@@ -351,9 +351,29 @@ export default function LessonView() {
 
         switch (item.content_type) {
             case 'text':
+                // Extraer el texto y asegurar su formato
+                let textContent = data.text || '';
+                
+                // Algunos motores escapan los saltos de línea literalmente como \\n, así que los limpiamos a \n real.
+                if (typeof textContent === 'string') {
+                    textContent = textContent.replace(/\\n/g, '\n');
+                }
+
+                const isHtml = /<[a-z][\s\S]*>/i.test(textContent);
+
                 return (
                     <div className="card p-5 md:p-7 prose prose-invert prose-slate max-w-none bg-slate-800/30 border-white/5 shadow-inner">
-                        <div dangerouslySetInnerHTML={{ __html: data.text }} />
+                        {isHtml ? (
+                            <div className="whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: textContent }} />
+                        ) : (
+                            <div className="text-gray-300">
+                                {textContent.split('\n').map((paragraph, idx) => (
+                                    <p key={idx} className={paragraph.trim() === '' ? 'h-4 m-0' : 'mb-4 leading-relaxed'}>
+                                        {paragraph}
+                                    </p>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 );
 
