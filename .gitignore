@@ -37,13 +37,13 @@ Thumbs.db
 *.seed
 *.pid.lock
 
-# Uploads
-uploads/
-backend/uploads/
+# Uploads Si se van a subir a git
+# uploads/
+# backend/uploads/
 
-# Database
-*.sql.gz
-*.sql.backup
+# Database. Tambien se pueden subir a git
+# *.sql.gz
+# *.sql.backup
 
 # Coverage
 coverage/

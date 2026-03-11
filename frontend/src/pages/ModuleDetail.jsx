@@ -23,6 +23,8 @@ import {
 import toast from 'react-hot-toast';
 import axios from 'axios';
 import CyberCat from '../components/CyberCat';
+import ModuleDetailSkeleton from '../components/skeletons/ModuleDetailSkeleton';
+import Skeleton from '../components/Skeleton';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -90,12 +92,7 @@ export default function ModuleDetail() {
     }, [id, fetchModule, navigate]);
 
     if (loading) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[400px] animate-fade-in">
-                <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                <p className="text-gray-400 font-medium">Cargando detalles del módulo...</p>
-            </div>
-        );
+        return <ModuleDetailSkeleton />;
     }
 
     const isPrerequisiteLocked = !!module?.is_locked && user?.role !== 'admin' && !viewAsStudent;

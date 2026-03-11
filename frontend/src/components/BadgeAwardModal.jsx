@@ -13,7 +13,7 @@ const BadgeAwardModal = ({ isOpen, onClose, badge }) => {
             isAnimatingRef.current = true;
 
             // Suena efecto de insignia
-            audioRef.current = new Audio('/badge.mp3');
+            audioRef.current = new Audio('/sounds/badge.mp3');
             audioRef.current.play().catch(e => console.log('Audio blocked', e));
 
             // Lanzar confeti premium

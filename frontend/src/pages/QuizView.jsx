@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
+import { useSoundStore } from '../store/soundStore';
 import {
     CheckCircle2,
     XCircle,
@@ -20,6 +21,7 @@ import {
 import toast from 'react-hot-toast';
 import { useNotificationStore } from '../store/notificationStore';
 import CyberCat from '../components/CyberCat';
+import { QuizSkeleton } from '../components/skeletons/QuizSkeleton';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -140,9 +142,10 @@ export default function QuizView() {
         }
     };
 
+    const { playSound } = useSoundStore();
+
     const playNextSound = () => {
-        const audio = new Audio('/next.mp3');
-        audio.play().catch(e => console.error('Error al reproducir audio next:', e));
+        playSound('/sounds/next.mp3');
     };
 
     const handleOptionSelect = (questionId, optionId) => {
@@ -199,12 +202,10 @@ export default function QuizView() {
                 }
 
                 if (response.data.passed) {
-                    const audio = new Audio('/winner.mp3');
-                    audio.play().catch(e => console.error('Error al reproducir audio de victoria:', e));
+                    playSound('/sounds/winner.mp3');
                     toast.success('¡Felicidades! Has aprobado.', { id: 'quiz-result' });
                 } else {
-                    const audio = new Audio('/failure.mp3');
-                    audio.play().catch(e => console.error('Error al reproducir audio de falla:', e));
+                    playSound('/sounds/failure.mp3');
                     toast.error('No has alcanzado la nota mínima.', { id: 'quiz-result' });
                 }
 
@@ -218,12 +219,7 @@ export default function QuizView() {
     };
 
     if (loading) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[600px] animate-fade-in">
-                <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                <p className="text-gray-400 font-medium">Cargando evaluación institucional...</p>
-            </div>
-        );
+        return <QuizSkeleton />;
     }
 
     if (!quizData) return null;

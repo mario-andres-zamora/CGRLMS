@@ -26,6 +26,8 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useNotificationStore } from '../store/notificationStore';
+import { useSoundStore } from '../store/soundStore';
+import { LessonSkeleton } from '../components/skeletons/LessonSkeleton';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -59,6 +61,7 @@ export default function LessonView() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { token, user, updateUser, viewAsStudent } = useAuthStore();
+    const { playSound } = useSoundStore();
     const [lesson, setLesson] = useState(null);
     const [contents, setContents] = useState([]);
     const [progress, setProgress] = useState(null);
@@ -206,8 +209,7 @@ export default function LessonView() {
     };
 
     const playAlert = () => {
-        const audio = new Audio('/alert.mp3');
-        audio.play().catch(e => console.log('Audio play blocked:', e));
+        playSound('/sounds/alert.mp3');
     };
 
     const markVideoAsWatched = (videoId) => {
@@ -650,12 +652,7 @@ export default function LessonView() {
     };
 
     if (loading) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[600px] animate-fade-in">
-                <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                <p className="text-gray-400 font-medium">Preparando material educativo...</p>
-            </div>
-        );
+        return <LessonSkeleton />;
     }
 
     if (!lesson) return null;

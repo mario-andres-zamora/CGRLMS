@@ -26,6 +26,8 @@ import {
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import ConfirmModal from '../components/ConfirmModal';
+import { TableSkeleton } from '../components/skeletons/TableSkeleton';
+import Skeleton from '../components/Skeleton';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -259,9 +261,21 @@ export default function AdminDirectory() {
 
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[600px] animate-fade-in">
-                <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                <p className="text-gray-400 font-medium">Sincronizando directorio institucional...</p>
+            <div className="max-w-7xl mx-auto space-y-10 animate-fade-in pb-20">
+                <div className="flex justify-between items-center">
+                    <div className="space-y-4">
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-10 w-64" />
+                    </div>
+                    <div className="flex gap-4">
+                        <Skeleton className="h-12 w-32 rounded-xl" />
+                        <Skeleton className="h-12 w-32 rounded-xl" />
+                    </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {[1, 2, 3].map(i => <Skeleton key={i} className="h-24 w-full rounded-2xl" />)}
+                </div>
+                <TableSkeleton rows={8} cols={5} />
             </div>
         );
     }

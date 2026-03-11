@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 import { ArrowLeft, Printer, Award, CheckCircle } from 'lucide-react';
+import { CertificateSkeleton } from '../components/skeletons/CertificateSkeleton';
 import toast from 'react-hot-toast';
 import confetti from 'canvas-confetti';
 
@@ -57,11 +58,7 @@ export default function CertificateView() {
     };
 
     if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-[#0d1127]">
-                <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-        );
+        return <CertificateSkeleton />;
     }
 
     if (!certificate) return null;

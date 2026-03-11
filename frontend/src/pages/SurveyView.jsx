@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
+import { useSoundStore } from '../store/soundStore';
 import {
     ClipboardList,
     Star,
@@ -13,6 +14,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useNotificationStore } from '../store/notificationStore';
+import { QuizSkeleton } from '../components/skeletons/QuizSkeleton';
 import CyberCat from '../components/CyberCat';
 
 const PointsCounter = ({ target }) => {
@@ -71,9 +73,10 @@ export default function SurveyView() {
         fetchSurvey();
     }, [id]);
 
+    const { playSound } = useSoundStore();
+
     const playNextSound = () => {
-        const audio = new Audio('/next.mp3');
-        audio.play().catch(e => console.error('Error al reproducir audio next:', e));
+        playSound('/sounds/next.mp3');
     };
 
     const fetchSurvey = async () => {
@@ -154,12 +157,7 @@ export default function SurveyView() {
     };
 
     if (loading) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[600px] animate-fade-in">
-                <div className="w-16 h-16 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                <p className="text-gray-400 font-medium">Cargando encuesta...</p>
-            </div>
-        );
+        return <QuizSkeleton />;
     }
 
     if (!surveyData) return null;

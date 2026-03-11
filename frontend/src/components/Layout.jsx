@@ -21,6 +21,7 @@ import { useNotificationStore } from '../store/notificationStore';
 import LevelUpModal from './LevelUpModal';
 import ModuleCompletionModal from './ModuleCompletionModal';
 import BadgeAwardModal from './BadgeAwardModal';
+import SoundControl from './SoundControl';
 
 export default function Layout() {
     const { user, logout, viewAsStudent, setViewAsStudent } = useAuthStore();
@@ -136,6 +137,8 @@ export default function Layout() {
                                     </div>
                                 </div>
                             </div>
+
+                            <SoundControl />
 
                             {/* Logout Button */}
                             <button

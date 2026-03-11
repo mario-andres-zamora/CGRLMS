@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trophy, Star, ChevronRight, X, Download, Share2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { useSoundStore } from '../store/soundStore';
 
 const PointsCounter = ({ target }) => {
     const [count, setCount] = useState(0);
@@ -29,7 +30,7 @@ const PointsCounter = ({ target }) => {
 const ModuleCompletionModal = ({ isOpen, onClose, data }) => {
     const [isVisible, setIsVisible] = useState(false);
     const navigate = useNavigate();
-    const audioRefs = React.useRef({ celebrate: null, completed: null });
+    const { playSound } = useSoundStore();
     const isAnimatingRef = React.useRef(false);
 
     useEffect(() => {
@@ -38,11 +39,8 @@ const ModuleCompletionModal = ({ isOpen, onClose, data }) => {
             isAnimatingRef.current = true;
 
             // Reproducir sonidos de celebracion
-            audioRefs.current.celebrate = new Audio('/celebrate.mp3');
-            audioRefs.current.completed = new Audio('/completed.mp3');
-
-            audioRefs.current.celebrate.play().catch(e => console.log('Audio play blocked:', e));
-            audioRefs.current.completed.play().catch(e => console.log('Audio play blocked:', e));
+            playSound('/sounds/celebrate.mp3');
+            playSound('/sounds/completed.mp3');
 
             // Launch confetti
             const duration = 3000;
@@ -77,27 +75,12 @@ const ModuleCompletionModal = ({ isOpen, onClose, data }) => {
             setIsVisible(false);
             isAnimatingRef.current = false;
 
-            // Detener sonidos al cerrar
-            Object.values(audioRefs.current).forEach(audio => {
-                if (audio) {
-                    audio.pause();
-                    audio.currentTime = 0;
-                }
-            });
-
             // Detener confeti inmediatamente
             confetti.reset();
         }
 
         return () => {
             isAnimatingRef.current = false;
-            // Cleanup: detener sonidos y confeti si el componente se desmonta
-            Object.values(audioRefs.current).forEach(audio => {
-                if (audio) {
-                    audio.pause();
-                    audio.currentTime = 0;
-                }
-            });
             confetti.reset();
         };
     }, [isOpen]);

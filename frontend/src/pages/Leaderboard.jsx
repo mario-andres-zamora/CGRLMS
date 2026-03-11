@@ -16,6 +16,8 @@ import {
     Award
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import LeaderboardSkeleton from '../components/skeletons/LeaderboardSkeleton';
+import Skeleton from '../components/Skeleton';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -91,12 +93,7 @@ export default function Leaderboard() {
     );
 
     if (loading) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[600px] animate-fade-in">
-                <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                <p className="text-gray-400 font-medium">Calculando posiciones institucionales...</p>
-            </div>
-        );
+        return <LeaderboardSkeleton />;
     }
 
     return (

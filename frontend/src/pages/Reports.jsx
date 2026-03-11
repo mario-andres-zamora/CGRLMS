@@ -35,6 +35,7 @@ import {
 } from 'recharts';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { ReportsSkeleton } from '../components/skeletons/ReportsSkeleton';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -148,13 +149,7 @@ export default function Reports() {
     }, [reportData, sortConfig]);
 
     if (loading) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[600px] animate-fade-in text-center">
-                <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mb-6 drop-shadow-[0_0_15px_rgba(56,74,153,0.4)]"></div>
-                <h2 className="text-white font-black uppercase text-xl tracking-tighter">Generando Inteligencia...</h2>
-                <p className="text-gray-400 font-medium mt-2">Sincronizando métricas de cumplimiento institucional.</p>
-            </div>
-        );
+        return <ReportsSkeleton />;
     }
 
     if (!reportData) return null;

@@ -13,6 +13,8 @@ import {
 import toast from 'react-hot-toast';
 import axios from 'axios';
 import primaryBanner from '../assets/primary-banner.svg';
+import { ModuleCardSkeleton, DashboardHeroSkeleton } from '../components/skeletons/DashboardSkeletons';
+import Skeleton from '../components/Skeleton';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -52,10 +54,43 @@ export default function Dashboard() {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-[400px]">
-                <div className="text-center">
-                    <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-gray-400">Cargando dashboard...</p>
+            <div className="space-y-4 animate-fade-in">
+                {/* Banner Skeleton */}
+                <DashboardHeroSkeleton />
+                
+                {/* Welcome & Stats Row */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                    <div className="space-y-2">
+                        <Skeleton className="h-10 w-64" />
+                        <Skeleton className="h-4 w-48" />
+                    </div>
+                    <div className="hidden lg:flex gap-4 justify-end">
+                        <Skeleton className="h-20 w-32" />
+                        <Skeleton className="h-20 w-32" />
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                    <div className="lg:col-span-3 space-y-4">
+                        <div className="card bg-slate-800/30 p-5">
+                            <div className="flex justify-between mb-6">
+                                <Skeleton className="h-8 w-48" />
+                                <Skeleton className="h-10 w-32" />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <ModuleCardSkeleton />
+                                <ModuleCardSkeleton />
+                                <ModuleCardSkeleton />
+                            </div>
+                        </div>
+                    </div>
+                    <div className="space-y-8">
+                        <Skeleton className="h-[400px] w-full" />
+                        <div className="grid grid-cols-2 gap-4">
+                            <Skeleton className="h-24 w-full" />
+                            <Skeleton className="h-24 w-full" />
+                        </div>
+                    </div>
                 </div>
             </div>
         );

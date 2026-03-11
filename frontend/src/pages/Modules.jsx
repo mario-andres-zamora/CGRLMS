@@ -14,8 +14,9 @@ import {
     Shield
 } from 'lucide-react';
 import { useState } from 'react';
-import CyberCat from '../components/CyberCat';
 import primaryBanner from '../assets/primary-banner.svg';
+import { ModuleCardSkeleton, DashboardHeroSkeleton } from '../components/skeletons/DashboardSkeletons';
+import Skeleton from '../components/Skeleton';
 
 export default function Modules() {
     const { modules, loading, fetchModules } = useModuleStore();
@@ -42,9 +43,20 @@ export default function Modules() {
 
     if (loading && modules.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[400px] animate-fade-in">
-                <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                <p className="text-gray-400 font-medium font-sans">Cargando catálogo de módulos...</p>
+            <div className="space-y-8 animate-fade-in">
+                <DashboardHeroSkeleton />
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <Skeleton className="h-10 w-64" />
+                    <Skeleton className="h-12 w-full md:w-96" />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <ModuleCardSkeleton />
+                    <ModuleCardSkeleton />
+                    <ModuleCardSkeleton />
+                    <ModuleCardSkeleton />
+                    <ModuleCardSkeleton />
+                    <ModuleCardSkeleton />
+                </div>
             </div>
         );
     }

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import axios from 'axios';
 import { useAuthStore } from './authStore';
+import { useSoundStore } from './soundStore';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -40,8 +41,7 @@ export const useNotificationStore = create((set, get) => ({
 
                 // Si hay notificaciones nuevas que no estaban antes, sonar alerta
                 if (newNotifications.length > oldNotifications.length && oldNotifications.length > 0) {
-                    const audio = new Audio('/alert.mp3');
-                    audio.play().catch(e => console.log('Audio play blocked:', e));
+                    useSoundStore.getState().playSound('/sounds/alert.mp3');
                 }
 
                 set({ notifications: newNotifications, loading: false });

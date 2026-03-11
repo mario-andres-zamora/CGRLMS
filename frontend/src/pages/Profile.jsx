@@ -22,6 +22,8 @@ import {
     ArrowLeft
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import ProfileSkeleton from '../components/skeletons/ProfileSkeleton';
+import Skeleton from '../components/Skeleton';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -67,12 +69,7 @@ export default function Profile() {
     };
 
     if (loading) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[600px] animate-fade-in">
-                <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                <p className="text-gray-400 font-medium">Sincronizando identidad digital...</p>
-            </div>
-        );
+        return <ProfileSkeleton />;
     }
 
     if (!profileData) return null;
@@ -422,7 +419,7 @@ export default function Profile() {
                                             className="w-full h-full object-contain p-3 transition-transform duration-700 group-hover:scale-110 drop-shadow-[0_0_15px_rgba(56,74,153,0.3)]"
                                             onError={(e) => {
                                                 e.target.onerror = null;
-                                                e.target.src = '/shield.svg';
+                                                e.target.src = '/images/shield.svg';
                                             }}
                                         />
                                     </div>

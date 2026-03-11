@@ -25,6 +25,8 @@ import {
 import toast from 'react-hot-toast';
 import axios from 'axios';
 import ConfirmModal from '../components/ConfirmModal';
+import Skeleton from '../components/Skeleton';
+import { ModuleCardSkeleton } from '../components/skeletons/DashboardSkeletons';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -486,8 +488,11 @@ export default function AdminModules() {
 
             {/* Modules Grid */}
             {loading ? (
-                <div className="flex justify-center py-20">
-                    <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                    <ModuleCardSkeleton />
+                    <ModuleCardSkeleton />
+                    <ModuleCardSkeleton />
+                    <ModuleCardSkeleton />
                 </div>
             ) : (
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
