@@ -90,11 +90,14 @@ export default function SurveyView() {
                 setCompleted(true);
                 setPointsEarned(response.data.pointsAwarded || 0);
 
-                if (response.data.pointsAwarded > 0) {
-                    updateUser({ points: (useAuthStore.getState().user.points || 0) + response.data.pointsAwarded });
-                }
+                // Actualizar store global
+                const currentUser = useAuthStore.getState().user;
+                updateUser({ 
+                    points: (currentUser?.points || 0) + (response.data.pointsAwarded || 0),
+                    level: response.data.newLevel || currentUser?.level
+                });
 
-                toast.success('¡Gracias por tu feedback!');
+                toast.success('¡Gracias por tu retroalimentación!');
             }
         } catch (error) {
             toast.error(error.response?.data?.error || 'Error al enviar la encuesta');
@@ -137,7 +140,7 @@ export default function SurveyView() {
                         <div className="space-y-3">
                             <h1 className="text-4xl font-black text-white uppercase tracking-tight">¡Encuesta Completada!</h1>
                             <p className="text-gray-400 font-bold uppercase tracking-widest text-sm">
-                                Tu feedback es fundamental para mejorar nuestra plataforma.
+                                Tu retroalimentación es fundamental para mejorar la plataforma.
                             </p>
                         </div>
 
@@ -196,7 +199,7 @@ export default function SurveyView() {
                     <div className="flex flex-col gap-3">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-yellow-500/10 rounded-full border border-yellow-500/20 self-start">
                             <ClipboardList className="w-3.5 h-3.5 text-yellow-500" />
-                            <span className="text-[9px] font-black text-yellow-400 uppercase tracking-widest">Feedback Institucional</span>
+                            <span className="text-[9px] font-black text-yellow-400 uppercase tracking-widest">Formulario de retroalimentación</span>
                         </div>
                         {survey.description && (
                             <p className="text-gray-300 text-sm md:text-base font-semibold italic border-l-4 border-yellow-500/40 pl-4 py-1 max-w-2xl leading-relaxed">

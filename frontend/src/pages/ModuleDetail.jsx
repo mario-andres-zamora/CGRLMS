@@ -17,7 +17,8 @@ import {
     Trophy,
     Zap,
     Award,
-    AlertTriangle
+    AlertTriangle,
+    ClipboardList
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import axios from 'axios';
@@ -333,16 +334,21 @@ export default function ModuleDetail() {
                                             {isLocked ? (
                                                 <Lock className="w-6 h-6" />
                                             ) : (
-                                                lesson.lesson_type === 'video' ? <PlayCircle className="w-6 h-6 text-blue-500" /> :
-                                                    (lesson.lesson_type === 'interactive' || lesson.lesson_type === 'h5p') ? <Zap className="w-6 h-6 text-yellow-500" /> :
-                                                        <FileText className="w-6 h-6 text-indigo-400" />
+                                                lesson.lesson_type === 'quiz' ? <HelpCircle className="w-6 h-6 text-secondary-500" /> :
+                                                    lesson.lesson_type === 'video' ? <PlayCircle className="w-6 h-6 text-blue-500" /> :
+                                                        (lesson.lesson_type === 'interactive' || lesson.lesson_type === 'h5p') ? <Zap className="w-6 h-6 text-yellow-500" /> :
+                                                            <FileText className="w-6 h-6 text-indigo-400" />
                                             )}
                                         </div>
 
                                         <div className="flex-1">
                                             <div className="flex items-center gap-3 mb-1">
                                                 <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">
-                                                    Lección {index + 1}
+                                                    {lesson.lesson_type === 'quiz' ? (
+                                                        <span className="text-secondary-500 flex items-center gap-1">
+                                                            <Award className="w-3 h-3" /> Evaluación Final
+                                                        </span>
+                                                    ) : `Lección ${index + 1}`}
                                                 </span>
                                                 {lesson.status === 'completed' && (
                                                     <span className="flex items-center gap-1 text-green-500 text-[9px] font-black uppercase tracking-tighter bg-green-500/10 px-2 py-0.5 rounded-full">
@@ -374,49 +380,6 @@ export default function ModuleDetail() {
                             );
                         })}
 
-                        {/* Quizzes */}
-                        {module.quizzes && module.quizzes.map((quiz) => {
-                            const mandatoryLessonsIncomplete = module.lessons.some(l => !l.is_optional && l.status !== 'completed');
-                            const isQuizLocked = mandatoryLessonsIncomplete && user?.role !== 'admin';
-
-                            return (
-                                <div
-                                    key={quiz.id}
-                                    className={`group relative p-6 rounded-2xl border transition-all duration-300 ${isQuizLocked
-                                        ? 'bg-slate-900/40 border-white/5 opacity-60 cursor-not-allowed'
-                                        : 'bg-secondary-500/5 border-secondary-500/20 hover:border-secondary-500/40 hover:bg-secondary-500/10 cursor-pointer'
-                                        }`}
-                                    onClick={() => {
-                                        if (isQuizLocked) {
-                                            toast.error('Debes completar todas las lecciones obligatorias para realizar el examen final.');
-                                            return;
-                                        }
-                                        navigate(`/quizzes/${quiz.id}`);
-                                    }}
-                                >
-                                    <div className="flex items-center gap-6">
-                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${isQuizLocked ? 'bg-slate-900 text-gray-700' : 'bg-secondary-900/30 text-secondary-500'
-                                            }`}>
-                                            {isQuizLocked ? <Lock className="w-6 h-6" /> : <HelpCircle className="w-6 h-6" />}
-                                        </div>
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-3 mb-1">
-                                                <span className={`text-[10px] font-black uppercase tracking-widest ${isQuizLocked ? 'text-gray-600' : 'text-secondary-500'}`}>Evaluación Final</span>
-                                                {quiz.best_score >= (quiz.passing_score || 70) && (
-                                                    <span className="flex items-center gap-1 text-green-500 text-[9px] font-black uppercase tracking-tighter bg-green-500/10 px-2 py-0.5 rounded-full">
-                                                        <CheckCircle className="w-3 h-3" /> Aprobado
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <h3 className={`font-bold ${isQuizLocked ? 'text-gray-600' : 'text-white'}`}>
-                                                {quiz.title}
-                                            </h3>
-                                        </div>
-                                        {!isQuizLocked && <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform text-secondary-500" />}
-                                    </div>
-                                </div>
-                            );
-                        })}
                     </div>
                 </div>
 

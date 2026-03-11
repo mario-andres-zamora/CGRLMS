@@ -26,7 +26,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
         }
 
         // 2. Verificar si el usuario ya respondió
-        const [responses] = await db.query(
+        const responses = await db.query(
             'SELECT id, submitted_at FROM survey_responses WHERE user_id = ? AND survey_id = ?',
             [userId, surveyId]
         );
@@ -133,7 +133,8 @@ router.post('/:id/submit', authMiddleware, async (req, res) => {
             success: true,
             message: 'Encuesta enviada correctamente',
             pointsAwarded,
-            levelUp: levelSync?.leveledUp || false
+            levelUp: levelSync?.leveledUp || false,
+            newLevel: levelSync?.leveledUp ? levelSync.newLevel : levelSync?.currentLevel
         });
 
     } catch (error) {

@@ -19,6 +19,8 @@ import {
     Download,
     ExternalLink,
     FileText,
+    HelpCircle,
+    ClipboardList,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import axios from 'axios';
@@ -70,6 +72,8 @@ export default function AdminModules() {
     const [resourcesLoading, setResourcesLoading] = useState(false);
     const [isResourceModalOpen, setIsResourceModalOpen] = useState(false);
     const [editingResource, setEditingResource] = useState(null);
+    const [moduleQuizzes, setModuleQuizzes] = useState([]);
+    const [moduleSurveys, setModuleSurveys] = useState([]);
     const [resourceFormData, setResourceFormData] = useState({
         module_id: null,
         title: '',
@@ -181,6 +185,8 @@ export default function AdminModules() {
             if (response.data.success) {
                 setModuleLessons(response.data.module.lessons || []);
                 setModuleResources(response.data.module.resources || []);
+                setModuleQuizzes(response.data.module.quizzes || []);
+                setModuleSurveys(response.data.module.surveys || []);
             }
         } catch (error) {
             console.error('Error fetching module content:', error);
@@ -617,7 +623,13 @@ export default function AdminModules() {
                                                             <div>
                                                                 <p className="text-sm font-bold text-white">{lesson.title}</p>
                                                                 <div className="flex items-center gap-2">
-                                                                    <p className="text-[10px] text-gray-500 uppercase font-black">{lesson.lesson_type}</p>
+                                                                    <p className="text-[10px] text-gray-500 uppercase font-black">
+                                                                        {lesson.lesson_type === 'quiz' ? (
+                                                                            <span className="flex items-center gap-1 text-secondary-500">
+                                                                                <Award className="w-3 h-3" /> EVALUACIÓN
+                                                                            </span>
+                                                                        ) : lesson.lesson_type}
+                                                                    </p>
                                                                     <span className="text-[10px] font-black text-primary-400 flex items-center gap-0.5">
                                                                         <Award className="w-2.5 h-2.5" /> {lesson.total_points || 0} PTS
                                                                     </span>
@@ -919,6 +931,7 @@ export default function AdminModules() {
                                             <option value="reading" className="bg-slate-900 text-gray-300">Lectura</option>
                                             <option value="video" className="bg-slate-900 text-gray-300">Video</option>
                                             <option value="interactive" className="bg-slate-900 text-gray-300">Interactivo</option>
+                                            <option value="quiz" className="bg-slate-900 text-gray-300">Evaluación Final</option>
                                         </select>
                                     </div>
                                     <div className="space-y-2">

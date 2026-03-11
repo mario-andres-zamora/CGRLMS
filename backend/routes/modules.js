@@ -237,6 +237,16 @@ router.get('/:id', authMiddleware, cacheMiddleware(600, true), async (req, res) 
             [userId, userId, moduleId]
         );
 
+        // Obtener encuestas del módulo
+        const surveys = await db.query(
+            `SELECT 
+                s.*,
+                (SELECT COUNT(*) FROM survey_responses WHERE survey_id = s.id AND user_id = ?) as is_completed
+            FROM surveys s
+            WHERE s.module_id = ?`,
+            [userId, moduleId]
+        );
+
         // Calcular porcentaje de completado basado en lecciones (OBLIGATORIAS) y quizzes
         const requiredLessons = lessons.filter(l => !l.is_optional);
         const completedRequiredLessons = requiredLessons.filter(l => l.status === 'completed').length;
@@ -245,8 +255,8 @@ router.get('/:id', authMiddleware, cacheMiddleware(600, true), async (req, res) 
         const totalQuizzesCount = quizzes.length;
         const completedQuizzes = quizzes.filter(q => q.best_score >= q.passing_score).length;
 
-        const totalItems = requiredLessons.length + totalQuizzesCount;
-        const totalCompleted = completedRequiredLessons + completedQuizzes;
+        const totalItems = requiredLessons.length + totalQuizzesCount + surveys.length;
+        const totalCompleted = completedRequiredLessons + completedQuizzes + surveys.filter(s => s.is_completed > 0).length;
 
         const completionPercentage = totalItems > 0
             ? Math.round((totalCompleted / totalItems) * 100)
@@ -259,7 +269,8 @@ router.get('/:id', authMiddleware, cacheMiddleware(600, true), async (req, res) 
                 completionPercentage,
                 lessons,
                 resources,
-                quizzes
+                quizzes,
+                surveys: surveys.map(s => ({ ...s, isCompleted: s.is_completed > 0 }))
             }
         });
     } catch (error) {

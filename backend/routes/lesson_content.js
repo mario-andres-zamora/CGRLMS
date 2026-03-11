@@ -280,6 +280,7 @@ router.put('/assignment/submission/:submissionId', authMiddleware, adminMiddlewa
 router.post('/', authMiddleware, adminMiddleware, upload.single('file'), async (req, res) => {
     try {
         const { lesson_id, title, content_type, data, order_index, is_required, points } = req.body;
+        const requiredVal = is_required === 'true' || is_required === true || is_required === 1 || is_required === '1';
         let contentData = data ? JSON.parse(data) : {};
 
         // Si hay archivo subido, agregarlo a contentData
@@ -293,7 +294,7 @@ router.post('/', authMiddleware, adminMiddleware, upload.single('file'), async (
         const result = await db.query(
             `INSERT INTO lesson_contents (lesson_id, title, content_type, data, order_index, is_required, points)
              VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [lesson_id, title, content_type, JSON.stringify(contentData), order_index || 0, is_required ? 1 : 0, points || 0]
+            [lesson_id, title, content_type, JSON.stringify(contentData), order_index || 0, requiredVal ? 1 : 0, points || 0]
         );
 
         res.status(201).json({
@@ -317,6 +318,7 @@ router.put('/:id', authMiddleware, adminMiddleware, upload.single('file'), async
     try {
         const { id } = req.params;
         const { title, content_type, data, order_index, is_required, points } = req.body;
+        const requiredVal = is_required === 'true' || is_required === true || is_required === 1 || is_required === '1';
 
         // Obtener data existente para no perder lo que había si no se envía todo
         const [current] = await db.query('SELECT data FROM lesson_contents WHERE id = ?', [id]);
@@ -343,7 +345,7 @@ router.put('/:id', authMiddleware, adminMiddleware, upload.single('file'), async
             `UPDATE lesson_contents 
              SET title = ?, content_type = ?, data = ?, order_index = ?, is_required = ?, points = ?
              WHERE id = ?`,
-            [title, content_type, JSON.stringify(contentData), order_index, is_required ? 1 : 0, points || 0, id]
+            [title, content_type, JSON.stringify(contentData), order_index, requiredVal ? 1 : 0, points || 0, id]
         );
 
         res.json({ success: true, message: 'Contenido actualizado correctamente' });

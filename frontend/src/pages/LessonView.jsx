@@ -733,9 +733,10 @@ export default function LessonView() {
                                                     ) : isLocked ? (
                                                         <Lock className="w-3.5 h-3.5" />
                                                     ) : (
-                                                        ml.lesson_type === 'video' ? <PlayCircle className="w-4 h-4" /> :
-                                                            (ml.lesson_type === 'interactive' || ml.lesson_type === 'h5p') ? <Zap className="w-4 h-4" /> :
-                                                                <FileText className="w-4 h-4" />
+                                                        ml.lesson_type === 'quiz' ? <HelpCircle className="w-4 h-4 text-secondary-500" /> :
+                                                            ml.lesson_type === 'video' ? <PlayCircle className="w-4 h-4" /> :
+                                                                (ml.lesson_type === 'interactive' || ml.lesson_type === 'h5p') ? <Zap className="w-4 h-4" /> :
+                                                                    <FileText className="w-4 h-4" />
                                                     )}
                                                 </div>
                                                 {!isCompleted && isCurrent && (
@@ -747,7 +748,7 @@ export default function LessonView() {
                                                 <div className="flex flex-wrap items-center gap-2 mb-0">
                                                     <p className={`text-[9px] font-black uppercase tracking-widest
                                                         ${isCurrent ? 'text-primary-400' : 'text-gray-500'}`}>
-                                                        L{index + 1}
+                                                        {ml.lesson_type === 'quiz' ? 'EVALUACIÓN' : `L${index + 1}`}
                                                     </p>
                                                     <div className="flex flex-wrap gap-1">
                                                         {isCompleted && (
