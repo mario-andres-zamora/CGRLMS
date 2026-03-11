@@ -20,7 +20,8 @@ router.get('/', authMiddleware, cacheMiddleware(600, true), async (req, res) => 
             `SELECT 
                 m.*,
                 COUNT(DISTINCT l.id) as total_lessons,
-                (SELECT COUNT(*) FROM quizzes q WHERE q.module_id = m.id AND q.is_published = TRUE) as total_quizzes,
+                (SELECT COUNT(*) FROM quizzes q WHERE q.module_id = m.id AND q.is_published = TRUE AND q.lesson_id IS NULL) as total_quizzes,
+                (SELECT COUNT(*) FROM surveys s WHERE s.module_id = m.id AND s.lesson_id IS NULL) as total_surveys,
                 SUM(l.duration_minutes) as total_duration,
                 (SELECT IFNULL(SUM(lc.points), 0) 
                  FROM lesson_contents lc 
@@ -63,11 +64,22 @@ router.get('/', authMiddleware, cacheMiddleware(600, true), async (req, res) => 
 
             const totalLessons = module.total_lessons || 0;
             const totalQuizzes = module.total_quizzes || 0;
-            const totalItems = totalLessons + totalQuizzes;
+            const totalSurveys = module.total_surveys || 0;
+            const totalItems = totalLessons + totalQuizzes + totalSurveys;
 
             const completedLessons = lessonProgress.completed_count || 0;
             const completedQuizzes = quizProgress.passed_count || 0;
-            const completedItems = completedLessons + completedQuizzes;
+            
+            // Para la vista de lista simplificada, aproximamos las encuestas como completadas si hay alguna respuesta
+            const [surveyProgress] = await db.query(
+                `SELECT COUNT(DISTINCT survey_id) as completed_count
+                 FROM survey_responses
+                 WHERE user_id = ? AND survey_id IN (SELECT id FROM surveys WHERE module_id = ? AND lesson_id IS NULL)`,
+                [userId, module.id]
+            );
+            const completedSurveys = surveyProgress.completed_count || 0;
+
+            const completedItems = completedLessons + completedQuizzes + completedSurveys;
 
             module.completionPercentage = totalItems > 0
                 ? Math.round((completedItems / totalItems) * 100)

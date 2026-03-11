@@ -44,15 +44,15 @@ router.get('/', authMiddleware, cacheMiddleware(300, true), async (req, res) => 
                 [userId, m.id]
             );
 
-            // Contar quizzes totales y aprobados
+            // Contar quizzes totales y aprobados (SOLO INDEPENDIENTES, los de lección ya se cuentan arriba)
             const [quizzesData] = await db.query(
                 `SELECT 
                     COUNT(*) as total,
                     (SELECT COUNT(DISTINCT quiz_id) FROM quiz_attempts qa 
                      WHERE qa.user_id = ? AND qa.passed = TRUE 
-                     AND qa.quiz_id IN (SELECT id FROM quizzes WHERE module_id = ? ${isAdmin ? '' : 'AND is_published = TRUE'})) as completed
+                     AND qa.quiz_id IN (SELECT id FROM quizzes WHERE module_id = ? ${isAdmin ? '' : 'AND is_published = TRUE'} AND lesson_id IS NULL)) as completed
                  FROM quizzes q
-                 WHERE q.module_id = ? ${isAdmin ? '' : 'AND q.is_published = TRUE'}`,
+                 WHERE q.module_id = ? ${isAdmin ? '' : 'AND q.is_published = TRUE'} AND q.lesson_id IS NULL`,
                 [userId, m.id, m.id]
             );
 
