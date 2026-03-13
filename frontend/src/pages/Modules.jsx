@@ -17,6 +17,7 @@ import { useState } from 'react';
 import primaryBanner from '../assets/primary-banner.svg';
 import { ModuleCardSkeleton, DashboardHeroSkeleton } from '../components/skeletons/DashboardSkeletons';
 import Skeleton from '../components/Skeleton';
+import CyberCat from '../components/CyberCat';
 
 export default function Modules() {
     const { modules, loading, fetchModules } = useModuleStore();
