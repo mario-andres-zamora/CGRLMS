@@ -28,7 +28,7 @@ const upload = multer({
     limits: { fileSize: 50 * 1024 * 1024 }, // 50MB límite
     fileFilter: (req, file, cb) => {
         // Permitir documentos, imágenes y videos básicos
-        const filetypes = /jpeg|jpg|png|gif|pdf|doc|docx|ppt|pptx|xls|xlsx|mp4|webm|mp3|zip|rar/;
+        const filetypes = /jpeg|jpg|png|gif|svg|pdf|doc|docx|ppt|pptx|xls|xlsx|mp4|webm|mp3|zip|rar/;
         const mimetype = filetypes.test(file.mimetype);
         const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
 

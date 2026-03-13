@@ -700,7 +700,7 @@ export default function AdminLessonEditor() {
                                         accept={formData.content_type === 'image' ? 'image/*' : '*/*'}
                                     />
                                     <p className="text-xs text-gray-500 mt-1">
-                                        Máx 50MB. Para imágenes usa JPG, PNG o GIF.
+                                        Máx 50MB. Para imágenes usa JPG, PNG, GIF o SVG.
                                     </p>
                                     {editingItem?.data?.original_name && (
                                         <p className="text-xs text-green-400 mt-1">Archivo actual: {editingItem.data.original_name}</p>
