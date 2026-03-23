@@ -79,7 +79,7 @@ app.set('trust proxy', 1);
 // Rate limiting
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutos
-    max: 1000, // límite de 1000 requests por ventana
+    max: parseInt(process.env.RATE_LIMIT_MAX) || 1000, // configurable mediante .env
     message: 'Demasiadas solicitudes desde esta IP, por favor intente más tarde.',
     standardHeaders: true,
     legacyHeaders: false,
@@ -176,6 +176,16 @@ app.put('/api/system/settings', authMiddleware, adminMiddleware, async (req, res
     } catch (error) {
         res.status(500).json({ error: 'Error al guardar configuración' });
     }
+});
+
+// Health Check Endpoint (Público para monitoreo y stress tests)
+app.get('/api/health', (req, res) => {
+    res.json({
+        status: 'OK',
+        timestamp: new Date(),
+        uptime: process.uptime(),
+        environment: process.env.NODE_ENV || 'development'
+    });
 });
 
 // Ruta raíz

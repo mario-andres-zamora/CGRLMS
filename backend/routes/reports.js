@@ -4,25 +4,32 @@ const router = express.Router();
 const logger = require('../config/logger');
 const db = require('../config/database');
 const { authMiddleware, adminMiddleware } = require('../middleware/auth');
+const redisClient = require('../config/redis');
 
 /**
- * @route   GET /api/reports/compliance
- * @desc    Obtener reporte de cumplimiento global y por departamento
- * @access  Private/Admin
+ * Función para generar y cachear el reporte de cumplimiento en Redis
+ * Se ejecuta periódicamente en segundo plano para no bloquear el API.
  */
-router.get('/compliance', authMiddleware, adminMiddleware, async (req, res) => {
+const refreshReportsCache = async () => {
     try {
+        if (!redisClient || !redisClient.isOpen) return null;
+
+        logger.info('📊 Refrescando caché de reportes de cumplimiento...');
+
+        // 0. Obtener total de módulos publicados una sola vez
+        const [moduleData] = await db.query('SELECT COUNT(*) as total FROM modules WHERE is_published = TRUE');
+        const totalModules = moduleData?.total || 1;
+
         // 1. Estadísticas Globales
         const [globalStats] = await db.query(`
             SELECT 
                 COUNT(DISTINCT u.id) as total_staff,
-                (SELECT COUNT(*) FROM modules WHERE is_published = TRUE) as total_modules,
                 AVG(up_agg.completion_rate) as avg_completion_rate
             FROM users u
             LEFT JOIN (
                 SELECT 
                     user_id, 
-                    (COUNT(CASE WHEN status = 'completed' THEN 1 END) / (SELECT COUNT(*) FROM modules WHERE is_published = TRUE)) * 100 as completion_rate
+                    (COUNT(CASE WHEN status = 'completed' THEN 1 END) / ${totalModules}) * 100 as completion_rate
                 FROM user_progress
                 GROUP BY user_id
             ) up_agg ON u.id = up_agg.user_id
@@ -41,7 +48,7 @@ router.get('/compliance', authMiddleware, adminMiddleware, async (req, res) => {
             LEFT JOIN (
                 SELECT 
                     user_id, 
-                    (COUNT(DISTINCT module_id) / (SELECT COUNT(*) FROM modules WHERE is_published = TRUE)) * 100 as completion_rate
+                    (COUNT(DISTINCT module_id) / ${totalModules}) * 100 as completion_rate
                 FROM user_progress
                 WHERE status = 'completed'
                 GROUP BY user_id
@@ -50,20 +57,7 @@ router.get('/compliance', authMiddleware, adminMiddleware, async (req, res) => {
             ORDER BY avg_completion DESC
         `);
 
-        // 3. Cumplimiento por Módulo
-        const moduleCompliance = await db.query(`
-            SELECT 
-                m.id, m.title,
-                AVG(CASE WHEN up.status = 'completed' THEN 100 ELSE COALESCE(up.progress_percentage, 0) END) as avg_completion
-            FROM modules m
-            LEFT JOIN user_progress up ON m.id = up.module_id
-            LEFT JOIN users u ON up.user_id = u.id
-            WHERE m.is_published = TRUE AND (u.role = 'student' OR u.id IS NULL)
-            GROUP BY m.id
-            ORDER BY avg_completion DESC
-        `);
-
-        // 3. Usuarios en Riesgo (Menos del 20% de progreso - Listado extendido)
+        // 3. Usuarios en Riesgo (Menos del 20%)
         const usersAtRisk = await db.query(`
             SELECT 
                 u.first_name, u.last_name, u.department, u.email,
@@ -72,7 +66,7 @@ router.get('/compliance', authMiddleware, adminMiddleware, async (req, res) => {
             LEFT JOIN (
                 SELECT 
                     user_id, 
-                    (COUNT(DISTINCT module_id) / (SELECT COUNT(*) FROM modules WHERE is_published = TRUE)) * 100 as completion_rate
+                    (COUNT(DISTINCT module_id) / ${totalModules}) * 100 as completion_rate
                 FROM user_progress
                 WHERE status = 'completed'
                 GROUP BY user_id
@@ -83,19 +77,19 @@ router.get('/compliance', authMiddleware, adminMiddleware, async (req, res) => {
             LIMIT 50
         `);
 
-        // 4. Listado Detallado de Usuarios para el reporte completo
+        // 4. Listado Detallado (Limitado a 500 para el cache, el resto paginado si fuera necesario, pero aquí guardamos todo)
         const detailedUsers = await db.query(`
             SELECT 
                 u.id, u.first_name, u.last_name, u.email, u.department, u.position,
                 COALESCE(up_agg.completion_rate, 0) as progress,
                 COALESCE(up_agg.completed_modules, 0) as completed_modules,
-                (SELECT COUNT(*) FROM modules WHERE is_published = TRUE) as total_modules
+                ${totalModules} as total_modules
             FROM users u
             LEFT JOIN (
                 SELECT 
                     user_id, 
                     COUNT(DISTINCT module_id) as completed_modules,
-                    (COUNT(DISTINCT module_id) / (SELECT COUNT(*) FROM modules WHERE is_published = TRUE)) * 100 as completion_rate
+                    (COUNT(DISTINCT module_id) / ${totalModules}) * 100 as completion_rate
                 FROM user_progress
                 WHERE status = 'completed'
                 GROUP BY user_id
@@ -104,16 +98,14 @@ router.get('/compliance', authMiddleware, adminMiddleware, async (req, res) => {
             ORDER BY progress DESC
         `);
 
-        // 5. Certificaciones Emitidas
         const [certsCount] = await db.query('SELECT COUNT(*) as count FROM certificates');
 
-        res.json({
-            success: true,
+        const reportData = {
             summary: {
                 totalStaff: globalStats.total_staff,
                 avgCompletion: Math.round(globalStats.avg_completion_rate || 0),
                 totalCerts: certsCount.count,
-                activeModules: globalStats.total_modules
+                activeModules: totalModules
             },
             departments: deptCompliance.map(d => ({
                 ...d,
@@ -123,11 +115,58 @@ router.get('/compliance', authMiddleware, adminMiddleware, async (req, res) => {
             detailedUsers: detailedUsers.map(u => ({
                 ...u,
                 progress: Math.round(u.progress)
-            }))
+            })),
+            lastUpdated: new Date()
+        };
+
+        // Guardar en Redis por 2 horas (7200 segundos)
+        await redisClient.setEx('reports:compliance', 7200, JSON.stringify(reportData));
+        logger.info('✅ Caché de reportes actualizada correctamente.');
+        return reportData;
+    } catch (error) {
+        logger.error('❌ Error refrescando caché de reportes:', error);
+        return null;
+    }
+};
+
+// Programar actualización cada 2 horas (opcional: primera ejecución tras 30s)
+setTimeout(refreshReportsCache, 30000);
+setInterval(refreshReportsCache, 2 * 60 * 60 * 1000);
+
+/**
+ * @route   GET /api/reports/compliance
+ * @desc    Obtener reporte de cumplimiento (Desde caché de Redis)
+ * @access  Private/Admin
+ */
+router.get('/compliance', authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+        let reportData = null;
+
+        // 1. Intentar obtener de Redis
+        if (redisClient && redisClient.isOpen) {
+            const cached = await redisClient.get('reports:compliance');
+            if (cached) {
+                reportData = JSON.parse(cached);
+            }
+        }
+
+        // 2. Si no hay caché, generar en el momento (solo la primera vez)
+        if (!reportData) {
+            logger.info('⚠️ Caché de reportes vacía, generando en tiempo real (slow path)...');
+            reportData = await refreshReportsCache();
+        }
+
+        if (!reportData) {
+            return res.status(500).json({ error: 'No se pudieron generar los reportes.' });
+        }
+
+        res.json({
+            success: true,
+            ...reportData
         });
     } catch (error) {
-        logger.error('Error generando reportes:', error);
-        res.status(500).json({ error: 'Error al generar los reportes de cumplimiento' });
+        logger.error('Error obteniendo reportes:', error);
+        res.status(500).json({ error: 'Error al cargar los reportes de cumplimiento' });
     }
 });
 
