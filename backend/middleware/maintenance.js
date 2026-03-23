@@ -1,4 +1,5 @@
 const db = require('../config/database');
+const logger = require('../config/logger');
 
 /**
  * Middleware para verificar si el sistema está en modo mantenimiento
@@ -25,7 +26,7 @@ const maintenanceMiddleware = async (req, res, next) => {
 
         next();
     } catch (error) {
-        console.error('Error en maintenanceMiddleware:', error);
+        logger.error('Error en maintenanceMiddleware:', error);
         next(); // Si falla la DB, dejamos pasar para no romper el app por completo
     }
 };

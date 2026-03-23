@@ -1,5 +1,6 @@
 const express = require('express');
-const router = express.Router();
+
+const logger = require('../config/logger');
 const db = require('../config/database');
 const { authMiddleware, adminMiddleware } = require('../middleware/auth');
 const multer = require('multer');
@@ -26,7 +27,7 @@ router.get('/', authMiddleware, adminMiddleware, async (req, res) => {
             directory
         });
     } catch (error) {
-        console.error('Error obteniendo directorio:', error);
+        logger.error('Error obteniendo directorio:', error);
         res.status(500).json({ error: 'Error al obtener el directorio maestro' });
     }
 });
@@ -55,7 +56,7 @@ router.post('/single', authMiddleware, adminMiddleware, async (req, res) => {
 
         res.status(201).json({ success: true, message: 'Funcionario agregado correctamente' });
     } catch (error) {
-        console.error('Error agregando funcionario individual:', error);
+        logger.error('Error agregando funcionario individual:', error);
         res.status(500).json({ error: 'Error al agregar el funcionario' });
     }
 });
@@ -110,7 +111,7 @@ router.post('/upload', authMiddleware, adminMiddleware, upload.single('csv'), as
             errors
         });
     } catch (error) {
-        console.error('Error procesando CSV:', error);
+        logger.error('Error procesando CSV:', error);
         res.status(500).json({ error: 'Error al procesar el archivo CSV' });
     }
 });
@@ -132,7 +133,7 @@ router.put('/:email', authMiddleware, adminMiddleware, async (req, res) => {
 
         res.json({ success: true, message: 'Registro actualizado correctamente' });
     } catch (error) {
-        console.error('Error actualizando registro del directorio:', error);
+        logger.error('Error actualizando registro del directorio:', error);
         res.status(500).json({ error: 'Error al actualizar el registro' });
     }
 });

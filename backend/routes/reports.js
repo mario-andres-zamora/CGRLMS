@@ -1,5 +1,6 @@
 const express = require('express');
-const router = express.Router();
+
+const logger = require('../config/logger');
 const db = require('../config/database');
 const { authMiddleware, adminMiddleware } = require('../middleware/auth');
 
@@ -124,7 +125,7 @@ router.get('/compliance', authMiddleware, adminMiddleware, async (req, res) => {
             }))
         });
     } catch (error) {
-        console.error('Error generando reportes:', error);
+        logger.error('Error generando reportes:', error);
         res.status(500).json({ error: 'Error al generar los reportes de cumplimiento' });
     }
 });

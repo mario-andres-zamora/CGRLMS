@@ -1,5 +1,6 @@
 const express = require('express');
-const router = express.Router();
+
+const logger = require('../config/logger');
 const db = require('../config/database');
 const { authMiddleware, adminMiddleware } = require('../middleware/auth');
 
@@ -13,7 +14,7 @@ router.get('/', authMiddleware, async (req, res) => {
         const departments = await db.query('SELECT * FROM departments ORDER BY name ASC');
         res.json({ success: true, departments });
     } catch (error) {
-        console.error('Error al obtener departamentos:', error);
+        logger.error('Error al obtener departamentos:', error);
         res.status(500).json({ error: 'Error al cargar los departamentos' });
     }
 });
@@ -34,7 +35,7 @@ router.post('/', authMiddleware, adminMiddleware, async (req, res) => {
         if (error.code === 'ER_DUP_ENTRY') {
             return res.status(400).json({ error: 'El departamento ya existe' });
         }
-        console.error('Error al crear departamento:', error);
+        logger.error('Error al crear departamento:', error);
         res.status(500).json({ error: 'Error al crear el departamento' });
     }
 });
@@ -106,7 +107,7 @@ router.post('/sync', authMiddleware, adminMiddleware, async (req, res) => {
                     addedCount++;
                 }
             } catch (err) {
-                console.error(`Error insertando departamento ${deptName}:`, err);
+                logger.error(`Error insertando departamento ${deptName}:`, err);
                 // Continuar con el siguiente
             }
         }
@@ -116,7 +117,7 @@ router.post('/sync', authMiddleware, adminMiddleware, async (req, res) => {
             message: `Sincronización completada. ${addedCount} nuevas áreas agregadas desde el directorio maestro.`
         });
     } catch (error) {
-        console.error('Error sincronizando departamentos:', error);
+        logger.error('Error sincronizando departamentos:', error);
         res.status(500).json({ error: 'Error al sincronizar departamentos' });
     }
 });
@@ -131,7 +132,7 @@ router.post('/delete-all', authMiddleware, adminMiddleware, async (req, res) => 
         await db.query('DELETE FROM departments');
         res.json({ success: true, message: 'Todas las áreas han sido eliminadas' });
     } catch (error) {
-        console.error('Error al eliminar todas las áreas:', error);
+        logger.error('Error al eliminar todas las áreas:', error);
         res.status(500).json({ error: 'Error al eliminar las áreas' });
     }
 });

@@ -1,5 +1,6 @@
 const express = require('express');
-const router = express.Router();
+
+const logger = require('../config/logger');
 const db = require('../config/database');
 
 const { authMiddleware } = require('../middleware/auth');
@@ -29,7 +30,7 @@ router.get('/:moduleId', authMiddleware, async (req, res) => {
 
         res.json({ success: true, certificate });
     } catch (error) {
-        console.error('Error fetching certificate:', error);
+        logger.error('Error fetching certificate:', error);
         res.status(500).json({ error: 'Error al obtener el certificado' });
     }
 });

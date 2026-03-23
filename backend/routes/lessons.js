@@ -1,5 +1,6 @@
 const express = require('express');
-const router = express.Router();
+
+const logger = require('../config/logger');
 const db = require('../config/database');
 const { authMiddleware, adminMiddleware } = require('../middleware/auth');
 const { cacheMiddleware } = require('../middleware/cache');
@@ -165,7 +166,7 @@ router.get('/:id', authMiddleware, cacheMiddleware(600, true), async (req, res) 
             }
         });
     } catch (error) {
-        console.error('Error en lección:', error);
+        logger.error('Error en lección:', error);
         res.status(500).json({ error: 'Error al cargar la lección' });
     }
 });
@@ -299,7 +300,7 @@ router.post('/:id/complete', authMiddleware, async (req, res) => {
             badgeAwarded: badgeSync?.awarded ? badgeSync.badge : null
         });
     } catch (error) {
-        console.error('Error al completar lección:', error);
+        logger.error('Error al completar lección:', error);
         res.status(500).json({ error: 'Error al registrar progreso' });
     }
 });
@@ -324,7 +325,7 @@ router.post('/', authMiddleware, adminMiddleware, async (req, res) => {
 
         res.status(201).json({ success: true, lessonId: result.insertId });
     } catch (error) {
-        console.error('Error creando lección:', error);
+        logger.error('Error creando lección:', error);
         res.status(500).json({ error: 'Error al crear lección' });
     }
 });
@@ -376,7 +377,7 @@ router.put('/:id', authMiddleware, adminMiddleware, async (req, res) => {
 
         res.json({ success: true, message: 'Lección actualizada' });
     } catch (error) {
-        console.error('Error actualizando lección:', error);
+        logger.error('Error actualizando lección:', error);
         res.status(500).json({ error: 'Error al actualizar lección' });
     }
 });
@@ -397,7 +398,7 @@ router.delete('/:id', authMiddleware, adminMiddleware, async (req, res) => {
 
         res.json({ success: true, message: 'Lección eliminada' });
     } catch (error) {
-        console.error('Error eliminando lección:', error);
+        logger.error('Error eliminando lección:', error);
         res.status(500).json({ error: 'Error al eliminar lección' });
     }
 });

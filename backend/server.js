@@ -13,6 +13,15 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const db = require('./config/database');
 const logger = require('./config/logger');
 
+// Validación crítica de variables de entorno (Fail-Fast)
+const requiredEnvVars = ['SESSION_SECRET', 'JWT_SECRET', 'GOOGLE_CLIENT_ID', 'DB_PASSWORD'];
+const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName]);
+
+if (missingEnvVars.length > 0) {
+    logger.error(`❌ ERROR CRÍTICO: Faltan las siguientes variables de entorno: ${missingEnvVars.join(', ')}`);
+    process.exit(1);
+}
+
 // Importar rutas
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
@@ -91,7 +100,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Configuración de sesiones con Redis
 app.use(session({
     store: new RedisStore({ client: redisClient }),
-    secret: process.env.SESSION_SECRET || 'cgr-session-secret',
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {

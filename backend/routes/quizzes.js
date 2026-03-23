@@ -1,5 +1,6 @@
 const express = require('express');
-const router = express.Router();
+
+const logger = require('../config/logger');
 const db = require('../config/database');
 const { authMiddleware, adminMiddleware } = require('../middleware/auth');
 const { syncUserLevel, getSystemSettings, checkAndRecordModuleCompletion } = require('../utils/gamification');
@@ -81,7 +82,7 @@ router.get('/:id/last-attempt', authMiddleware, async (req, res) => {
             }
         });
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         res.status(500).json({ error: 'Error al obtener último intento' });
     }
 });
@@ -133,7 +134,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
             attemptsLeft: quiz.max_attempts - attempts.count
         });
     } catch (error) {
-        console.error('Error al obtener quiz:', error);
+        logger.error('Error al obtener quiz:', error);
         res.status(500).json({ error: 'Error al cargar la evaluación' });
     }
 });
@@ -330,7 +331,7 @@ router.post('/:id/submit', authMiddleware, async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error al calificar quiz:', error);
+        logger.error('Error al calificar quiz:', error);
         res.status(500).json({ error: 'Error al procesar los resultados' });
     }
 });
@@ -358,7 +359,7 @@ router.post('/', authMiddleware, adminMiddleware, async (req, res) => {
             quizId: result.insertId
         });
     } catch (error) {
-        console.error('Error creando quiz:', error);
+        logger.error('Error creando quiz:', error);
         res.status(500).json({ error: 'Error al crear la evaluación' });
     }
 });
@@ -442,7 +443,7 @@ router.post('/:id/questions', authMiddleware, adminMiddleware, async (req, res) 
 
         res.status(201).json({ success: true, questionId });
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         res.status(500).json({ error: 'Error al agregar pregunta' });
     }
 });
@@ -482,7 +483,7 @@ router.put('/questions/:questionId', authMiddleware, adminMiddleware, async (req
         res.json({ success: true, message: 'Pregunta actualizada' });
     } catch (error) {
         await connection.rollback();
-        console.error(error);
+        logger.error(error);
         res.status(500).json({ error: 'Error al actualizar pregunta' });
     } finally {
         connection.release();

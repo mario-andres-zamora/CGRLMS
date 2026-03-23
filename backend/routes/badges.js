@@ -1,5 +1,6 @@
 const express = require('express');
-const router = express.Router();
+
+const logger = require('../config/logger');
 const db = require('../config/database');
 const { authMiddleware, adminMiddleware } = require('../middleware/auth');
 
@@ -13,7 +14,7 @@ router.get('/', authMiddleware, async (req, res) => {
         const badges = await db.query('SELECT * FROM badges ORDER BY created_at DESC');
         res.json({ success: true, badges });
     } catch (error) {
-        console.error('Error al obtener insignias:', error);
+        logger.error('Error al obtener insignias:', error);
         res.status(500).json({ error: 'Error al obtener las insignias' });
     }
 });
@@ -42,7 +43,7 @@ router.post('/', authMiddleware, adminMiddleware, async (req, res) => {
             badgeId: result.insertId
         });
     } catch (error) {
-        console.error('Error al crear insignia:', error);
+        logger.error('Error al crear insignia:', error);
         res.status(500).json({ error: 'Error al crear la insignia' });
     }
 });
@@ -64,7 +65,7 @@ router.put('/:id', authMiddleware, adminMiddleware, async (req, res) => {
 
         res.json({ success: true, message: 'Insignia actualizada correctamente' });
     } catch (error) {
-        console.error('Error al actualizar insignia:', error);
+        logger.error('Error al actualizar insignia:', error);
         res.status(500).json({ error: 'Error al actualizar la insignia' });
     }
 });
@@ -80,7 +81,7 @@ router.delete('/:id', authMiddleware, adminMiddleware, async (req, res) => {
         await db.query('DELETE FROM badges WHERE id = ?', [id]);
         res.json({ success: true, message: 'Insignia eliminada correctamente' });
     } catch (error) {
-        console.error('Error al eliminar insignia:', error);
+        logger.error('Error al eliminar insignia:', error);
         res.status(500).json({ error: 'Error al eliminar la insignia' });
     }
 });
@@ -103,7 +104,7 @@ router.get('/user/:userId', authMiddleware, async (req, res) => {
 
         res.json({ success: true, badges });
     } catch (error) {
-        console.error('Error al obtener insignias del usuario:', error);
+        logger.error('Error al obtener insignias del usuario:', error);
         res.status(500).json({ error: 'Error al obtener las insignias del usuario' });
     }
 });
@@ -128,7 +129,7 @@ router.post('/award', authMiddleware, adminMiddleware, async (req, res) => {
 
         res.json({ success: true, message: 'Insignia asignada correctamente' });
     } catch (error) {
-        console.error('Error al asignar insignia:', error);
+        logger.error('Error al asignar insignia:', error);
         res.status(500).json({ error: 'Error al asignar la insignia' });
     }
 });

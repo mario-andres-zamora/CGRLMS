@@ -40,7 +40,6 @@ import { ReportsSkeleton } from '../components/skeletons/ReportsSkeleton';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export default function Reports() {
-    const { token } = useAuthStore();
     const navigate = useNavigate();
     const [reportData, setReportData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -56,9 +55,7 @@ export default function Reports() {
     const fetchReports = async () => {
         try {
             setLoading(true);
-            const response = await axios.get(`${API_URL}/reports/compliance`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await axios.get(`${API_URL}/reports/compliance`);
             if (response.data.success) {
                 setReportData(response.data);
             }

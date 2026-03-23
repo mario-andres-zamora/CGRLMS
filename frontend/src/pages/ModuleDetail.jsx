@@ -33,7 +33,7 @@ export default function ModuleDetail() {
     const navigate = useNavigate();
     const location = useLocation();
     const { fetchModule } = useModuleStore();
-    const { user, viewAsStudent, token } = useAuthStore();
+    const { user, viewAsStudent } = useAuthStore();
     const { setPendingModuleCompletion, setPendingBadge } = useNotificationStore();
     const [module, setModule] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -41,9 +41,7 @@ export default function ModuleDetail() {
 
     const handleResourceDownload = async (resource) => {
         try {
-            const response = await axios.post(`${API_URL}/resources/${resource.id}/track-download`, {}, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await axios.post(`${API_URL}/resources/${resource.id}/track-download`, {});
 
             if (response.data.success) {
                 if (response.data.badgeAwarded) {

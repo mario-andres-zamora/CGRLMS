@@ -1,5 +1,6 @@
 const express = require('express');
-const router = express.Router();
+
+const logger = require('../config/logger');
 const db = require('../config/database');
 const { authMiddleware, adminMiddleware } = require('../middleware/auth');
 const { syncUserLevel, getSystemSettings } = require('../utils/gamification');
@@ -66,7 +67,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
             submittedAt: responses.length > 0 ? responses[0].submitted_at : null
         });
     } catch (error) {
-        console.error('Error al obtener encuesta:', error);
+        logger.error('Error al obtener encuesta:', error);
         res.status(500).json({ error: 'Error al cargar la encuesta' });
     }
 });
@@ -160,7 +161,7 @@ router.post('/:id/submit', authMiddleware, async (req, res) => {
 
     } catch (error) {
         await connection.rollback();
-        console.error('Error al enviar encuesta:', error);
+        logger.error('Error al enviar encuesta:', error);
         res.status(500).json({ error: 'Error al procesar la encuesta' });
     } finally {
         connection.release();

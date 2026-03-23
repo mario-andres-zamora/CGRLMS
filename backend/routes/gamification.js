@@ -1,5 +1,6 @@
 const express = require('express');
-const router = express.Router();
+
+const logger = require('../config/logger');
 const db = require('../config/database');
 const { authMiddleware, adminMiddleware } = require('../middleware/auth');
 const { cacheMiddleware } = require('../middleware/cache');
@@ -71,9 +72,9 @@ const refreshLeaderboardCache = async () => {
 
         await redisClient.setEx('leaderboard:institutional', 3600, JSON.stringify(institutionalLeaderboard));
         await redisClient.setEx('leaderboard:departments', 3600, JSON.stringify(departmentRanking));
-        console.log('✅ Leaderboard cache refreshed in Redis (including real-time ZSET)');
+        logger.info('✅ Leaderboard cache refreshed in Redis (including real-time ZSET)');
     } catch (err) {
-        console.error('❌ Error refreshing leaderboard cache:', err);
+        logger.error('❌ Error refreshing leaderboard cache:', err);
     }
 };
 
@@ -160,7 +161,7 @@ router.get('/leaderboard', authMiddleware, cacheMiddleware(60, true), async (req
             scope: isAdmin ? 'institutional' : 'department'
         });
     } catch (error) {
-        console.error('Error obteniendo leaderboard:', error);
+        logger.error('Error obteniendo leaderboard:', error);
         res.status(500).json({ error: 'Error al cargar el ranking' });
     }
 });
@@ -185,7 +186,7 @@ router.get('/settings', authMiddleware, adminMiddleware, async (req, res) => {
             levels
         });
     } catch (error) {
-        console.error('Error obteniendo settings de gamificación:', error);
+        logger.error('Error obteniendo settings de gamificación:', error);
         res.status(500).json({ error: 'Error al cargar configuración' });
     }
 });
@@ -216,7 +217,7 @@ router.put('/settings', authMiddleware, adminMiddleware, async (req, res) => {
 
         res.json({ success: true, message: 'Configuración actualizada correctamente' });
     } catch (error) {
-        console.error('Error actualizando settings de gamificación:', error);
+        logger.error('Error actualizando settings de gamificación:', error);
         res.status(500).json({ error: 'Error al actualizar configuración' });
     }
 });

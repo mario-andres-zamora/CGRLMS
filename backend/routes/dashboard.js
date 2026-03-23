@@ -1,5 +1,6 @@
 const express = require('express');
-const router = express.Router();
+
+const logger = require('../config/logger');
 const db = require('../config/database');
 const { authMiddleware, adminMiddleware } = require('../middleware/auth');
 const { cacheMiddleware } = require('../middleware/cache');
@@ -145,7 +146,7 @@ router.get('/', authMiddleware, cacheMiddleware(300, true), async (req, res) => 
                     }
                 }
             } catch (redisError) {
-                console.error('Redis error in dashboard ranking:', redisError);
+                logger.error('Redis error in dashboard ranking:', redisError);
             }
         }
 
@@ -196,7 +197,7 @@ router.get('/', authMiddleware, cacheMiddleware(300, true), async (req, res) => 
             modules: modulesWithProgress
         });
     } catch (error) {
-        console.error('Error en dashboard:', error);
+        logger.error('Error en dashboard:', error);
         res.status(500).json({ error: 'Error al cargar datos del dashboard' });
     }
 });
@@ -225,7 +226,7 @@ router.get('/admin-stats', authMiddleware, adminMiddleware, async (req, res) => 
             stats
         });
     } catch (error) {
-        console.error('Error in admin stats:', error);
+        logger.error('Error in admin stats:', error);
         res.status(500).json({ error: 'Error al cargar estadísticas de admin' });
     }
 });

@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import axios from 'axios';
-import { useAuthStore } from './authStore';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -12,10 +11,7 @@ export const useModuleStore = create((set, get) => ({
     fetchModules: async () => {
         set({ loading: true, error: null });
         try {
-            const token = useAuthStore.getState().token;
-            const response = await axios.get(`${API_URL}/modules`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await axios.get(`${API_URL}/modules`);
             set({ modules: response.data.modules, loading: false });
         } catch (error) {
             set({ error: error.response?.data?.error || 'Error al obtener módulos', loading: false });
@@ -25,10 +21,7 @@ export const useModuleStore = create((set, get) => ({
     fetchAdminModules: async () => {
         set({ loading: true, error: null });
         try {
-            const token = useAuthStore.getState().token;
-            const response = await axios.get(`${API_URL}/modules/admin/all`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await axios.get(`${API_URL}/modules/admin/all`);
             set({ modules: response.data.modules, loading: false });
         } catch (error) {
             set({ error: error.response?.data?.error || 'Error al obtener módulos', loading: false });
@@ -38,10 +31,7 @@ export const useModuleStore = create((set, get) => ({
     createModule: async (moduleData) => {
         set({ loading: true, error: null });
         try {
-            const token = useAuthStore.getState().token;
-            await axios.post(`${API_URL}/modules`, moduleData, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await axios.post(`${API_URL}/modules`, moduleData);
             await get().fetchAdminModules();
             set({ loading: false });
             return { success: true };
@@ -54,10 +44,7 @@ export const useModuleStore = create((set, get) => ({
     updateModule: async (id, moduleData) => {
         set({ loading: true, error: null });
         try {
-            const token = useAuthStore.getState().token;
-            await axios.put(`${API_URL}/modules/${id}`, moduleData, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await axios.put(`${API_URL}/modules/${id}`, moduleData);
             await get().fetchAdminModules();
             set({ loading: false });
             return { success: true };
@@ -70,10 +57,7 @@ export const useModuleStore = create((set, get) => ({
     deleteModule: async (id) => {
         set({ loading: true, error: null });
         try {
-            const token = useAuthStore.getState().token;
-            await axios.delete(`${API_URL}/modules/${id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await axios.delete(`${API_URL}/modules/${id}`);
             await get().fetchAdminModules();
             set({ loading: false });
             return { success: true };
@@ -86,10 +70,7 @@ export const useModuleStore = create((set, get) => ({
     fetchModule: async (id) => {
         set({ loading: true, error: null });
         try {
-            const token = useAuthStore.getState().token;
-            const response = await axios.get(`${API_URL}/modules/${id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await axios.get(`${API_URL}/modules/${id}`);
             set({ loading: false });
             return response.data;
         } catch (error) {
@@ -101,10 +82,8 @@ export const useModuleStore = create((set, get) => ({
     // Resource Management
     createResource: async (formData) => {
         try {
-            const token = useAuthStore.getState().token;
             const response = await axios.post(`${API_URL}/resources`, formData, {
                 headers: {
-                    Authorization: `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data'
                 }
             });
@@ -116,10 +95,8 @@ export const useModuleStore = create((set, get) => ({
 
     updateResource: async (id, formData) => {
         try {
-            const token = useAuthStore.getState().token;
             const response = await axios.put(`${API_URL}/resources/${id}`, formData, {
                 headers: {
-                    Authorization: `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data'
                 }
             });
@@ -131,10 +108,7 @@ export const useModuleStore = create((set, get) => ({
 
     deleteResource: async (id) => {
         try {
-            const token = useAuthStore.getState().token;
-            await axios.delete(`${API_URL}/resources/${id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await axios.delete(`${API_URL}/resources/${id}`);
             return { success: true };
         } catch (error) {
             return { success: false, error: error.response?.data?.error || 'Error al eliminar recurso' };

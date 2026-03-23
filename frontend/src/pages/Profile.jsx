@@ -30,7 +30,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 export default function Profile() {
     const navigate = useNavigate();
     const { userId } = useParams();
-    const { token, user: authUser } = useAuthStore();
+    const { user: authUser } = useAuthStore();
     const [profileData, setProfileData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
@@ -51,9 +51,7 @@ export default function Profile() {
 
             setLoading(true);
             const endpoint = userId ? `${API_URL}/users/${userId}/full-profile` : `${API_URL}/users/profile`;
-            const response = await axios.get(endpoint, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await axios.get(endpoint);
             if (response.data.success) {
                 setProfileData(response.data);
             }

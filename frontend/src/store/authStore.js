@@ -4,11 +4,13 @@ import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
+// Configurar axios globalmente para manejar cookies de sesión (HTTP-Only)
+axios.defaults.withCredentials = true;
+
 export const useAuthStore = create(
     persist(
         (set, get) => ({
             user: null,
-            token: null,
             isAuthenticated: false,
             isLoading: false,
             error: null,
@@ -24,14 +26,10 @@ export const useAuthStore = create(
                         credential,
                     });
 
-                    const { token, user } = response.data;
-
-                    // Configurar token en axios para futuras peticiones
-                    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+                    const { user } = response.data;
 
                     set({
                         user,
-                        token,
                         isAuthenticated: true,
                         isLoading: false,
                         error: null,
@@ -56,47 +54,44 @@ export const useAuthStore = create(
                 } catch (error) {
                     console.error('Error al cerrar sesión:', error);
                 } finally {
-                    // Limpiar token de axios
-                    delete axios.defaults.headers.common['Authorization'];
-
                     set({
                         user: null,
-                        token: null,
                         isAuthenticated: false,
                         error: null,
                     });
                 }
             },
 
-            // Verificar token
+            // Verificar sesión activa
             verifyToken: async () => {
-                const { token } = get();
-                if (!token) {
-                    set({ isAuthenticated: false });
-                    return false;
-                }
-
+                set({ isLoading: true });
                 try {
-                    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
                     const response = await axios.get(`${API_URL}/auth/verify`);
 
                     if (response.data.valid) {
                         set({
                             isAuthenticated: true,
-                            user: { ...get().user, ...response.data.user }
+                            user: { ...get().user, ...response.data.user },
+                            isLoading: false
                         });
                         return true;
                     } else {
                         get().logout();
+                        set({ isLoading: false });
                         return false;
                     }
                 } catch (error) {
-                    get().logout();
+                    // Si recibimos 401, simplemente limpiamos el estado local de auth
+                    set({
+                        user: null,
+                        isAuthenticated: false,
+                        isLoading: false
+                    });
                     return false;
                 }
             },
 
-            // Actualizar usuario
+            // Actualizar el estado del usuario en el store
             updateUser: (userData) => {
                 set((state) => ({
                     user: { ...state.user, ...userData },
@@ -110,7 +105,6 @@ export const useAuthStore = create(
             name: 'cgr-lms-auth',
             partialize: (state) => ({
                 user: state.user,
-                token: state.token,
                 isAuthenticated: state.isAuthenticated,
                 viewAsStudent: state.viewAsStudent,
             }),
@@ -118,7 +112,7 @@ export const useAuthStore = create(
     )
 );
 
-// Configurar interceptor de axios para incluir header de modo estudiante y manejar errores 401
+// Interceptor de axios para incluir header de modo estudiante y manejar errores 401
 axios.interceptors.request.use((config) => {
     const viewAsStudent = useAuthStore.getState().viewAsStudent;
     if (viewAsStudent) {
@@ -130,6 +124,7 @@ axios.interceptors.request.use((config) => {
 axios.interceptors.response.use(
     (response) => response,
     (error) => {
+        // Si el servidor retorna 401 Unauthorized, cerramos sesión localmente
         if (error.response?.status === 401) {
             useAuthStore.getState().logout();
         }

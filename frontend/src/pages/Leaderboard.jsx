@@ -23,7 +23,7 @@ import primaryBanner from '../assets/primary-banner.svg';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export default function Leaderboard() {
-    const { token, user: loggedUser, viewAsStudent } = useAuthStore();
+    const { user: loggedUser, viewAsStudent } = useAuthStore();
     const [institutionalLeaderboard, setInstitutionalLeaderboard] = useState([]);
     const [departmentLeaderboard, setDepartmentLeaderboard] = useState([]);
     const [deptRanking, setDeptRanking] = useState([]);
@@ -61,9 +61,7 @@ export default function Leaderboard() {
     const fetchLeaderboard = async () => {
         try {
             setLoading(true);
-            const response = await axios.get(`${API_URL}/gamification/leaderboard`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await axios.get(`${API_URL}/gamification/leaderboard`);
             if (response.data.success) {
                 setInstitutionalLeaderboard(response.data.institutionalLeaderboard);
                 setDepartmentLeaderboard(response.data.departmentLeaderboard);
