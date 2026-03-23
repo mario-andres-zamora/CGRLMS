@@ -120,15 +120,6 @@ app.use(session({
     }
 }));
 
-// Middleware de depuración de sesiones (Solo para resolver el problema de loop)
-app.use((req, res, next) => {
-    if (req.path.startsWith('/api/auth')) {
-        logger.info(`[DEBUG] ${req.method} ${req.path} - SessionID: ${req.sessionID} - User: ${req.session.userId || 'none'}`);
-        logger.info(`[DEBUG] Headers: host=${req.headers.host}, x-forwarded-proto=${req.headers['x-forwarded-proto']}`);
-    }
-    next();
-});
-
 // Health check
 app.get('/health', async (req, res) => {
     try {

@@ -25,9 +25,6 @@ class AuthController {
             req.session.userId = user.id;
             req.session.email = user.email;
 
-            logger.info(`Session created for user ${user.id} [SID: ${req.sessionID}]`);
-            logger.info(`Headers in Login: ${JSON.stringify(req.headers)}`);
-
             // Registrar actividad
             await authService.logActivity(user.id, 'login', req.ip, req.get('user-agent'));
 
@@ -93,11 +90,6 @@ class AuthController {
     async verifySession(req, res) {
         try {
             const userId = req.session.userId;
-
-            logger.info(`Session verify called. SID: ${req.sessionID}`);
-            logger.info(`Session UserID: ${userId}`);
-            logger.info(`All session keys: ${Object.keys(req.session)}`);
-            logger.info(`Cookies received: ${req.headers.cookie}`);
 
             if (!userId) {
                 return res.status(401).json({ error: 'Sesión expirada o no válida' });
