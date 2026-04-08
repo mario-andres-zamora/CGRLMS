@@ -33,6 +33,13 @@ router.post('/', authMiddleware, adminMiddleware, lessonController.createLesson)
 router.put('/:id', authMiddleware, adminMiddleware, lessonController.updateLesson);
 
 /**
+ * @route   POST /api/lessons/reorder
+ * @desc    Reordenar lecciones de un módulo
+ * @access  Private/Admin
+ */
+router.post('/reorder', authMiddleware, adminMiddleware, lessonController.reorderLessons);
+
+/**
  * @route   DELETE /api/lessons/:id
  * @desc    Eliminar lección
  * @access  Private/Admin
