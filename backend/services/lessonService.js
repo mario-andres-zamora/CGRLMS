@@ -215,7 +215,17 @@ class LessonService {
                 is_published = COALESCE(?, is_published), 
                 is_optional = COALESCE(?, is_optional)
              WHERE id = ?`,
-            [title, content, lesson_type, video_url, duration_minutes, order_index, is_published, is_optional, lessonId]
+            [
+                title ?? null, 
+                content ?? null, 
+                lesson_type ?? null, 
+                video_url ?? null, 
+                duration_minutes ?? null, 
+                order_index ?? null, 
+                is_published ?? null, 
+                is_optional ?? null, 
+                lessonId
+            ]
         );
     }
 

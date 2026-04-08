@@ -25,11 +25,11 @@ export default function ModuleCard({ module, user, viewAsStudent }) {
     const cardSrc = new URL(`../../assets/card-banner/Tar-Sec-${(module.module_number ?? 0).toString().padStart(2, '0')}.svg`, import.meta.url).href;
 
     return (
-        <div className="relative">
+        <div className="relative h-full">
             <Link
                 to={isLocked ? '#' : `/modules/${module.id}`}
                 onClick={(e) => isLocked && e.preventDefault()}
-                className={`group relative flex flex-col bg-slate-800/20 border border-white/5 rounded-[1.5rem] overflow-hidden transition-all duration-500 ${isLocked
+                className={`group relative flex flex-col h-full bg-slate-800/20 border border-white/5 rounded-[1.5rem] overflow-hidden transition-all duration-500 ${isLocked
                     ? 'grayscale-[0.5] opacity-80 cursor-not-allowed'
                     : module.completionPercentage === 100
                         ? 'bg-green-500/[0.03] border-green-500/30 shadow-[0_0_30px_rgba(34,197,94,0.08)] hover:border-green-500/50'

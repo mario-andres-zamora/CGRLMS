@@ -25,22 +25,23 @@ export default function ModuleCard({
 
     return (
         <div 
-            className={`group relative overflow-hidden transition-all duration-500 rounded-[2.5rem] border ${
+            className={`group relative overflow-hidden transition-all duration-300 rounded-3xl border ${
                 isExpanded 
-                ? 'bg-slate-900 border-primary-500/30 ring-1 ring-primary-500/20' 
-                : 'bg-slate-900/40 border-white/5 hover:border-white/10 hover:shadow-2xl hover:shadow-primary-500/5 shadow-xl'
+                ? 'bg-[#161b2e] border-blue-500/30 shadow-2xl' 
+                : 'bg-[#121625]/60 border-white/5 hover:border-white/10 hover:shadow-xl shadow-lg'
             }`}
         >
             {/* Decorative Background for active module */}
             {isExpanded && (
-                <div className="absolute top-0 right-0 w-80 h-80 bg-primary-500/5 blur-[100px] rounded-full pointer-events-none"></div>
+                <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/5 blur-[100px] rounded-full pointer-events-none"></div>
             )}
 
-            <div className="p-6 md:p-10">
-                <div className="flex flex-col xl:flex-row justify-between items-start mb-8 gap-6">
-                    <div className="flex items-center gap-6">
-                        {/* Module Number Display */}
-                        <div className="relative w-24 h-24 bg-slate-950 rounded-[2rem] flex items-center justify-center text-3xl font-black border border-white/10 overflow-hidden shadow-2xl flex-shrink-0 group-hover:scale-105 group-hover:rotate-1 transition-all duration-700">
+            <div className="p-6 md:p-8">
+                {/* Header Row */}
+                <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-5">
+                        {/* Thumbnail Number */}
+                        <div className="relative w-20 h-20 bg-black rounded-2xl flex items-center justify-center text-2xl font-black border border-white/10 overflow-hidden shadow-2xl flex-shrink-0 group-hover:scale-105 transition-transform duration-500">
                             {(() => {
                                 const num = module.module_number ?? 0;
                                 const paddedNum = num.toString().padStart(2, '0');
@@ -50,104 +51,93 @@ export default function ModuleCard({
                                         <img
                                             src={cardSrc}
                                             alt=""
-                                            className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay"
+                                            className="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-overlay"
                                             onError={(e) => { e.target.style.display = 'none'; }}
                                         />
-                                        <div className="relative z-10 text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] italic">
-                                            {module.module_number}
-                                        </div>
-                                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60"></div>
+                                        <div className="relative z-10 text-white italic">{module.module_number}</div>
+                                        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black to-transparent"></div>
                                     </>
                                 );
                             })()}
                         </div>
 
-                        <div className="flex-1 min-w-0 pr-4">
-                            <div className="flex flex-wrap items-center gap-2 mb-2">
-                                {module.is_published ? (
-                                    <span className="inline-flex items-center gap-1.5 py-1 px-3.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
-                                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> PUBLICADO
-                                    </span>
-                                ) : (
-                                    <span className="inline-flex items-center gap-1.5 py-1 px-3.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] bg-slate-800 text-gray-500 border border-white/5 shadow-inner">
-                                        <EyeOff className="w-3.5 h-3.5" /> BORRADOR
-                                    </span>
-                                )}
-                                {module.generates_certificate && (
-                                    <span className="inline-flex items-center gap-1.5 py-1 px-3.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] bg-primary-500/10 text-primary-400 border border-primary-500/20 shadow-lg shadow-primary-500/5">
-                                        <Award className="w-3.5 h-3.5 text-primary-400" /> CERTIFICADO
-                                    </span>
-                                )}
-                            </div>
-                            <h3 className="text-2xl font-black text-white group-hover:text-primary-400 transition-colors truncate tracking-tight uppercase italic max-w-[400px]">
+                        <div className="space-y-2">
+                            <h3 className="text-xl font-bold text-white tracking-tight leading-tight group-hover:text-blue-400 transition-colors">
                                 {module.title}
                             </h3>
-                            <div className="flex items-center gap-5 mt-3 text-[10px] text-gray-500 font-bold uppercase tracking-widest leading-none">
-                                <span className="flex items-center gap-2 bg-slate-950/50 px-3 py-1.5 rounded-xl border border-white/5 shadow-inner group-hover:text-gray-400 transition-colors">
-                                    <Calendar className="w-4 h-4 text-secondary-500" />
-                                    {module.release_date ? new Date(module.release_date).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }) : module.month}
+                            <div className="flex items-center gap-4 text-[10px] uppercase font-black tracking-widest text-gray-500">
+                                <span className="flex items-center gap-1.5 px-3 py-1 bg-slate-950/40 rounded-lg border border-white/5">
+                                    <Calendar className="w-3.5 h-3.5 text-gray-600" />
+                                    {module.release_date ? new Date(module.release_date).toLocaleDateString('es-ES') : module.month}
                                 </span>
-                                <span className="flex items-center gap-2 bg-slate-950/50 px-3 py-1.5 rounded-xl border border-white/5 shadow-inner group-hover:text-gray-400 transition-colors">
-                                    <Clock className="w-4 h-4 text-primary-500" />
-                                    {module.total_duration || 0} min
-                                </span>
+                                {module.is_published ? (
+                                    <span className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 text-emerald-400 rounded-full border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
+                                        <CheckCircle2 className="w-3 h-3" /> PUBLICADO
+                                    </span>
+                                ) : (
+                                    <span className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 text-gray-400 rounded-full border border-white/10">
+                                        <EyeOff className="w-3 h-3" /> BORRADOR
+                                    </span>
+                                )}
                             </div>
                         </div>
                     </div>
 
-                    {/* Action Buttons */}
-                    <div className="flex gap-2 p-2 bg-slate-950/50 rounded-[1.5rem] border border-white/10 shadow-2xl backdrop-blur-sm self-end xl:self-start">
+                    {/* Actions Corner */}
+                    <div className="flex gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
                         <button
                             onClick={() => onTogglePublish(module)}
-                            className={`p-3.5 rounded-2xl transition-all shadow-xl ${module.is_published
-                                ? 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border border-emerald-500/20'
-                                : 'bg-slate-800/50 text-gray-500 hover:text-white hover:bg-slate-800 border border-white/5'}`}
-                            title={module.is_published ? 'Desactivar Módulo' : 'Activar Módulo'}
+                            className={`p-2.5 rounded-xl transition-all ${module.is_published ? 'text-emerald-500 hover:bg-emerald-500/10' : 'text-gray-500 hover:text-white hover:bg-slate-800'}`}
+                            title={module.is_published ? 'Desactivar' : 'Activar'}
                         >
-                            {module.is_published ? <Eye className="w-6 h-6" /> : <EyeOff className="w-6 h-6" />}
+                            {module.is_published ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
                         </button>
                         <button
                             onClick={() => onEditModule(module)}
-                            className="p-3.5 bg-slate-800/50 text-gray-400 hover:text-white hover:bg-slate-800 rounded-2xl transition-all border border-white/5 shadow-xl group/btn"
-                            title="Ajustes Estratégicos"
+                            className="p-2.5 text-gray-500 hover:text-white hover:bg-slate-800 rounded-xl transition-all"
+                            title="Editar"
                         >
-                            <Edit2 className="w-6 h-6 group-hover/btn:scale-110 transition-transform" />
+                            <Edit2 className="w-5 h-5" />
                         </button>
                         <button
                             onClick={() => onDeleteModule(module)}
-                            className="p-3.5 bg-slate-800/50 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-2xl transition-all border border-white/5 shadow-xl group/btn"
-                            title="Eliminar del Registro"
+                            className="p-2.5 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
+                            title="Eliminar"
                         >
-                            <Trash2 className="w-6 h-6 group-hover/btn:scale-110 transition-transform" />
+                            <Trash2 className="w-5 h-5" />
                         </button>
                     </div>
                 </div>
 
-                <p className="text-gray-500 text-sm leading-relaxed mb-8 group-hover:text-gray-400 transition-colors line-clamp-2 min-h-[3rem] font-medium tracking-wide">
+                <p className="text-gray-500 text-sm leading-relaxed mb-6 group-hover:text-gray-400 transition-colors line-clamp-2 min-h-[2.5rem]">
                     {module.description}
                 </p>
 
-                <div className="flex flex-wrap items-center justify-between gap-6 pt-8 border-t border-white/5">
-                    <div className="flex gap-4">
-                        <div className="px-6 py-3 bg-slate-950 rounded-[1.5rem] border border-white/10 text-center shadow-lg group-hover:border-white/20 transition-all">
-                            <p className="text-[10px] uppercase text-gray-600 font-black tracking-[0.2em] leading-none mb-1.5">Unidades</p>
-                            <p className="text-white font-black text-lg">{module.total_lessons || 0}</p>
+                {/* Footer Data & Expansion Toggle */}
+                <div className="flex items-center justify-between pt-6 border-t border-white/5">
+                    <div className="flex gap-8 items-center">
+                        <div className="space-y-1">
+                            <p className="text-[9px] uppercase text-gray-600 font-black tracking-widest">Lecciones</p>
+                            <p className="text-white font-bold text-lg leading-none">{module.total_lessons || 0}</p>
                         </div>
-                        <div className="px-6 py-3 bg-primary-500/5 rounded-[1.5rem] border border-primary-500/20 text-center shadow-lg group-hover:border-primary-500/30 transition-all">
-                            <p className="text-[10px] uppercase text-primary-500 font-black tracking-[0.2em] leading-none mb-1.5">Capacidad</p>
-                            <p className="text-primary-400 font-black text-lg">{module.points_to_earn || 0}</p>
+                        <div className="space-y-1">
+                            <p className="text-[9px] uppercase text-gray-600 font-black tracking-widest">Duración</p>
+                            <p className="text-white font-bold text-lg leading-none">{module.total_duration || 0} min</p>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-[9px] uppercase text-gray-600 font-black tracking-widest">Puntos</p>
+                            <p className="text-blue-400 font-black text-lg leading-none">{module.points_to_earn || 0}</p>
                         </div>
                     </div>
+
                     <button
                         onClick={() => onToggleExpansion(module.id)}
-                        className={`group/admin flex items-center gap-3 px-8 py-3.5 rounded-2xl font-black text-[11px] uppercase tracking-[0.3em] transition-all border shadow-2xl active:scale-95 ${
-                            isExpanded
-                            ? 'bg-primary-500 text-white border-primary-500 shadow-primary-500/30'
-                            : 'bg-slate-950 border-white/10 text-gray-500 hover:border-primary-500/50 hover:text-white hover:bg-slate-900 group-hover:translate-x-2'
+                        className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all ${
+                            isExpanded ? 'text-blue-400 bg-blue-500/10' : 'text-gray-500 hover:text-white hover:bg-slate-800'
                         }`}
                     >
-                        {isExpanded ? 'Cerrar Registro' : 'Administrar Módulo'}
-                        {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4 group-hover/admin:translate-y-0.5 transition-transform" />}
+                        Gestionar contenido
+                        {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                     </button>
                 </div>
             </div>

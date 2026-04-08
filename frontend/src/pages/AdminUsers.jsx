@@ -32,18 +32,16 @@ export default function AdminUsers() {
     }
 
     return (
-        <div className="max-w-7xl mx-auto space-y-10 animate-fade-in pb-20">
+        <div className="max-w-full w-full mx-auto space-y-2 animate-fade-in pb-20 px-1 md:px-2 pt-2">
             {/* Action Bar Header */}
-            <UserHeader 
-                filteredCount={filteredUsers.length}
-                activeCount={filteredUsers.filter(u => u.is_active).length}
+            <UserHeader
                 searchTerm={searchTerm}
                 onSearchChange={setSearchTerm}
                 onBack={() => navigate('/admin')}
             />
 
             {/* Main Table Content */}
-            <UserTable 
+            <UserTable
                 users={filteredUsers}
                 currentUserId={currentUser?.id}
                 onEdit={(u) => {
@@ -62,7 +60,7 @@ export default function AdminUsers() {
             />
 
             {/* Edit User Modal */}
-            <UserEditModal 
+            <UserEditModal
                 user={actions.edit.user}
                 departments={departments}
                 isOpen={actions.edit.isOpen}
@@ -83,7 +81,7 @@ export default function AdminUsers() {
                 })}
                 title="Reiniciar Progreso Maestro"
                 message={`¿Estás seguro de que deseas reiniciar todo el progreso de ${actions.reset.user?.first_name} ${actions.reset.user?.last_name}? Esta acción purgará sus puntos, certificados, insignias e historial de lecciones. Esta acción es monitoreada por auditoría institucional.`}
-                confirmText="PURGAR PROGRESO"
+                confirmText="REINICIAR PROGRESO"
                 isDestructive={true}
             />
 

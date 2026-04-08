@@ -228,9 +228,17 @@ class ModuleService {
                 image_url = COALESCE(?, image_url)
              WHERE id = ?`,
             [
-                module_number, title, description, month, duration_minutes, 
-                is_published, generates_certificate, requires_previous, 
-                formattedDate, order_index, image_url, 
+                module_number ?? null, 
+                title ?? null, 
+                description ?? null, 
+                month ?? null, 
+                duration_minutes ?? null, 
+                is_published ?? null, 
+                generates_certificate ?? null, 
+                requires_previous ?? null, 
+                formattedDate, 
+                order_index ?? null, 
+                image_url ?? null, 
                 moduleId
             ]
         );

@@ -266,7 +266,16 @@ class QuizService {
                 randomize_options = COALESCE(?, randomize_options),
                 is_published = COALESCE(?, is_published)
              WHERE id = ?`,
-            [title, description, passing_score, time_limit_minutes, max_attempts, randomize_options, is_published, quizId]
+            [
+                title ?? null, 
+                description ?? null, 
+                passing_score ?? null, 
+                time_limit_minutes ?? null, 
+                max_attempts ?? null, 
+                randomize_options !== undefined ? (randomize_options ? 1 : 0) : null,
+                is_published !== undefined ? (is_published ? 1 : 0) : null,
+                quizId
+            ]
         );
     }
 
@@ -306,7 +315,15 @@ class QuizService {
                     order_index = COALESCE(?, order_index), 
                     explanation = COALESCE(?, explanation)
                  WHERE id = ?`,
-                [question_text, question_type, image_url, points, order_index, explanation, questionId]
+                [
+                    question_text ?? null, 
+                    question_type ?? null, 
+                    image_url ?? null, 
+                    points ?? null, 
+                    order_index ?? null, 
+                    explanation ?? null, 
+                    questionId
+                ]
             );
 
             if (options && Array.isArray(options)) {

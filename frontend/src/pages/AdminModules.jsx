@@ -79,18 +79,14 @@ export default function AdminModules() {
 
     return (
         <div className="space-y-8 animate-fade-in pb-20 max-w-[1600px] mx-auto">
-            {/* Header section with stats */}
+            {/* Header section with stats & search */}
             <AdminModulesHeader 
                 totalModules={fullModules.length}
                 publishedModules={fullModules.filter(m => m.is_published).length}
                 draftModules={fullModules.filter(m => !m.is_published).length}
                 onNewModule={() => handleOpenModuleModal()}
-            />
-
-            {/* Search & Filters */}
-            <AdminModulesSearch 
                 searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
+                onSearchChange={setSearchTerm}
             />
 
             {/* Modules Grid */}

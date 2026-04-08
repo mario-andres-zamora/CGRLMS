@@ -34,7 +34,7 @@ class BadgeService {
                 criteria_type = COALESCE(?, criteria_type), 
                 criteria_value = COALESCE(?, criteria_value) 
             WHERE id = ?`,
-            [name, description, icon_name, criteria_type, criteria_value, id]
+            [name ?? null, description ?? null, icon_name ?? null, criteria_type ?? null, criteria_value ?? null, id]
         );
     }
 

@@ -1,19 +1,15 @@
 export default function TaskEditor({ contentType, value, onChange }) {
-    const getLabel = () => {
-        if (contentType === 'note') return 'Aprendizaje Clave';
-        if (contentType === 'heading') return 'Texto del Bloque';
-        return 'Directrices de Actividad';
-    };
-
     return (
-        <div className="space-y-2">
-            <label className="text-[10px] font-black text-primary-500 uppercase tracking-widest block ml-1">
-                {getLabel()}
+        <div className="space-y-1.5">
+            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider ml-1">
+                {contentType === 'note' ? 'Contenido de la Propiedad' :
+                 contentType === 'heading' ? 'Texto del Título' : 'Instrucciones / Descripción'}
             </label>
             <textarea
-                rows={contentType === 'heading' ? 2 : 4}
-                className="w-full bg-slate-950/50 border-white/5 focus:border-primary-500 rounded-3xl p-6 text-gray-300 font-medium outline-none border transition-all placeholder:text-gray-700 leading-relaxed"
-                placeholder="Define el propósito de este elemento..."
+                rows={contentType === 'heading' ? "2" : "4"}
+                className="w-full bg-[#0a0d18] border border-white/5 focus:border-primary-500/50 rounded-xl py-3 px-4 text-white text-sm font-medium outline-none transition-all hover:border-white/10 resize-none custom-scrollbar"
+                placeholder={contentType === 'note' ? 'Escribe los conceptos clave...' :
+                            contentType === 'heading' ? 'Ej: Introducción, Fase 1...' : 'Instrucciones para la actividad...'}
                 value={value}
                 onChange={e => onChange(e.target.value)}
             />

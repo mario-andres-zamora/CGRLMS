@@ -7,28 +7,28 @@ export default function FileEditor({
     editingItem 
 }) {
     return (
-        <div className="space-y-2">
-            <label className="text-[10px] font-black text-primary-500 uppercase tracking-widest block ml-1">Archivo de Recurso</label>
-            <div className="p-10 bg-slate-950/50 border-2 border-dashed border-white/5 rounded-[2.5rem] hover:border-primary-500/30 transition-all flex flex-col items-center justify-center gap-4">
+        <div className="space-y-1.5">
+            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider ml-1">Archivo de Recurso</label>
+            <div className="p-10 bg-[#0a0d18] border-2 border-dashed border-white/5 rounded-3xl hover:border-primary-500/30 transition-all flex flex-col items-center justify-center gap-4 group cursor-pointer relative overflow-hidden">
                 <input
                     type="file"
                     required={!editingItem}
                     id="contentFile"
-                    className="hidden"
+                    className="absolute inset-0 opacity-0 cursor-pointer"
                     onChange={e => onSetFile(e.target.files[0])}
                     accept={contentType === 'image' ? 'image/*' : '*/*'}
                 />
-                <label htmlFor="contentFile" className="flex flex-col items-center gap-3 cursor-pointer group">
-                    <div className="p-5 bg-primary-500/10 rounded-[1.5rem] group-hover:scale-110 transition-transform border border-primary-500/10 shadow-lg shadow-primary-500/5">
-                        {contentType === 'image' ? <ImageIcon className="w-10 h-10 text-purple-400" /> : <Plus className="w-10 h-10 text-orange-400" />}
+                <div className="flex flex-col items-center gap-3">
+                    <div className={`p-4 rounded-2xl transition-transform duration-300 group-hover:scale-110 ${contentType === 'image' ? 'bg-purple-500/10 text-purple-400' : 'bg-blue-500/10 text-blue-400'}`}>
+                        {contentType === 'image' ? <ImageIcon className="w-8 h-8" /> : <Plus className="w-8 h-8" />}
                     </div>
                     <div className="text-center">
-                        <p className="text-[10px] font-black text-white uppercase tracking-widest mb-1">
+                        <p className="text-[11px] font-bold text-white uppercase tracking-wider mb-0.5">
                             {file ? file.name : editingItem?.data?.original_name || 'Seleccionar Archivo'}
                         </p>
-                        <p className="text-[8px] font-bold text-gray-600 uppercase tracking-widest">Máximo servidor: 50MB</p>
+                        <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest">Formatos: {contentType === 'image' ? 'JPG, PNG, WEBP' : 'PDF, DOCX, ZIP'}</p>
                     </div>
-                </label>
+                </div>
             </div>
         </div>
     );

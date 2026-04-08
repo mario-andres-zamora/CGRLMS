@@ -59,21 +59,20 @@ export default function AdminLessonEditor() {
 
     return (
         <div className="max-w-5xl mx-auto pb-20 space-y-8 animate-fade-in px-4">
-            <LessonEditorHeader 
-                lesson={lesson} 
-                totalPoints={totalPoints} 
+            <LessonEditorHeader
+                lesson={lesson}
+                totalPoints={totalPoints}
             />
 
-            <ContentTypeSelector 
-                onSelect={handleOpenModal} 
+            <ContentTypeSelector
+                onSelect={handleOpenModal}
             />
 
             {/* Content List Section */}
             <div className="space-y-6">
                 <div className="flex items-center justify-between pl-2">
                     <h2 className="text-sm font-black text-gray-400 uppercase tracking-[0.3em] flex items-center gap-3">
-                        <div className="w-1.5 h-1.5 bg-primary-500 rounded-full"></div>
-                        Arquitectura de Contenido
+                        Contenido de la Lección
                     </h2>
                     <span className="text-[10px] bg-white/5 px-2 py-1 rounded text-gray-500 border border-white/5 font-black uppercase tracking-widest">
                         {contents.length} {contents.length === 1 ? 'Elemento' : 'Elementos'}
@@ -91,7 +90,7 @@ export default function AdminLessonEditor() {
                 ) : (
                     <div className="space-y-4">
                         {contents.map((item, index) => (
-                            <ContentItem 
+                            <ContentItem
                                 key={item.id}
                                 item={item}
                                 index={index}
@@ -114,7 +113,7 @@ export default function AdminLessonEditor() {
                 )}
             </div>
 
-            <ContentEditorModal 
+            <ContentEditorModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 formData={formData}
@@ -123,7 +122,7 @@ export default function AdminLessonEditor() {
                 onSave={handleSaveContent}
             />
 
-            <AssignmentReviewModal 
+            <AssignmentReviewModal
                 isOpen={!!viewingAssignment}
                 onClose={() => setViewingAssignment(null)}
                 assignment={viewingAssignment}

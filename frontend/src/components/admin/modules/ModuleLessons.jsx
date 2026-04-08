@@ -1,13 +1,13 @@
-import { Plus, CheckCircle2, Clock, Award, Target, Edit2, Trash2, ExternalLink } from 'lucide-react';
+import { Plus, CheckCircle2, Clock, Award, Target, Edit2, Trash2, ExternalLink, BookOpen } from 'lucide-react';
 
-export default function ModuleLessons({ 
-    lessons, 
-    onNewLesson, 
-    onEditLesson, 
-    onDeleteLesson, 
-    onToggleOptional, 
-    onOpenEditor, 
-    loading 
+export default function ModuleLessons({
+    lessons,
+    onNewLesson,
+    onEditLesson,
+    onDeleteLesson,
+    onToggleOptional,
+    onOpenEditor,
+    loading
 }) {
     return (
         <div className="animate-slide-up bg-slate-950/20 p-6 md:p-8 rounded-3xl border border-white/5">
@@ -40,8 +40,8 @@ export default function ModuleLessons({
                 <div className="grid grid-cols-1 gap-4">
                     {lessons.length > 0 ? (
                         lessons.map((lesson) => (
-                            <div 
-                                key={lesson.id} 
+                            <div
+                                key={lesson.id}
                                 className="group/item flex flex-col lg:flex-row items-start lg:items-center justify-between p-5 bg-slate-900/60 border border-white/5 rounded-[2rem] hover:border-primary-500/30 transition-all hover:bg-slate-900 shadow-xl"
                             >
                                 <div className="flex items-center gap-5 w-full lg:w-auto mb-4 lg:mb-0">
@@ -56,11 +56,10 @@ export default function ModuleLessons({
                                             {lesson.title}
                                         </h5>
                                         <div className="flex flex-wrap items-center gap-3 mt-1">
-                                            <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border shadow-lg ${
-                                                lesson.lesson_type === 'quiz' 
-                                                ? 'bg-secondary-500/10 text-secondary-500 border-secondary-500/10 shadow-secondary-500/5' 
-                                                : 'bg-primary-500/10 text-primary-400 border-primary-500/10 shadow-primary-500/5'
-                                            }`}>
+                                            <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border shadow-lg ${lesson.lesson_type === 'quiz'
+                                                    ? 'bg-secondary-500/10 text-secondary-500 border-secondary-500/10 shadow-secondary-500/5'
+                                                    : 'bg-primary-500/10 text-primary-400 border-primary-500/10 shadow-primary-500/5'
+                                                }`}>
                                                 {lesson.lesson_type}
                                                 {lesson.lesson_type === 'quiz' && <Award className="inline w-3 h-3 ml-1 mb-0.5" />}
                                             </span>
@@ -86,7 +85,7 @@ export default function ModuleLessons({
                                             <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all shadow-xl ${lesson.is_optional ? 'left-5.5' : 'left-0.5'}`}></div>
                                         </button>
                                     </div>
-                                    
+
                                     <div className="flex items-center gap-1 bg-slate-950 p-1.5 rounded-2xl border border-white/5">
                                         <button
                                             onClick={() => onEditLesson(lesson)}

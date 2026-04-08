@@ -127,7 +127,7 @@ class LessonContentService {
                 grade = COALESCE(?, grade), 
                 feedback = COALESCE(?, feedback)
              WHERE id = ?`,
-            [status, grade, feedback, submissionId]
+            [status ?? null, grade ?? null, feedback ?? null, submissionId]
         );
     }
 
@@ -184,7 +184,7 @@ class LessonContentService {
                 is_required = COALESCE(?, is_required), 
                 points = COALESCE(?, points)
              WHERE id = ?`,
-            [title, content_type, JSON.stringify(contentData), order_index, requiredVal ? 1 : 0, points, id]
+            [title ?? null, content_type ?? null, JSON.stringify(contentData), order_index ?? null, requiredVal ? 1 : 0, points ?? null, id]
         );
     }
 

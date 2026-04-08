@@ -54,13 +54,14 @@ export function useUsers() {
         try {
             const response = await axios.put(`${API_URL}/users/${editingUser.id}`, editingUser);
             if (response.data.success) {
-                toast.success('Usuario actualizado correctamente');
+                toast.success('Usuario actualizado correctamente', { id: 'user-update' });
                 setIsEditModalOpen(false);
                 fetchUsers();
                 return true;
             }
         } catch (error) {
-            toast.error('Error al actualizar el usuario');
+            const msg = error.response?.data?.error || 'Error al actualizar el usuario';
+            toast.error(msg, { id: 'user-update' });
             return false;
         }
     };
