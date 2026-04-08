@@ -99,7 +99,7 @@ export default function LessonContentItem({
                                 <PlayCircle className={`w-5 h-5 ${isWatched ? 'text-green-500' : 'text-blue-400'}`} />
                                 {item.title}
                             </h3>
-                            {item.is_required && !isWatched && (
+                            {!!item.is_required && !isWatched && (
                                 <p className="text-[10px] text-orange-400 font-black uppercase tracking-widest mt-1">
                                     Debes ver el video completo para finalizar
                                 </p>
@@ -173,7 +173,7 @@ export default function LessonContentItem({
                                 {isVisited && <CheckCircle className="w-3.5 h-3.5 text-green-500" />}
                             </h4>
                             <p className="text-sm text-green-400/70 truncate">{data.url}</p>
-                            {item.is_required && !isVisited && (
+                            {!!item.is_required && !isVisited && (
                                 <p className="text-[10px] text-orange-400 font-black uppercase tracking-widest mt-1">
                                     Debes visitar este enlace para finalizar
                                 </p>
