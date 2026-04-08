@@ -343,6 +343,26 @@ export function useAdminModules() {
         }
     };
 
+    const handleReorderLessons = async (moduleId, orderedIds) => {
+        try {
+            const response = await axios.post(`${API_URL}/lessons/reorder`, {
+                moduleId,
+                orderedIds
+            });
+            
+            if (response.data.success) {
+                toast.success('Orden de lecciones actualizado');
+                fetchModuleDetails(moduleId);
+                fetchAdminModules();
+                return true;
+            }
+        } catch (error) {
+            console.error('Error reordering lessons:', error);
+            toast.error('Error al reordenar lecciones');
+        }
+        return false;
+    };
+
     const filteredModules = modules.filter(m =>
         m.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         m.description.toLowerCase().includes(searchTerm.toLowerCase())
@@ -398,6 +418,9 @@ export function useAdminModules() {
         setResourceFormData,
         handleOpenResourceModal,
         handleSaveResource,
-        confirmDeleteResource
+        confirmDeleteResource,
+
+        // Reorder
+        handleReorderLessons
     };
 }
