@@ -95,7 +95,7 @@ class LessonService {
             );
 
             const badgeResult = await checkAllBadges(userId, { moduleId: lesson.module_id });
-            if (badgeResult?.awarded) badgeAwarded = badgeResult.badge;
+            if (badgeResult?.awarded) badgeAwarded = badgeResult.badges;
         } else {
             await db.query('UPDATE user_progress SET last_accessed = NOW() WHERE id = ?', [progress.id]);
         }
@@ -207,7 +207,7 @@ class LessonService {
             levelData: levelSync,
             moduleCompleted: moduleSync?.completed && moduleSync?.newlyRecorded,
             moduleData: moduleSync,
-            badgeAwarded: badgeSync?.awarded ? badgeSync.badge : null
+            badgeAwarded: badgeSync?.awarded ? badgeSync.badges : null
         };
     }
 

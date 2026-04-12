@@ -172,7 +172,7 @@ router.post('/:id/track-download', authMiddleware, async (req, res) => {
         res.json({
             success: true,
             message: 'Descarga registrada',
-            badgeAwarded: badgeResult?.awarded ? badgeResult.badge : null
+            badgeAwarded: badgeResult?.awarded ? badgeResult.badges : null
         });
     } catch (error) {
         logger.error('Error al trackear descarga:', error);

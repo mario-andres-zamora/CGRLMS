@@ -222,43 +222,48 @@ async function checkModuleOneBadge(userId, moduleId) {
 
 /**
  * Revisa todas las insignias automáticas para un usuario.
- * @returns La primera insignia otorgada o null
+ * @returns Un objeto con 'awarded' (boolean) y 'badges' (array de insignias otorgadas)
  */
 async function checkAllBadges(userId, extraData = {}) {
+    const awardedBadges = [];
     try {
         // 1. Racha (Streak)
         const streak = await checkStreakBadge(userId);
-        if (streak && streak.awarded) return streak;
+        if (streak && streak.awarded) awardedBadges.push(streak.badge);
 
         // 2. Descarga de recursos
         const resource = await checkResourceBadge(userId);
-        if (resource && resource.awarded) return resource;
+        if (resource && resource.awarded) awardedBadges.push(resource.badge);
 
         // 3. Velocidad e Insignias de Módulo Específico (solo si es el momento de completitud)
         if (extraData.moduleId && extraData.isModuleCompletion) {
             // Club de la Velocidad
             const speed = await checkSpeedBadge(userId, extraData.moduleId);
-            if (speed && speed.awarded) return speed;
+            if (speed && speed.awarded) awardedBadges.push(speed.badge);
 
             // Lo mejor de la Sabana (2 módulos en un día)
             const sabana = await checkSabanaBadge(userId);
-            if (sabana && sabana.awarded) return sabana;
+            if (sabana && sabana.awarded) awardedBadges.push(sabana.badge);
 
             // Módulo 1: Un gran poder...
             const mod1 = await checkModuleOneBadge(userId, extraData.moduleId);
-            if (mod1 && mod1.awarded) return mod1;
+            if (mod1 && mod1.awarded) awardedBadges.push(mod1.badge);
         }
 
         // 4. Inicio de seguridad (al entrar a un módulo > 0)
         if (extraData.moduleId) {
             const start = await checkFirstModuleBadge(userId, extraData.moduleId);
-            if (start && start.awarded) return start;
+            if (start && start.awarded) awardedBadges.push(start.badge);
         }
 
-        return null;
+        return {
+            awarded: awardedBadges.length > 0,
+            badges: awardedBadges,
+            badge: awardedBadges[0] // Para compatibilidad
+        };
     } catch (error) {
         logger.error(`Error en checkAllBadges para usuario ${userId}:`, error);
-        return null;
+        return { awarded: false, badges: [], badge: null };
     }
 }
 

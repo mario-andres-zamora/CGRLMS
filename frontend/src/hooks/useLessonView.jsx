@@ -174,21 +174,26 @@ export function useLessonView() {
             });
 
             if (response.data.success && response.data.badgeAwarded) {
-                const badge = response.data.badgeAwarded;
-                toast.success(
-                    <div className="flex flex-col gap-1">
-                        <p className="font-black text-secondary-500 uppercase tracking-widest text-[10px]">¡Nueva Insignia Ganada!</p>
-                        <p className="font-bold text-white tracking-tight">{badge.name}</p>
-                    </div>,
-                    {
-                        duration: 6000,
-                        icon: '🏆',
-                        style: {
-                            border: '1px solid rgba(229, 123, 60, 0.4)',
-                            background: '#0d1127'
-                        }
-                    }
-                );
+                const badges = Array.isArray(response.data.badgeAwarded) ? response.data.badgeAwarded : [response.data.badgeAwarded];
+                
+                badges.forEach((badge, idx) => {
+                    setTimeout(() => {
+                        toast.success(
+                            <div className="flex flex-col gap-1">
+                                <p className="font-black text-secondary-500 uppercase tracking-widest text-[10px]">¡Nueva Insignia Ganada!</p>
+                                <p className="font-bold text-white tracking-tight">{badge.name}</p>
+                            </div>,
+                            {
+                                duration: 6000,
+                                icon: '🏆',
+                                style: {
+                                    border: '1px solid rgba(229, 123, 60, 0.4)',
+                                    background: '#0d1127'
+                                }
+                            }
+                        );
+                    }, idx * 500);
+                });
             }
         } catch (error) {
             console.error('Error tracking download:', error);

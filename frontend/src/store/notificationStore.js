@@ -11,7 +11,8 @@ export const useNotificationStore = create((set, get) => ({
     loading: false,
     pendingLevelUp: null,
     pendingModuleCompletion: null,
-    pendingBadge: null,
+    badgeQueue: [],
+    pendingBadge: null, 
 
     setPendingLevelUp: (data) => {
         set({ pendingLevelUp: data });
@@ -19,9 +20,22 @@ export const useNotificationStore = create((set, get) => ({
     clearLevelUp: () => set({ pendingLevelUp: null }),
 
     setPendingBadge: (badge) => {
-        set({ pendingBadge: badge });
+        if (!badge) return;
+        const badges = Array.isArray(badge) ? badge : [badge];
+        set(state => ({ 
+            badgeQueue: [...state.badgeQueue, ...badges],
+            pendingBadge: state.pendingBadge || badges[0]
+        }));
     },
-    clearBadge: () => set({ pendingBadge: null }),
+    clearBadge: () => {
+        set(state => {
+            const newQueue = state.badgeQueue.slice(1);
+            return {
+                badgeQueue: newQueue,
+                pendingBadge: newQueue.length > 0 ? newQueue[0] : null
+            };
+        });
+    },
 
     setPendingModuleCompletion: (data) => {
         set({ pendingModuleCompletion: data });

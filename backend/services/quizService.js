@@ -228,7 +228,7 @@ class QuizService {
             levelData: levelSync,
             moduleCompleted: moduleSync?.completed && moduleSync?.newlyRecorded,
             moduleData: moduleSync,
-            badgeAwarded: badgeSync?.awarded ? badgeSync.badge : null
+            badgeAwarded: badgeSync?.awarded ? badgeSync.badges : null
         };
     }
 
