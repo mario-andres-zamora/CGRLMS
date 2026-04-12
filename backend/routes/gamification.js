@@ -231,7 +231,14 @@ router.put('/settings', authMiddleware, adminMiddleware, async (req, res) => {
  */
 router.post('/leaderboard/refresh', authMiddleware, adminMiddleware, async (req, res) => {
     try {
+        const { clearCache } = require('../middleware/cache');
+        
+        // 1. Recalcular la data central
         await refreshLeaderboardCache();
+        
+        // 2. Invalidar todos los resultados cacheados por usuario del endpoint de leaderboard
+        await clearCache('cache:/api/gamification/leaderboard*');
+        
         res.json({ success: true, message: 'Ranking actualizado correctamente' });
     } catch (error) {
         logger.error('Error refrescando leaderboard manualmente:', error);
