@@ -12,7 +12,8 @@ class LessonContentService {
                 asub.grade as asub_grade,
                 asub.feedback as asub_feedback,
                 asub.submitted_at as asub_submitted_at,
-                ucp.completed_at as completed_at
+                ucp.completed_at as completed_at,
+                ucp.response_data as interaction_data
              FROM lesson_contents lc
              LEFT JOIN assignment_submissions asub ON asub.content_id = lc.id AND asub.user_id = ?
              LEFT JOIN user_content_progress ucp ON ucp.content_id = lc.id AND ucp.user_id = ?
@@ -63,7 +64,7 @@ class LessonContentService {
                 isCompleted = completedSurveyIds.includes(sId);
             } else if (item.content_type === 'assignment') {
                 isCompleted = item.asub_status === 'approved';
-            } else if (item.content_type === 'video' || item.content_type === 'link' || item.content_type === 'confirmation') {
+            } else if (['video', 'link', 'confirmation', 'interactive_input'].includes(item.content_type)) {
                 isCompleted = !!item.completed_at;
             }
 
@@ -77,6 +78,7 @@ class LessonContentService {
                 points: item.points,
                 is_required: item.is_required,
                 submission: userSubmission,
+                interactionData: item.interaction_data ? (typeof item.interaction_data === 'string' ? JSON.parse(item.interaction_data) : item.interaction_data) : null,
                 isCompleted,
                 attemptsMade,
                 maxAttempts

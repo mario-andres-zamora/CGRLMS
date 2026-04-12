@@ -26,6 +26,7 @@ export const CONTENT_TYPES_CONFIG = [
     { type: 'heading', label: 'Título', icon: Type, color: 'text-white' },
     { type: 'bullets', label: 'Viñetas', icon: List, color: 'text-sky-400' },
     { type: 'confirmation', label: 'Confirmación', icon: CheckCircle2, color: 'text-emerald-400' },
+    { type: 'interactive_input', label: 'Input Interactivo', icon: Type, color: 'text-indigo-400' },
 ];
 
 export const getIconForType = (type) => {
@@ -51,7 +52,8 @@ export const getTypeLabel = (type) => {
         note: 'Nota de Aprendizaje',
         heading: 'Título de Sección',
         bullets: 'Viñetas',
-        confirmation: 'Confirmación Interactiva'
+        confirmation: 'Confirmación Interactiva',
+        interactive_input: 'Input Interactivo (Validación/Reflexión)'
     };
     return labels[type] || type;
 };

@@ -35,7 +35,11 @@ export function useLessonEditor(lessonId) {
         bulletItems: [{ title: '', text: '' }],
         option1: '',
         option2: '',
-        correctOption: 1
+        correctOption: 1,
+        validation_type: 'free',
+        correct_answer: '',
+        regex_pattern: '',
+        placeholder: 'Escribe tu respuesta aquí...'
     });
 
     const fetchLessonAndContents = useCallback(async () => {
@@ -110,7 +114,11 @@ export function useLessonEditor(lessonId) {
                 points: item.points || 0,
                 option1: item.content_type === 'confirmation' ? (item.data?.option1 || '') : '',
                 option2: item.content_type === 'confirmation' ? (item.data?.option2 || '') : '',
-                correctOption: item.content_type === 'confirmation' ? (item.data?.correctOption || 1) : 1
+                correctOption: item.content_type === 'confirmation' ? (item.data?.correctOption || 1) : 1,
+                validation_type: item.content_type === 'interactive_input' ? (item.data?.validation_type || 'free') : 'free',
+                correct_answer: item.content_type === 'interactive_input' ? (item.data?.correct_answer || '') : '',
+                regex_pattern: item.content_type === 'interactive_input' ? (item.data?.regex_pattern || '') : '',
+                placeholder: item.content_type === 'interactive_input' ? (item.data?.placeholder || 'Escribe tu respuesta aquí...') : 'Escribe tu respuesta aquí...'
             });
         } else {
             setEditingItem(null);
@@ -125,7 +133,11 @@ export function useLessonEditor(lessonId) {
                 points: 0,
                 option1: '',
                 option2: '',
-                correctOption: 1
+                correctOption: 1,
+                validation_type: 'free',
+                correct_answer: '',
+                regex_pattern: '',
+                placeholder: 'Escribe tu respuesta aquí...'
             });
         }
         setIsModalOpen(true);
@@ -161,6 +173,14 @@ export function useLessonEditor(lessonId) {
                     option1: formData.option1,
                     option2: formData.option2,
                     correctOption: formData.correctOption
+                };
+            } else if (formData.content_type === 'interactive_input') {
+                finalData = {
+                    description: formData.data,
+                    validation_type: formData.validation_type,
+                    correct_answer: formData.correct_answer,
+                    regex_pattern: formData.regex_pattern,
+                    placeholder: formData.placeholder
                 };
             } else if (['note', 'heading'].includes(formData.content_type)) {
                 finalData = { text: formData.data };

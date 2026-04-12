@@ -26,6 +26,7 @@ export const CONTENT_TYPES = [
     { type: 'heading', label: 'Título', icon: Type, color: 'text-white' },
     { type: 'bullets', label: 'Viñetas', icon: List, color: 'text-sky-400' },
     { type: 'confirmation', label: 'Confirmación', icon: CheckCircle2, color: 'text-emerald-400' },
+    { type: 'interactive_input', label: 'Input', icon: Type, color: 'text-indigo-400' },
 ];
 
 export default function ContentTypeSelector({ onSelect }) {

@@ -70,6 +70,16 @@ export default function ContentItem({
                         <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed italic">{item.data.text}</p>
                     </div>
                 )}
+                {item.content_type === 'interactive_input' && item.data?.description && (
+                    <div className="bg-black/20 p-3 rounded-xl border border-white/5 mt-2">
+                        <div className="flex items-center gap-2 mb-1">
+                            <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-400 uppercase tracking-wider">
+                                {item.data.validation_type === 'free' ? 'Reflexión Libre' : item.data.validation_type === 'exact' ? 'Validación Exacta' : 'Validación Regex'}
+                            </span>
+                        </div>
+                        <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed italic">{item.data.description}</p>
+                    </div>
+                )}
                 {item.data?.url && (
                     <a href={item.data.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-[10px] font-bold text-primary-400/70 hover:text-primary-400 bg-primary-500/5 px-3 py-1.5 rounded-lg border border-primary-500/10 mt-2 transition-all">
                         <LinkIcon className="w-3 h-3" /> {item.data.url}

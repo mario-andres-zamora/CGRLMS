@@ -7,6 +7,7 @@ import FileEditor from './editors/FileEditor.jsx';
 import TaskEditor from './editors/TaskEditor.jsx';
 import BulletsEditor from './editors/BulletsEditor.jsx';
 import ConfirmationEditor from './editors/ConfirmationEditor.jsx';
+import InteractiveInputEditor from './editors/InteractiveInputEditor.jsx';
 
 export default function ContentEditorModal({
     isOpen,
@@ -76,6 +77,21 @@ export default function ContentEditorModal({
                         onChangeOption2={(val) => setFormData({ ...formData, option2: val })}
                         correctOption={formData.correctOption}
                         onChangeCorrectOption={(val) => setFormData({ ...formData, correctOption: val })}
+                    />
+                );
+            case 'interactive_input':
+                return (
+                    <InteractiveInputEditor
+                        description={formData.data}
+                        onChangeDescription={(val) => setFormData({ ...formData, data: val })}
+                        placeholder={formData.placeholder}
+                        onChangePlaceholder={(val) => setFormData({ ...formData, placeholder: val })}
+                        validationType={formData.validation_type}
+                        onChangeValidationType={(val) => setFormData({ ...formData, validation_type: val })}
+                        correctAnswer={formData.correct_answer}
+                        onChangeCorrectAnswer={(val) => setFormData({ ...formData, correct_answer: val })}
+                        regexPattern={formData.regex_pattern}
+                        onChangeRegexPattern={(val) => setFormData({ ...formData, regex_pattern: val })}
                     />
                 );
             default:
