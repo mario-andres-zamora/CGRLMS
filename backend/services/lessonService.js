@@ -199,6 +199,15 @@ class LessonService {
 
         const [updatedStats] = await db.query('SELECT points, level FROM user_points WHERE user_id = ?', [userId]);
 
+        // --- SINCRONIZACIÓN FINAL ---
+        // Refrescar el ranking global después de otorgar todos los puntos (incluyendo posibles insignias)
+        try {
+            const { refreshLeaderboardCache } = require('../utils/gamification');
+            await refreshLeaderboardCache();
+        } catch (rankErr) {
+            console.error('Error sincronizando ranking al final de la lección:', rankErr);
+        }
+
         return {
             pointsAwarded,
             newBalance: updatedStats?.points || 0,

@@ -302,16 +302,12 @@ const checkAndRecordModuleCompletion = async (userId, moduleId, isAdmin = false)
             if (newPoints && newPoints.points !== undefined) {
                 await updateUserScore(userId, newPoints.points);
 
-                // --- FORZAR ACTUALIZACIÓN DEL RANKING ---
-                // Refrescar los resúmenes institucionales y por área
+                // Limpiar el caché de la ruta de ranking para este usuario y patrones globales
                 try {
-                    await refreshLeaderboardCache();
-
-                    // Limpiar el caché de la ruta de ranking para este usuario y patrones globales
                     const { clearCache } = require('../middleware/cache');
                     await clearCache('cache:/api/gamification/leaderboard*');
-                } catch (rankErr) {
-                    logger.error('Error forzando actualización de ranking tras módulo:', rankErr);
+                } catch (cacheErr) {
+                    console.error('Error invalidando caché tras módulo:', cacheErr);
                 }
             }
         }

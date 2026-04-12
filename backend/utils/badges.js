@@ -46,6 +46,12 @@ async function awardBadge(userId, badgeId) {
             // Invalidad caché del perfil y leaderboard para que se refleje de inmediato
             try {
                 const { clearCache } = require('../middleware/cache');
+                const { refreshLeaderboardCache } = require('./gamification');
+                
+                // 1. Recalcular el ranking global
+                await refreshLeaderboardCache();
+                
+                // 2. Limpiar versiones cacheadas
                 await clearCache(`cache:/api/users/profile:u${userId}*`);
                 await clearCache(`cache:/api/gamification/leaderboard*`);
             } catch (cacheError) {

@@ -210,9 +210,11 @@ class UserService {
         const activities = await db.query(
             `SELECT ga.activity_type as type, ga.points_earned, ga.created_at, ga.reference_id,
                 CASE 
-                    WHEN ga.activity_type = 'lesson_completed' THEN (SELECT title FROM lessons WHERE id = ga.reference_id)
-                    WHEN ga.activity_type = 'quiz_passed' THEN (SELECT title FROM quizzes WHERE id = ga.reference_id)
-                    WHEN ga.activity_type = 'module_completed' THEN (SELECT title FROM modules WHERE id = ga.reference_id)
+                    WHEN ga.activity_type = 'lesson_completed' THEN CONCAT('¡Completaste la lección: ', (SELECT title FROM lessons WHERE id = ga.reference_id), '!')
+                    WHEN ga.activity_type = 'quiz_passed' THEN CONCAT('¡Aprobaste el cuestionario: ', (SELECT title FROM quizzes WHERE id = ga.reference_id), '!')
+                    WHEN ga.activity_type = 'module_completed' THEN CONCAT('¡Completaste el módulo: ', (SELECT title FROM modules WHERE id = ga.reference_id), '!')
+                    WHEN ga.activity_type = 'badge_earned' THEN CONCAT('🏆 ¡Ganaste la insignia: ', (SELECT name FROM badges WHERE id = ga.reference_id), '!')
+                    WHEN ga.activity_type = 'resource_downloaded' THEN CONCAT('📥 Descargaste: ', (SELECT title FROM resources WHERE id = ga.reference_id))
                     ELSE 'Actividad general'
                 END as reference_title,
                 CASE 
