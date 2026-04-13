@@ -14,8 +14,8 @@ export default function PremiumSelect({ options, value, onChange, placeholder = 
         if (triggerRef.current) {
             const rect = triggerRef.current.getBoundingClientRect();
             setCoords({
-                top: rect.bottom + window.scrollY,
-                left: rect.left + window.scrollX,
+                top: rect.bottom,
+                left: rect.left,
                 width: rect.width
             });
         }
