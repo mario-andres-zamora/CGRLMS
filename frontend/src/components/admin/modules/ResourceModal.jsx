@@ -78,15 +78,58 @@ export default function ResourceModal({
                                 />
                             </div>
                         ) : (
-                            <div className="space-y-2.5">
-                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-2 italic">Referencia del Archivo Local</label>
-                                <input
-                                    type="text"
-                                    className="w-full bg-slate-950/80 border border-white/10 focus:border-secondary-500/50 rounded-2xl py-4 px-6 text-white font-black placeholder-gray-800 outline-none transition-all shadow-inner hover:border-white/20"
-                                    placeholder="Nombre del archivo o ruta interna..."
-                                    value={formData.url}
-                                    onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-                                />
+                            <div className="space-y-6">
+                                <div className="space-y-2.5">
+                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-2 italic">Carga de Archivo Estratégico</label>
+                                    <div className="relative group/file">
+                                        <input
+                                            type="file"
+                                            id="file-upload"
+                                            className="hidden"
+                                            onChange={(e) => {
+                                                const file = e.target.files[0];
+                                                if (file) {
+                                                    setFormData({ ...formData, file, url: file.name });
+                                                }
+                                            }}
+                                        />
+                                        <label
+                                            htmlFor="file-upload"
+                                            className={`flex flex-col items-center justify-center w-full min-h-[120px] bg-slate-950/80 border-2 border-dashed rounded-3xl cursor-pointer transition-all p-6 group-hover/file:bg-slate-950
+                                                ${formData.file ? 'border-secondary-500/50 bg-secondary-500/5' : 'border-white/5 hover:border-secondary-500/30'}`}
+                                        >
+                                            <Download className={`w-8 h-8 mb-3 transition-transform group-hover/file:-translate-y-1 ${formData.file ? 'text-secondary-400' : 'text-gray-700'}`} />
+                                            {formData.file ? (
+                                                <div className="text-center">
+                                                    <p className="text-secondary-400 font-black text-xs uppercase tracking-tight">{formData.file.name}</p>
+                                                    <p className="text-gray-600 text-[9px] mt-1 uppercase">Haga clic para reemplazar el activo</p>
+                                                </div>
+                                            ) : (
+                                                <div className="text-center">
+                                                    <p className="text-gray-500 font-bold text-[10px] uppercase tracking-widest">Seleccionar archivo local</p>
+                                                    <p className="text-gray-700 text-[8px] mt-2 uppercase tracking-tighter italic">PDF, Word, Excel, ZIP hasta 20MB</p>
+                                                </div>
+                                            )}
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div className="relative flex items-center py-2">
+                                    <div className="flex-grow border-t border-white/5"></div>
+                                    <span className="flex-shrink mx-4 text-[9px] font-black text-gray-700 uppercase tracking-widest italic">O vincular ruta manual</span>
+                                    <div className="flex-grow border-t border-white/5"></div>
+                                </div>
+
+                                <div className="space-y-2.5">
+                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-2 italic">Referencia Manual (URL o Nombre)</label>
+                                    <input
+                                        type="text"
+                                        className="w-full bg-slate-950/80 border border-white/10 focus:border-secondary-500/50 rounded-2xl py-4 px-6 text-white font-black placeholder-gray-800 outline-none transition-all shadow-inner hover:border-white/20"
+                                        placeholder="Nombre del archivo o ruta interna..."
+                                        value={formData.url}
+                                        onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                                    />
+                                </div>
                             </div>
                         )}
                     </div>

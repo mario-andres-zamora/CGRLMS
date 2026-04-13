@@ -38,8 +38,10 @@ export default function ModuleResources({
                                         ? 'bg-blue-600/10 border-blue-500/20 text-blue-400 shadow-blue-500/5'
                                         : 'bg-red-600/10 border-red-500/20 text-red-500 shadow-red-500/5'}`}>
                                     {res.resource_type === 'drive' ? (
-                                        <svg viewBox="0 0 24 24" className="w-8 h-8 fill-current" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M7.71 3.502L1.15 14.782L4.44 20.492L11 9.212L7.71 3.502ZM9.73 14.782L6.44 20.492H19.56L22.85 14.782H9.73ZM12.91 9.212L16.2 3.502H9.71L6.42 9.212H12.91Z" />
+                                        <svg viewBox="0 0 24 24" className="w-8 h-8 transition-transform group-hover/res:scale-110" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M7.71 3.502L1.15 14.782L4.44 20.492L11 9.212L7.71 3.502Z" fill="#FFC107" />
+                                            <path d="M22.85 14.782L19.56 20.492H6.44L9.73 14.782H22.85Z" fill="#4CAF50" />
+                                            <path d="M16.2 3.502H9.71L6.42 9.212L12.91 9.212L16.2 3.502Z" fill="#2196F3" />
                                         </svg>
                                     ) : (
                                         <FileText className="w-8 h-8" />
