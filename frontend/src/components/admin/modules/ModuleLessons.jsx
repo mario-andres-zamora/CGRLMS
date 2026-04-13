@@ -113,7 +113,7 @@ export default function ModuleLessons({
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-3 w-full lg:w-auto justify-end border-t lg:border-t-0 border-white/5 pt-4 lg:pt-0">
+                                <div className="flex items-center flex-wrap gap-3 w-full lg:w-auto justify-end border-t lg:border-t-0 border-white/5 pt-4 lg:pt-0">
                                     <div className="flex items-center gap-4 group/toggle bg-slate-950 px-4 py-2 rounded-2xl border border-white/5 shadow-inner">
                                         <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest group-hover/toggle:text-secondary-400/70 transition-colors">Progreso Opcional</span>
                                         <button
@@ -123,8 +123,7 @@ export default function ModuleLessons({
                                             <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all shadow-xl ${lesson.is_optional ? 'left-5.5' : 'left-0.5'}`}></div>
                                         </button>
                                     </div>
-
-                                    <div className="flex items-center gap-1 bg-slate-950 p-1.5 rounded-2xl border border-white/5">
+                                    <div className="flex items-center flex-wrap gap-1 bg-slate-950 p-1.5 rounded-2xl border border-white/5 justify-end">
                                         <button
                                             onClick={() => onTogglePublish(lesson)}
                                             className={`p-2 rounded-xl transition-all ${lesson.is_published ? 'text-emerald-500 hover:bg-emerald-500/10' : 'text-gray-500 hover:text-white hover:bg-slate-800'}`}
