@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
 import { PlayCircle, CheckCircle, CheckCircle2, XCircle, Download, FileText, Link as LinkIcon, Shield, Award, HelpCircle, ClipboardList, Upload, Zap, Eye, RotateCcw, Clock, AlertTriangle, Type, Lock, Unlock, CheckSquare } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { useSoundStore } from '../../store/soundStore';
 import YouTubePlayer from './YouTubePlayer';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -19,6 +21,10 @@ export default function LessonContentItem({
 }) {
     const [isIncorrect, setIsIncorrect] = useState(null);
     const [revealing, setRevealing] = useState(false);
+    const { playSound } = useSoundStore();
+
+    const playSuccess = () => playSound('/sounds/success.mp3');
+    const playError = () => playSound('/sounds/error.mp3');
 
     let data = item.data || {};
 
@@ -397,10 +403,12 @@ export default function LessonContentItem({
 
                 if (optNum === data.correctOption) {
                     setRevealing(true);
+                    playSuccess();
                     markLinkAsVisited(item.id, { selectedOption: optNum, answeredAt: new Date().toISOString() });
                     setTimeout(() => setRevealing(false), 1000);
                 } else {
                     setIsIncorrect(optNum);
+                    playError();
                     setTimeout(() => setIsIncorrect(null), 1000);
                 }
             };
@@ -763,14 +771,15 @@ export default function LessonContentItem({
                 if (!hasCorrectAnswer) {
                     setSubmitting_mc(true);
                     try {
-                        const res = await axios.post(`${API_URL}/progress/interaction`, {
-                            content_id: item.id,
-                            interaction_data: { selectedIndex: index, text: selectedOption.text, status: 'completed' }
+                        const resData = await markLinkAsVisited(item.id, { 
+                            selectedIndex: index, 
+                            text: selectedOption.text, 
+                            status: 'completed' 
                         });
-                        if (res.data.success) {
+                        
+                        if (resData?.success) {
                             setStatus_mc('completed');
-                            markLinkAsVisited(item.id);
-                            if (res.data.pointsEarned > 0) playSuccess();
+                            playSuccess();
                         }
                     } catch (error) {
                         toast.error('Error al guardar respuesta');
@@ -787,20 +796,16 @@ export default function LessonContentItem({
                 const isCorrect = options_mc[selectedIdx].is_correct;
                 
                 try {
-                    const res = await axios.post(`${API_URL}/progress/interaction`, {
-                        content_id: item.id,
-                        interaction_data: { 
-                            selectedIndex: selectedIdx, 
-                            text: options_mc[selectedIdx].text, 
-                            status: isCorrect ? 'completed' : 'incorrect' 
-                        }
+                    const resData = await markLinkAsVisited(item.id, { 
+                        selectedIndex: selectedIdx, 
+                        text: options_mc[selectedIdx].text, 
+                        status: isCorrect ? 'completed' : 'incorrect' 
                     });
 
-                    if (res.data.success) {
+                    if (resData?.success) {
                         if (isCorrect) {
                             setStatus_mc('completed');
-                            markLinkAsVisited(item.id);
-                            if (res.data.pointsEarned > 0) playSuccess();
+                            playSuccess();
                             toast.success('¡Correcto!');
                         } else {
                             setStatus_mc('incorrect');

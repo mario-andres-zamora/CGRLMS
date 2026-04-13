@@ -1,6 +1,7 @@
 const db = require('../config/database');
 const xss = require('xss');
 const path = require('path');
+const { TRACEABLE_CONTENT_TYPES } = require('../constants/contentTypes');
 
 class LessonContentService {
     async getLessonContents(lessonId, userId) {
@@ -64,7 +65,7 @@ class LessonContentService {
                 isCompleted = completedSurveyIds.includes(sId);
             } else if (item.content_type === 'assignment') {
                 isCompleted = item.asub_status === 'approved';
-            } else if (['video', 'link', 'confirmation', 'interactive_input'].includes(item.content_type)) {
+            } else if (TRACEABLE_CONTENT_TYPES.includes(item.content_type)) {
                 isCompleted = !!item.completed_at;
             }
 

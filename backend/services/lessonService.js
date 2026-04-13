@@ -2,6 +2,7 @@ const db = require('../config/database');
 const logger = require('../config/logger');
 const { syncUserLevel, checkAndRecordModuleCompletion } = require('../utils/gamification');
 const { checkAllBadges } = require('../utils/badges');
+const { TRACEABLE_CONTENT_TYPES } = require('../constants/contentTypes');
 
 class LessonService {
     async getLessonById(lessonId, userId, isAdmin) {
@@ -169,15 +170,17 @@ class LessonService {
             `SELECT lc.id, lc.title, lc.content_type, ucp.completed_at 
              FROM lesson_contents lc 
              LEFT JOIN user_content_progress ucp ON ucp.content_id = lc.id AND ucp.user_id = ? 
-             WHERE lc.lesson_id = ? AND lc.is_required = 1 AND lc.content_type IN ('video', 'link', 'confirmation')`,
-            [userId, lessonId]
+             WHERE lc.lesson_id = ? AND lc.is_required = 1 AND lc.content_type IN (${TRACEABLE_CONTENT_TYPES.map(() => '?').join(',')})`,
+            [userId, lessonId, ...TRACEABLE_CONTENT_TYPES]
         );
 
         for (const item of contents) {
             if (!item.completed_at) {
                 let action = 'visitar el enlace';
                 if (item.content_type === 'video') action = 'ver el video';
-                if (item.content_type === 'confirmation') action = 'confirmar la pregunta';
+                if (item.content_type === 'confirmation' || item.content_type === 'multiple_choice') action = 'responder la pregunta';
+                if (item.content_type === 'interactive_input') action = 'completar la entrada';
+                if (item.content_type === 'password_tester') action = 'probar la contraseña';
                 
                 throw new Error(`No puedes finalizar: Te falta ${action} "${item.title}".`);
             }

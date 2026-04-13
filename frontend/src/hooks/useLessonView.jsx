@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { useAuthStore } from '../store/authStore';
 import { useNotificationStore } from '../store/notificationStore';
 import { useSoundStore } from '../store/soundStore';
+import { TRACEABLE_CONTENT_TYPES } from '../constants/contentTypes';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -58,7 +59,7 @@ export function useLessonView() {
                 fetchedContents.forEach(item => {
                     if (item.isCompleted) {
                         if (item.content_type === 'video') watched.add(item.id);
-                        if (['link', 'confirmation', 'interactive_input', 'password_tester', 'multiple_choice'].includes(item.content_type)) visited.add(item.id);
+                        if (TRACEABLE_CONTENT_TYPES.includes(item.content_type) && item.content_type !== 'video') visited.add(item.id);
                     }
                 });
                 setWatchedVideos(watched);
@@ -150,10 +151,10 @@ export function useLessonView() {
     };
 
     const markLinkAsVisited = async (linkId, data = {}) => {
-        if (visitedLinks.has(linkId) && Object.keys(data).length === 0) return;
+        if (visitedLinks.has(linkId) && Object.keys(data).length === 0) return null;
 
         try {
-            await axios.post(`${API_URL}/content/${linkId}/trace`, data, {
+            const res = await axios.post(`${API_URL}/content/${linkId}/trace`, data, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -162,8 +163,10 @@ export function useLessonView() {
                 next.add(linkId);
                 return next;
             });
+            return res.data;
         } catch (error) {
             console.error('Error marking link as visited:', error);
+            throw error;
         }
     };
 
