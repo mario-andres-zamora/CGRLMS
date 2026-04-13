@@ -303,12 +303,32 @@ function HackNeighborQuestion({ question, isAnswered, onWin }) {
     );
 }
 
-function MfaDefenderQuestion({ question, isAnswered, onWin }) {
+function MfaDefenderQuestion({ question, isAnswered, storedAnswer, onWin }) {
     const [mfaStatus, setMfaStatus] = useState(isAnswered ? 'won' : 'idle');
     const [mfaCode, setMfaCode] = useState('------');
     const [userMfaInput, setUserMfaInput] = useState('');
-    const hackTimeLimit = question.data?.hack_time || 20;
-    const mfaRotateTime = question.data?.rotate_time || 5;
+    const [mfaFails, setMfaFails] = useState(() => {
+        if (typeof storedAnswer === 'object' && storedAnswer !== null) {
+            return parseInt(storedAnswer.mfaFails) || 0;
+        }
+        return 0;
+    });
+
+    const ensureDataObject = (data) => {
+        if (!data) return {};
+        if (typeof data === 'object') return data;
+        try {
+            return JSON.parse(data);
+        } catch (e) {
+            return {};
+        }
+    };
+
+    const qData = ensureDataObject(question.data);
+    const hackTimeLimit = qData.hack_time || 20;
+    const mfaRotateTime = qData.rotate_time || 5;
+    const failPenalty = parseInt(qData.fail_penalty) || 0;
+    const currentPotentialPoints = Math.max(0, question.points - (mfaFails * failPenalty));
     const [timeLeft, setTimeLeft] = useState(hackTimeLimit);
     const [rotateProgress, setRotateProgress] = useState(100);
 
@@ -323,6 +343,7 @@ function MfaDefenderQuestion({ question, isAnswered, onWin }) {
         setMfaCode(generateMfaCode());
         setRotateProgress(100);
         setUserMfaInput('');
+        // No reseteamos mfaFails aquí para que persistan entre reintentos de la misma pregunta
     };
 
     useEffect(() => {
@@ -332,6 +353,11 @@ function MfaDefenderQuestion({ question, isAnswered, onWin }) {
                 setTimeLeft(prev => {
                     if (prev <= 0.1) {
                         setMfaStatus('failed');
+                        setMfaFails(f => {
+                            const newFails = f + 1;
+                            console.info(`[MFA-Quiz] FAILURE (Timeout)! Current fails: ${newFails}`);
+                            return newFails;
+                        });
                         return 0;
                     }
                     return prev - 0.1;
@@ -341,6 +367,11 @@ function MfaDefenderQuestion({ question, isAnswered, onWin }) {
                     const step = (100 / (mfaRotateTime * 10));
                     if (prev <= step) {
                         setMfaCode(generateMfaCode());
+                        setMfaFails(f => {
+                            const newFails = f + 1;
+                            console.info(`[MFA-Quiz] FAILURE (Code Expired)! Current fails: ${newFails}`);
+                            return newFails;
+                        });
                         return 100;
                     }
                     return prev - step;
@@ -355,8 +386,13 @@ function MfaDefenderQuestion({ question, isAnswered, onWin }) {
 
         if (userMfaInput === mfaCode) {
             setMfaStatus('won');
-            onWin();
+            onWin({ success: true, mfaFails });
         } else {
+            setMfaFails(prev => {
+                const newFails = prev + 1;
+                console.info(`[MFA-Quiz] FAILURE (Wrong Code)! Current fails: ${newFails}`);
+                return newFails;
+            });
             setUserMfaInput('');
         }
     };
@@ -364,6 +400,34 @@ function MfaDefenderQuestion({ question, isAnswered, onWin }) {
     return (
         <div className={`p-8 mt-4 rounded-[2.5rem] transition-all duration-700 border-2 ${mfaStatus === 'won' ? 'bg-indigo-500/10 border-indigo-500/30' : mfaStatus === 'failed' ? 'bg-red-500/10 border-red-500/30 animate-shake' : 'bg-slate-900/40 border-white/5'}`}>
             <div className="flex flex-col gap-6">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex items-center gap-2 px-4 py-2 bg-indigo-500/10 border border-indigo-500/20 rounded-full">
+                        <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
+                        <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em]">Actividad de Evaluación</span>
+                    </div>
+
+                    <div className="flex flex-col items-end gap-1">
+                        <div className="flex items-center gap-3">
+                            <span className="text-[11px] font-black text-white/40 uppercase tracking-wider">Recompensa:</span>
+                            <span className={`text-lg font-black tracking-tighter ${currentPotentialPoints === question.points ? 'text-emerald-400' : 'text-yellow-400'}`}>
+                                {currentPotentialPoints} <span className="text-xs text-white/30">/ {question.points} PTS</span>
+                            </span>
+                        </div>
+                        {failPenalty > 0 && (
+                            <div className="flex items-center gap-2">
+                                <span className="text-[9px] font-bold text-red-500/60 uppercase tracking-widest">
+                                    Panel de Riesgo: -{failPenalty} PTS x fallo
+                                </span>
+                                {mfaFails > 0 && (
+                                    <span className="px-2 py-0.5 bg-red-500/10 border border-red-500/20 rounded text-[9px] font-black text-red-500 uppercase">
+                                        -{mfaFails * failPenalty} acumulado ({mfaFails})
+                                    </span>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch max-w-4xl mx-auto w-full">
                     {/* Left Side: Hacker Terminal */}
                     <div className="bg-[#0a0a0a] rounded-3xl p-6 border border-white/10 relative overflow-hidden flex flex-col justify-between shadow-[inset_0_4px_20px_rgba(0,0,0,0.5)]">
@@ -400,12 +464,14 @@ function MfaDefenderQuestion({ question, isAnswered, onWin }) {
                         <div className="absolute top-2 w-16 h-1.5 bg-slate-900 rounded-full"></div>
 
                         {mfaStatus === 'idle' ? (
-                            <button
-                                onClick={startMfaGame}
-                                className="bg-indigo-600 hover:bg-indigo-500 text-white font-black uppercase tracking-widest text-xs px-8 py-4 rounded-2xl transition-all shadow-lg shadow-indigo-600/30 flex items-center gap-2 hover:scale-105 active:scale-95 text-center"
-                            >
-                                <ShieldAlert className="w-5 h-5" /> Iniciar Defensa
-                            </button>
+                            <div className="flex flex-col items-center gap-3">
+                                <button
+                                    onClick={startMfaGame}
+                                    className="bg-indigo-600 hover:bg-indigo-500 text-white font-black uppercase tracking-widest text-xs px-8 py-4 rounded-2xl transition-all shadow-lg shadow-indigo-600/30 flex items-center gap-2 hover:scale-105 active:scale-95 text-center"
+                                >
+                                    <ShieldAlert className="w-5 h-5" /> Iniciar Defensa
+                                </button>
+                            </div>
                         ) : mfaStatus === 'failed' ? (
                             <div className="text-center space-y-4 animate-fade-in">
                                 <XCircle className="w-16 h-16 text-red-500 mx-auto animate-shake" />
@@ -420,7 +486,19 @@ function MfaDefenderQuestion({ question, isAnswered, onWin }) {
                         ) : mfaStatus === 'won' ? (
                             <div className="text-center space-y-4 animate-fade-in p-2">
                                 <CheckCircle2 className="w-16 h-16 text-indigo-400 mx-auto scale-110" />
-                                <div className="text-indigo-400 font-black uppercase tracking-widest text-lg">¡Misión Cumplida: Ataque Detenido!</div>
+                                <div className="space-y-1">
+                                    <div className="text-indigo-400 font-black uppercase tracking-widest text-lg">¡Misión Cumplida!</div>
+                                    <div className="flex flex-col items-center gap-1">
+                                        <p className="text-[10px] text-emerald-400 font-black uppercase tracking-[0.2em]">
+                                            PUNTOS GANADOS: {currentPotentialPoints} PTS
+                                        </p>
+                                        {mfaFails > 0 && failPenalty > 0 && (
+                                            <p className="text-[9px] text-red-500/80 font-bold uppercase tracking-[0.1em]">
+                                                (Penalización aplicada: -{mfaFails * failPenalty} pts por {mfaFails} fallos)
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
                                 <div className="text-sm text-slate-300 font-medium leading-relaxed">
                                     Como acabas de experimentar, la contraseña por sí sola ya no es suficiente. En este escenario, el atacante logró obtener tus credenciales, pero se topó con un muro: el MFA (Autenticación de Múltiples Factores).
                                 </div>
@@ -556,8 +634,9 @@ export default function QuizTake({
                     <div className="relative z-10">
                         <MfaDefenderQuestion
                             question={currentQuestion}
-                            isAnswered={answers[currentQuestion.id] === true || answers[currentQuestion.id] === 'true'}
-                            onWin={() => onOptionSelect(currentQuestion.id, true)}
+                            isAnswered={answers[currentQuestion.id]?.success === true || answers[currentQuestion.id] === 'true' || answers[currentQuestion.id] === true}
+                            storedAnswer={answers[currentQuestion.id]}
+                            onWin={(data) => onOptionSelect(currentQuestion.id, data)}
                         />
                     </div>
                 ) : currentQuestion.question_type === 'hack_neighbor' ? (

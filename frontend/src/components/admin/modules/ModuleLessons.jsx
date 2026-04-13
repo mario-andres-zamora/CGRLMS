@@ -15,14 +15,14 @@ export default function ModuleLessons({
     const handleMoveLesson = (index, direction) => {
         const newLessons = [...lessons];
         const targetIndex = direction === 'up' ? index - 1 : index + 1;
-        
+
         if (targetIndex < 0 || targetIndex >= newLessons.length) return;
-        
+
         // Swap elements
         [newLessons[index], newLessons[targetIndex]] = [newLessons[targetIndex], newLessons[index]];
-        
+
         const orderedIds = newLessons.map(l => l.id);
-        
+
         onReorderLessons(orderedIds);
     };
 
@@ -64,7 +64,7 @@ export default function ModuleLessons({
                                 <div className="flex items-center gap-5 w-full lg:w-auto mb-4 lg:mb-0">
                                     <div className="relative group/idx w-14 h-14 bg-slate-950 rounded-2xl flex items-center justify-center text-lg font-black text-gray-600 border border-white/10 shadow-inner group-hover/item:text-primary-400 transition-colors group-hover/item:scale-105 duration-500">
                                         <div className="absolute inset-x-0 -top-6 flex justify-center opacity-0 group-hover/idx:opacity-100 transition-opacity">
-                                            <button 
+                                            <button
                                                 onClick={() => handleMoveLesson(lessons.indexOf(lesson), 'up')}
                                                 disabled={lessons.indexOf(lesson) === 0}
                                                 className="p-1 bg-slate-800 rounded-lg text-gray-400 hover:text-primary-400 disabled:opacity-30 disabled:hover:text-gray-400"
@@ -74,9 +74,9 @@ export default function ModuleLessons({
                                         </div>
 
                                         {lesson.order_index}
-                                        
+
                                         <div className="absolute inset-x-0 -bottom-6 flex justify-center opacity-0 group-hover/idx:opacity-100 transition-opacity">
-                                            <button 
+                                            <button
                                                 onClick={() => handleMoveLesson(lessons.indexOf(lesson), 'down')}
                                                 disabled={lessons.indexOf(lesson) === lessons.length - 1}
                                                 className="p-1 bg-slate-800 rounded-lg text-gray-400 hover:text-primary-400 disabled:opacity-30 disabled:hover:text-gray-400"
@@ -95,8 +95,8 @@ export default function ModuleLessons({
                                         </h5>
                                         <div className="flex flex-wrap items-center gap-3 mt-1">
                                             <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border shadow-lg ${lesson.lesson_type === 'quiz'
-                                                    ? 'bg-secondary-500/10 text-secondary-500 border-secondary-500/10 shadow-secondary-500/5'
-                                                    : 'bg-primary-500/10 text-primary-400 border-primary-500/10 shadow-primary-500/5'
+                                                ? 'bg-secondary-500/10 text-secondary-500 border-secondary-500/10 shadow-secondary-500/5'
+                                                : 'bg-primary-500/10 text-primary-400 border-primary-500/10 shadow-primary-500/5'
                                                 }`}>
                                                 {lesson.lesson_type}
                                                 {lesson.lesson_type === 'quiz' && <Award className="inline w-3 h-3 ml-1 mb-0.5" />}

@@ -50,6 +50,51 @@ class QuizService {
         };
     }
 
+    _calculateQuestionScore(q, userAnswer) {
+        let isCorrect = false;
+        let earnedPoints = 0;
+        let penaltyApplied = 0;
+
+        if (q.question_type === 'mfa_defender' || q.question_type === 'hack_neighbor') {
+            console.log(`[QuizScore] Scrutinizing ${q.question_type} Q#${q.id}:`, { userAnswer });
+            if (typeof userAnswer === 'object' && userAnswer !== null) {
+                isCorrect = userAnswer.success === true || userAnswer.success === 'true';
+                earnedPoints = q.points;
+
+                if (isCorrect) {
+                    let qData = {};
+                    try {
+                        qData = typeof q.data === 'string' ? JSON.parse(q.data) : (q.data || {});
+                    } catch (e) {}
+
+                    if (q.question_type === 'hack_neighbor') {
+                        const hintsUsed = parseInt(userAnswer.hintsUsed) || 0;
+                        const penaltyPerHint = parseInt(qData.hint_penalty) || 0;
+                        penaltyApplied = hintsUsed * penaltyPerHint;
+                    } else if (q.question_type === 'mfa_defender') {
+                        const mfaFails = parseInt(userAnswer.mfaFails) || 0;
+                        const failPenalty = parseInt(qData.fail_penalty) || 0;
+                        penaltyApplied = mfaFails * failPenalty;
+                        console.log(`[QuizScore] MFA Penalization: ${mfaFails} fails * ${failPenalty} pts = -${penaltyApplied}`);
+                    }
+                    earnedPoints = Math.max(0, q.points - penaltyApplied);
+                    console.log(`[QuizScore] Final Score for Q#${q.id}: ${earnedPoints}/${q.points}`);
+                }
+            } else {
+                console.log(`[QuizScore] Answer for Q#${q.id} is NOT an object:`, userAnswer);
+                isCorrect = userAnswer === true || userAnswer === 'true';
+                if (isCorrect) earnedPoints = q.points;
+            }
+        }
+ else {
+            // Logic handled outside for options as it needs correct_option_id
+            // This helper is mainly for the special types.
+            // But let's make it general if possible.
+        }
+
+        return { isCorrect, earnedPoints, penaltyApplied };
+    }
+
     async getLastAttempt(quizId, userId) {
         const [lastAttempt] = await db.query(
             'SELECT answers, score, passed, attempt_number FROM quiz_attempts WHERE user_id = ? AND quiz_id = ? ORDER BY attempt_number DESC LIMIT 1',
@@ -59,7 +104,7 @@ class QuizService {
         if (!lastAttempt) return null;
 
         const questions = await db.query(
-            `SELECT q.id, q.question_type, o.id as correct_option_id, q.explanation
+            `SELECT q.id, q.question_type, q.points, q.data, o.id as correct_option_id, q.explanation
              FROM quiz_questions q
              LEFT JOIN quiz_options o ON q.id = o.question_id AND o.is_correct = TRUE
              WHERE q.quiz_id = ?`,
@@ -67,35 +112,39 @@ class QuizService {
         );
 
         const answers = typeof lastAttempt.answers === 'string' ? JSON.parse(lastAttempt.answers) : (lastAttempt.answers || {});
-        let earnedPoints = 0;
+        let earnedPointsTotal = 0;
         let totalPoints = 0;
-
-        const questionData = await db.query('SELECT id, points FROM quiz_questions WHERE quiz_id = ?', [quizId]);
-        const pointsMap = {};
-        questionData.forEach(p => {
-            pointsMap[p.id] = p.points;
-            totalPoints += p.points;
-        });
 
         const feedback = [];
         questions.forEach(q => {
+            totalPoints += q.points;
             const userAnswer = answers[q.id];
             
             let isCorrect = false;
-            if (q.question_type === 'mfa_defender') {
-                isCorrect = userAnswer === true || userAnswer === 'true';
+            let earnedPoints = 0;
+            let penaltyApplied = 0;
+
+            if (q.question_type === 'mfa_defender' || q.question_type === 'hack_neighbor') {
+                const scoring = this._calculateQuestionScore(q, userAnswer);
+                isCorrect = scoring.isCorrect;
+                earnedPoints = scoring.earnedPoints;
+                penaltyApplied = scoring.penaltyApplied;
             } else {
                 isCorrect = userAnswer == q.correct_option_id;
+                if (isCorrect) earnedPoints = q.points;
             }
 
-            if (isCorrect) earnedPoints += pointsMap[q.id] || 0;
+            if (isCorrect) earnedPointsTotal += earnedPoints;
             
             feedback.push({
                 questionId: q.id,
                 isCorrect,
                 userAnswerId: userAnswer,
                 correctOptionId: q.correct_option_id,
-                explanation: q.explanation
+                explanation: q.explanation,
+                earnedPoints,
+                maxPoints: q.points,
+                penaltyApplied
             });
         });
 
@@ -103,7 +152,7 @@ class QuizService {
             score: lastAttempt.score,
             passed: lastAttempt.passed,
             attemptNumber: lastAttempt.attempt_number,
-            earnedPoints,
+            earnedPoints: earnedPointsTotal,
             totalPoints,
             answers,
             feedback
@@ -151,39 +200,29 @@ class QuizService {
             const userAnswer = answers[q.id];
             
             let isCorrect = false;
-            let currentQPoints = q.points;
+            let earnedPointsForThisQ = 0;
+            let penaltyApplied = 0;
 
             if (q.question_type === 'mfa_defender' || q.question_type === 'hack_neighbor') {
-                if (typeof userAnswer === 'object' && userAnswer !== null) {
-                    isCorrect = userAnswer.success === true || userAnswer.success === 'true';
-                    
-                    // Apply penalty for hints
-                    if (isCorrect && q.question_type === 'hack_neighbor') {
-                        let qData = {};
-                        try {
-                            qData = typeof q.data === 'string' ? JSON.parse(q.data) : (q.data || {});
-                        } catch (e) {
-                            // Silent catch for unexpected data format
-                        }
-                        
-                        const hintsUsed = parseInt(userAnswer.hintsUsed) || 0;
-                        const penaltyPerHint = parseInt(qData.hint_penalty) || 0;
-                        currentQPoints = Math.max(0, q.points - (hintsUsed * penaltyPerHint));
-                    }
-                } else {
-                    isCorrect = userAnswer === true || userAnswer === 'true';
-                }
+                const scoring = this._calculateQuestionScore(q, userAnswer);
+                isCorrect = scoring.isCorrect;
+                earnedPointsForThisQ = scoring.earnedPoints;
+                penaltyApplied = scoring.penaltyApplied;
             } else {
                 isCorrect = userAnswer == q.correct_option_id;
+                if (isCorrect) earnedPointsForThisQ = q.points;
             }
 
-            if (isCorrect) earnedPoints += currentQPoints;
+            if (isCorrect) earnedPoints += earnedPointsForThisQ;
 
             feedback.push({
                 questionId: q.id,
                 isCorrect,
                 correctOptionId: q.correct_option_id,
-                explanation: q.explanation
+                explanation: q.explanation,
+                earnedPoints: earnedPointsForThisQ,
+                maxPoints: q.points,
+                penaltyApplied
             });
         });
 

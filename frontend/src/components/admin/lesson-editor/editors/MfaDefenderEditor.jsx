@@ -1,4 +1,4 @@
-import { Shield, Clock, RotateCw } from 'lucide-react';
+import { Shield, Clock, RotateCw, AlertTriangle } from 'lucide-react';
 
 export default function MfaDefenderEditor({ formData, setFormData }) {
     // Default values if not set
@@ -44,7 +44,7 @@ export default function MfaDefenderEditor({ formData, setFormData }) {
                         />
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="space-y-1.5">
                             <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider ml-1 flex items-center gap-2">
                                 <Clock className="w-3 h-3 text-red-400" /> Tiempo de Hackeo (seg)
@@ -57,7 +57,7 @@ export default function MfaDefenderEditor({ formData, setFormData }) {
                                 value={hackTime}
                                 onChange={e => handleChange('hack_time', parseInt(e.target.value) || 20)}
                             />
-                            <p className="text-[9px] text-gray-500 italic ml-1">Tiempo total que tiene el usuario para reaccionar.</p>
+                            <p className="text-[9px] text-gray-500 italic ml-1 leading-tight">Tiempo total de reacción.</p>
                         </div>
 
                         <div className="space-y-1.5">
@@ -72,7 +72,22 @@ export default function MfaDefenderEditor({ formData, setFormData }) {
                                 value={rotateTime}
                                 onChange={e => handleChange('rotate_time', parseInt(e.target.value) || 5)}
                             />
-                            <p className="text-[9px] text-gray-500 italic ml-1">Cada cuántos segundos cambia el código de 6 dígitos.</p>
+                            <p className="text-[9px] text-gray-500 italic ml-1 leading-tight">Frecuencia del Authenticator.</p>
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider ml-1 flex items-center gap-2">
+                                <AlertTriangle className="w-3 h-3 text-yellow-500" /> Penalización x Fallo
+                            </label>
+                            <input
+                                type="number"
+                                min="0"
+                                max="100"
+                                className="w-full bg-[#0a0d18] border border-white/5 focus:border-yellow-500/50 rounded-xl py-3 px-4 text-white text-sm font-black outline-none transition-all hover:border-white/10"
+                                value={formData.data?.fail_penalty ?? 0}
+                                onChange={e => handleChange('fail_penalty', parseInt(e.target.value) || 0)}
+                            />
+                            <p className="text-[9px] text-gray-500 italic ml-1 leading-tight">Puntos a restar por error.</p>
                         </div>
                     </div>
                 </div>

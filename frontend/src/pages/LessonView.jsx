@@ -41,12 +41,12 @@ export default function LessonView() {
     return (
         <div className="max-w-[1400px] mx-auto px-4 md:px-8 pt-0 md:pt-2 pb-20 min-h-screen animate-fade-in">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 xl:gap-12">
-                <LessonSidebar 
-                    lesson={lesson} 
-                    moduleLessons={moduleLessons} 
-                    currentLessonId={id} 
-                    user={user} 
-                    viewAsStudent={viewAsStudent} 
+                <LessonSidebar
+                    lesson={lesson}
+                    moduleLessons={moduleLessons}
+                    currentLessonId={id}
+                    user={user}
+                    viewAsStudent={viewAsStudent}
                 />
 
                 <main className="lg:col-span-9 xl:col-span-9 space-y-4 animate-fade-in-up">
@@ -60,7 +60,7 @@ export default function LessonView() {
                             <div>
                                 <h4 className="text-indigo-400 font-black text-xs uppercase tracking-widest mb-1">Lección Opcional</h4>
                                 <p className="text-indigo-300/70 text-sm font-medium">
-                                    Esta actividad es complementaria. Puedes completarla para ganar puntos extra, pero <span className="text-indigo-300 font-bold underline decoration-indigo-500/40">no es obligatoria</span> para finalizar el módulo o recibir tu certificado.
+                                    Esta actividad es complementaria. Puede completarla para ganar puntos extra, pero <span className="text-indigo-300 font-bold underline decoration-indigo-500/40">no es obligatoria</span> para finalizar el módulo o recibir su certificado.
                                 </p>
                             </div>
                         </div>
@@ -70,7 +70,7 @@ export default function LessonView() {
                         {contents.length > 0 ? (
                             contents.map((item, index) => (
                                 <div key={item.id} className="animate-fade-in-up" style={{ animationDelay: `${index * 100}ms` }}>
-                                    <LessonContentItem 
+                                    <LessonContentItem
                                         item={item}
                                         ytApiLoaded={ytApiLoaded}
                                         watchedVideos={watchedVideos}
@@ -95,7 +95,7 @@ export default function LessonView() {
                         )}
                     </div>
 
-                    <LessonCompletion 
+                    <LessonCompletion
                         progress={progress}
                         lesson={lesson}
                         contents={contents}
@@ -109,7 +109,7 @@ export default function LessonView() {
                     <LessonNavigation navigation={navigation} />
                 </main>
             </div>
-            
+
             <style>{`
                 @keyframes float {
                     0%, 100% { transform: translateY(0); }

@@ -205,6 +205,19 @@ class LessonService {
                     itemPoints = Math.max(0, itemPoints - (hintsUsed * penaltyPerHint));
                 }
             }
+
+            // If it's a mfa_defender, check for fail penalties
+            if (content.content_type === 'mfa_defender' && itemPoints > 0) {
+                const [progress] = await db.query('SELECT response_data FROM user_content_progress WHERE user_id = ? AND content_id = ?', [userId, content.id]);
+                if (progress?.response_data) {
+                    const responseData = typeof progress.response_data === 'string' ? JSON.parse(progress.response_data) : progress.response_data;
+                    const contentData = typeof content.data === 'string' ? JSON.parse(content.data) : (content.data || {});
+                    
+                    const mfaFails = parseInt(responseData.mfaFails) || 0;
+                    const failPenalty = parseInt(contentData.fail_penalty) || 0;
+                    itemPoints = Math.max(0, itemPoints - (mfaFails * failPenalty));
+                }
+            }
             
             pointsAwarded += itemPoints;
         }

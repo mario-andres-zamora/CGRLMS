@@ -145,26 +145,49 @@ export default function QuestionItem({
                         </label>
                         <div className="grid grid-cols-2 gap-4">
                             {question.question_type === 'mfa_defender' ? (
-                                <>
-                                    <div className="space-y-1.5">
-                                        <label className="text-[10px] font-bold text-gray-400">T. de Hackeo (Segundos: 20)</label>
-                                        <input
-                                            type="number"
-                                            className="input-field bg-slate-950/50 border-white/10 text-sm"
-                                            value={question.data?.hack_time || 20}
-                                            onChange={e => onUpdateQuestion(question.id, 'data', { ...(question.data || {}), hack_time: parseInt(e.target.value) })}
-                                        />
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <label className="text-[10px] font-bold text-gray-400">Cambio de Código (Segundos: 5)</label>
-                                        <input
-                                            type="number"
-                                            className="input-field bg-slate-950/50 border-white/10 text-sm"
-                                            value={question.data?.rotate_time || 5}
-                                            onChange={e => onUpdateQuestion(question.id, 'data', { ...(question.data || {}), rotate_time: parseInt(e.target.value) })}
-                                        />
-                                    </div>
-                                </>
+                                (() => {
+                                    const qData = typeof question.data === 'string' ? JSON.parse(question.data) : (question.data || {});
+                                    return (
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-white/5">
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+                                                    T. de Hackeo (seg)
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    className="input-field bg-slate-950/30 border-white/5 text-xs text-white"
+                                                    placeholder="Segundos (ej: 20)"
+                                                    value={qData.hack_time || ''}
+                                                    onChange={e => onUpdateQuestion(question.id, 'data', { ...qData, hack_time: parseInt(e.target.value) })}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+                                                    Cambio Código (seg)
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    className="input-field bg-slate-950/30 border-white/5 text-xs text-white"
+                                                    placeholder="Segundos (ej: 5)"
+                                                    value={qData.rotate_time || ''}
+                                                    onChange={e => onUpdateQuestion(question.id, 'data', { ...qData, rotate_time: parseInt(e.target.value) })}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+                                                    Penalización (PTS)
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    className="input-field bg-slate-950/30 border-white/5 text-xs text-secondary-400"
+                                                    placeholder="Puntos por fallo (ej: 10)"
+                                                    value={qData.fail_penalty || ''}
+                                                    onChange={e => onUpdateQuestion(question.id, 'data', { ...qData, fail_penalty: parseInt(e.target.value) })}
+                                                />
+                                            </div>
+                                        </div>
+                                    );
+                                })()
                             ) : (
                                 <div className="space-y-1.5 col-span-2">
                                     <label className="text-[10px] font-bold text-gray-400">Penalización por Pista Revelada (Puntos)</label>
