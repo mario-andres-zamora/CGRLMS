@@ -10,6 +10,7 @@ import ConfirmationEditor from './editors/ConfirmationEditor.jsx';
 import InteractiveInputEditor from './editors/InteractiveInputEditor.jsx';
 import PasswordTesterEditor from './editors/PasswordTesterEditor.jsx';
 import MultipleChoiceEditor from './editors/MultipleChoiceEditor.jsx';
+import MfaDefenderEditor from './editors/MfaDefenderEditor.jsx';
 
 export default function ContentEditorModal({
     isOpen,
@@ -106,6 +107,13 @@ export default function ContentEditorModal({
             case 'multiple_choice':
                 return (
                     <MultipleChoiceEditor
+                        formData={formData}
+                        setFormData={setFormData}
+                    />
+                );
+            case 'mfa_defender':
+                return (
+                    <MfaDefenderEditor
                         formData={formData}
                         setFormData={setFormData}
                     />

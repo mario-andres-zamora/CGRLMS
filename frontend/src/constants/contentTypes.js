@@ -4,5 +4,6 @@ export const TRACEABLE_CONTENT_TYPES = [
     'confirmation', 
     'interactive_input', 
     'multiple_choice', 
-    'password_tester'
+    'password_tester',
+    'mfa_defender'
 ];

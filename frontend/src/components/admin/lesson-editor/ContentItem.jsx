@@ -85,6 +85,16 @@ export default function ContentItem({
                         <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed italic">{item.data.description}</p>
                     </div>
                 )}
+                {item.content_type === 'mfa_defender' && item.data?.description && (
+                    <div className="bg-black/20 p-3 rounded-xl border border-white/5 mt-2">
+                        <div className="flex items-center gap-2 mb-1">
+                            <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-400 uppercase tracking-wider">
+                                {item.data.hack_time || 20}s Límite (Rotación {item.data.rotate_time || 5}s)
+                            </span>
+                        </div>
+                        <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed italic">{item.data.description}</p>
+                    </div>
+                )}
                 {item.content_type === 'multiple_choice' && item.data?.description && (
                     <div className="bg-black/20 p-3 rounded-xl border border-white/5 mt-2">
                         <div className="flex items-center gap-2 mb-1">

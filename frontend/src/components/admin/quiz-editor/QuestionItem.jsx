@@ -59,6 +59,19 @@ export default function QuestionItem({
                             onChange={e => onUpdateQuestion(question.id, 'points', parseInt(e.target.value))}
                         />
                     </div>
+                    <div className="w-48 space-y-2">
+                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest text-left">Tipo</label>
+                        <select
+                            className="input-field bg-slate-950/50 border-white/10 text-[10px]"
+                            value={question.question_type || 'multiple_choice'}
+                            onChange={e => onUpdateQuestion(question.id, 'question_type', e.target.value)}
+                        >
+                            <option value="multiple_choice">Selección Múltiple</option>
+                            <option value="true_false">Falso / Verdadero</option>
+                            <option value="multiple_select">Selección Múltiple (Varias)</option>
+                            <option value="mfa_defender">Simulador MFA</option>
+                        </select>
+                    </div>
                     <button
                         onClick={() => onRemoveQuestion(question.id)}
                         className="mt-6 p-3 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500 hover:text-white transition-all self-start border border-red-500/20"
@@ -67,57 +80,85 @@ export default function QuestionItem({
                     </button>
                 </div>
 
-                {/* Options Grid */}
-                <div className="space-y-4 pt-4 border-t border-white/5 text-left">
-                    <div className="flex justify-between items-center">
-                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Opciones de Respuesta</label>
-                        <button
-                            onClick={() => onAddOption(question.id)}
-                            className="text-[9px] font-black text-primary-400 hover:text-white uppercase tracking-widest bg-primary-500/10 px-3 py-1 rounded-full border border-primary-500/20"
-                        >
-                            + Añadir Opción
-                        </button>
-                    </div>
-                    <div className="grid gap-3">
-                        {question.options.map((opt, oIdx) => (
-                            <div key={opt.id} className="flex items-center gap-3 group/opt">
+                {question.question_type !== 'mfa_defender' ? (
+                    <>
+                        {/* Options Grid */}
+                        <div className="space-y-4 pt-4 border-t border-white/5 text-left">
+                            <div className="flex justify-between items-center">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Opciones de Respuesta</label>
                                 <button
-                                    onClick={() => onUpdateOption(question.id, opt.id, 'is_correct', !opt.is_correct)}
-                                    className={`w-10 h-10 rounded-xl border flex items-center justify-center transition-all ${opt.is_correct ? 'bg-green-500/20 border-green-500 text-green-500 shadow-[0_0_15px_rgba(34,197,94,0.2)]' : 'bg-slate-950/50 border-white/5 text-gray-600 hover:border-white/20'}`}
-                                    title={opt.is_correct ? 'Respuesta Correcta' : 'Marcar como correcta'}
+                                    onClick={() => onAddOption(question.id)}
+                                    className="text-[9px] font-black text-primary-400 hover:text-white uppercase tracking-widest bg-primary-500/10 px-3 py-1 rounded-full border border-primary-500/20"
                                 >
-                                    {opt.is_correct ? <CheckCircle2 className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
-                                </button>
-                                <input
-                                    type="text"
-                                    className={`flex-1 input-field bg-slate-950/50 border-white/10 text-sm ${opt.is_correct ? 'border-green-500/30' : ''}`}
-                                    placeholder={`Opción ${oIdx + 1}`}
-                                    value={opt.option_text}
-                                    onChange={e => onUpdateOption(question.id, opt.id, 'option_text', e.target.value)}
-                                />
-                                <button
-                                    onClick={() => onRemoveOption(question.id, opt.id)}
-                                    className="opacity-0 group-hover/opt:opacity-100 p-2 text-gray-500 hover:text-red-400 transition-all"
-                                >
-                                    <Trash2 className="w-4 h-4" />
+                                    + Añadir Opción
                                 </button>
                             </div>
-                        ))}
-                    </div>
-                </div>
+                            <div className="grid gap-3">
+                                {question.options.map((opt, oIdx) => (
+                                    <div key={opt.id} className="flex items-center gap-3 group/opt">
+                                        <button
+                                            onClick={() => onUpdateOption(question.id, opt.id, 'is_correct', !opt.is_correct)}
+                                            className={`w-10 h-10 rounded-xl border flex items-center justify-center transition-all ${opt.is_correct ? 'bg-green-500/20 border-green-500 text-green-500 shadow-[0_0_15px_rgba(34,197,94,0.2)]' : 'bg-slate-950/50 border-white/5 text-gray-600 hover:border-white/20'}`}
+                                            title={opt.is_correct ? 'Respuesta Correcta' : 'Marcar como correcta'}
+                                        >
+                                            {opt.is_correct ? <CheckCircle2 className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
+                                        </button>
+                                        <input
+                                            type="text"
+                                            className={`flex-1 input-field bg-slate-950/50 border-white/10 text-sm ${opt.is_correct ? 'border-green-500/30' : ''}`}
+                                            placeholder={`Opción ${oIdx + 1}`}
+                                            value={opt.option_text}
+                                            onChange={e => onUpdateOption(question.id, opt.id, 'option_text', e.target.value)}
+                                        />
+                                        <button
+                                            onClick={() => onRemoveOption(question.id, opt.id)}
+                                            className="opacity-0 group-hover/opt:opacity-100 p-2 text-gray-500 hover:text-red-400 transition-all"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
 
-                {/* Explanation */}
-                <div className="pt-4 border-t border-white/5 space-y-2 text-left">
-                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex items-center gap-1.5">
-                        <MessageSquare className="w-3 h-3 text-primary-400" /> Explicación de la Respuesta Correcta
-                    </label>
-                    <textarea
-                        className="input-field bg-slate-950/50 border-white/10 text-xs italic"
-                        placeholder="Esta respuesta es correcta porque..."
-                        value={question.explanation}
-                        onChange={e => onUpdateQuestion(question.id, 'explanation', e.target.value)}
-                    />
-                </div>
+                        {/* Explanation */}
+                        <div className="pt-4 border-t border-white/5 space-y-2 text-left">
+                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex items-center gap-1.5">
+                                <MessageSquare className="w-3 h-3 text-primary-400" /> Explicación de la Respuesta Correcta
+                            </label>
+                            <textarea
+                                className="input-field bg-slate-950/50 border-white/10 text-xs italic"
+                                placeholder="Esta respuesta es correcta porque..."
+                                value={question.explanation || ''}
+                                onChange={e => onUpdateQuestion(question.id, 'explanation', e.target.value)}
+                            />
+                        </div>
+                    </>
+                ) : (
+                    <div className="pt-4 border-t border-white/5 space-y-4 text-left">
+                        <label className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Configuración de Defensa MFA</label>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-gray-400">T. de Hackeo (Milisegundos/Segundos recomendados: 20)</label>
+                                <input
+                                    type="number"
+                                    className="input-field bg-slate-950/50 border-white/10 text-sm"
+                                    value={question.data?.hack_time || 20}
+                                    onChange={e => onUpdateQuestion(question.id, 'data', { ...(question.data || {}), hack_time: parseInt(e.target.value) })}
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-gray-400">Cambio de Código (Milisegundos/Segundos recomendados: 5)</label>
+                                <input
+                                    type="number"
+                                    className="input-field bg-slate-950/50 border-white/10 text-sm"
+                                    value={question.data?.rotate_time || 5}
+                                    onChange={e => onUpdateQuestion(question.id, 'data', { ...(question.data || {}), rotate_time: parseInt(e.target.value) })}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

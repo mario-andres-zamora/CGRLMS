@@ -12,7 +12,8 @@ import {
     File,
     CheckCircle2,
     Lock,
-    CheckSquare
+    CheckSquare,
+    Smartphone
 } from 'lucide-react';
 
 export const CONTENT_TYPES = [
@@ -31,6 +32,7 @@ export const CONTENT_TYPES = [
     { type: 'interactive_input', label: 'Input', icon: Type, color: 'text-indigo-400' },
     { type: 'password_tester', label: 'Password', icon: Lock, color: 'text-pink-400' },
     { type: 'multiple_choice', label: 'Opciones', icon: CheckSquare, color: 'text-orange-400' },
+    { type: 'mfa_defender', label: 'MFA', icon: Smartphone, color: 'text-indigo-500' },
 ];
 
 export default function ContentTypeSelector({ onSelect }) {

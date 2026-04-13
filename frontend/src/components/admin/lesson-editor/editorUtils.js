@@ -12,7 +12,8 @@ import {
     File,
     CheckCircle2,
     Lock,
-    CheckSquare
+    CheckSquare,
+    Smartphone
 } from 'lucide-react';
 
 export const CONTENT_TYPES_CONFIG = [
@@ -31,6 +32,7 @@ export const CONTENT_TYPES_CONFIG = [
     { type: 'interactive_input', label: 'Input Interactivo', icon: Type, color: 'text-indigo-400' },
     { type: 'password_tester', label: 'Test Password', icon: Lock, color: 'text-pink-400' },
     { type: 'multiple_choice', label: 'Opción Múltiple', icon: CheckSquare, color: 'text-orange-400' },
+    { type: 'mfa_defender', label: 'Defensor MFA', icon: Smartphone, color: 'text-indigo-500' },
 ];
 
 export const getIconForType = (type) => {
@@ -59,7 +61,8 @@ export const getTypeLabel = (type) => {
         confirmation: 'Confirmación Interactiva',
         interactive_input: 'Input Interactivo (Validación/Reflexión)',
         password_tester: 'Medidor de Contraseña',
-        multiple_choice: 'Opciones Múltiples'
+        multiple_choice: 'Opciones Múltiples',
+        mfa_defender: 'Simulador de MFA'
     };
     return labels[type] || type;
 };

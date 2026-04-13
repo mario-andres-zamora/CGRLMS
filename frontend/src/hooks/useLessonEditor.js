@@ -191,6 +191,8 @@ export function useLessonEditor(lessonId) {
                 };
             } else if (['note', 'heading', 'password_tester'].includes(formData.content_type)) {
                 finalData = { text: formData.data };
+            } else if (formData.content_type === 'mfa_defender') {
+                finalData = typeof formData.data === 'string' ? { description: formData.data } : formData.data;
             } else {
                 const currentData = typeof editingItem?.data === 'string' ? JSON.parse(editingItem.data) : (editingItem?.data || {});
                 finalData = { ...currentData, description: formData.data };

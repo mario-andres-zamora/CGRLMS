@@ -18,7 +18,7 @@ class QuizService {
         );
 
         const questions = await db.query(
-            'SELECT id, question_text, question_type, image_url, points, order_index FROM quiz_questions WHERE quiz_id = ? ORDER BY order_index ASC',
+            'SELECT id, question_text, question_type, image_url, points, order_index, data FROM quiz_questions WHERE quiz_id = ? ORDER BY order_index ASC',
             [quizId]
         );
 
@@ -47,10 +47,10 @@ class QuizService {
         if (!lastAttempt) return null;
 
         const questions = await db.query(
-            `SELECT q.id, o.id as correct_option_id, q.explanation
+            `SELECT q.id, q.question_type, o.id as correct_option_id, q.explanation
              FROM quiz_questions q
-             JOIN quiz_options o ON q.id = o.question_id
-             WHERE q.quiz_id = ? AND o.is_correct = TRUE`,
+             LEFT JOIN quiz_options o ON q.id = o.question_id AND o.is_correct = TRUE
+             WHERE q.quiz_id = ?`,
             [quizId]
         );
 
@@ -67,8 +67,15 @@ class QuizService {
 
         const feedback = [];
         questions.forEach(q => {
-            const userAnswer = parseInt(answers[q.id]);
-            const isCorrect = userAnswer === q.correct_option_id;
+            const userAnswer = answers[q.id];
+            
+            let isCorrect = false;
+            if (q.question_type === 'mfa_defender') {
+                isCorrect = userAnswer === true || userAnswer === 'true';
+            } else {
+                isCorrect = userAnswer == q.correct_option_id;
+            }
+
             if (isCorrect) earnedPoints += pointsMap[q.id] || 0;
             
             feedback.push({
@@ -116,10 +123,10 @@ class QuizService {
         }
 
         const questions = await db.query(
-            `SELECT q.id, q.points, o.id as correct_option_id, q.explanation
+            `SELECT q.id, q.question_type, q.points, o.id as correct_option_id, q.explanation
              FROM quiz_questions q
-             JOIN quiz_options o ON q.id = o.question_id
-             WHERE q.quiz_id = ? AND o.is_correct = TRUE`,
+             LEFT JOIN quiz_options o ON q.id = o.question_id AND o.is_correct = TRUE
+             WHERE q.quiz_id = ?`,
             [quizId]
         );
 
@@ -130,7 +137,13 @@ class QuizService {
         questions.forEach(q => {
             totalPoints += q.points;
             const userAnswer = answers[q.id];
-            const isCorrect = userAnswer == q.correct_option_id;
+            
+            let isCorrect = false;
+            if (q.question_type === 'mfa_defender') {
+                isCorrect = userAnswer === true || userAnswer === 'true';
+            } else {
+                isCorrect = userAnswer == q.correct_option_id;
+            }
 
             if (isCorrect) earnedPoints += q.points;
 
@@ -279,12 +292,12 @@ class QuizService {
         );
     }
 
-    async addQuestion(quizId, data) {
-        const { question_text, question_type, image_url, points, order_index, explanation, options } = data;
+    async addQuestion(quizId, dataIn) {
+        const { question_text, question_type, image_url, points, order_index, explanation, options, data } = dataIn;
         const result = await db.query(
-            `INSERT INTO quiz_questions (quiz_id, question_text, question_type, image_url, points, order_index, explanation)
-             VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [quizId, question_text, question_type || 'multiple_choice', image_url || null, points || 1, order_index || 0, explanation || '']
+            `INSERT INTO quiz_questions (quiz_id, question_text, question_type, image_url, points, order_index, explanation, data)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [quizId, question_text, question_type || 'multiple_choice', image_url || null, points || 1, order_index || 0, explanation || '', data ? JSON.stringify(data) : null]
         );
         const questionId = result.insertId;
 
@@ -300,10 +313,10 @@ class QuizService {
         return questionId;
     }
 
-    async updateQuestion(questionId, data) {
+    async updateQuestion(questionId, dataIn) {
         const connection = await db.pool.getConnection();
         try {
-            const { question_text, question_type, image_url, points, order_index, explanation, options } = data;
+            const { question_text, question_type, image_url, points, order_index, explanation, options, data } = dataIn;
             await connection.beginTransaction();
 
             await connection.query(
@@ -313,7 +326,8 @@ class QuizService {
                     image_url = COALESCE(?, image_url), 
                     points = COALESCE(?, points), 
                     order_index = COALESCE(?, order_index), 
-                    explanation = COALESCE(?, explanation)
+                    explanation = COALESCE(?, explanation),
+                    data = COALESCE(?, data)
                  WHERE id = ?`,
                 [
                     question_text ?? null, 
@@ -322,6 +336,7 @@ class QuizService {
                     points ?? null, 
                     order_index ?? null, 
                     explanation ?? null, 
+                    data ? JSON.stringify(data) : null,
                     questionId
                 ]
             );

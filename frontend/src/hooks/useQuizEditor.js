@@ -41,7 +41,11 @@ export function useQuizEditor({ isOpen, quizId, moduleId, lessonId, initialTitle
             });
             if (res.data.success) {
                 setQuiz(res.data.quiz);
-                setQuestions(res.data.questions || []);
+                const parsedQuestions = (res.data.questions || []).map(q => ({
+                    ...q,
+                    data: typeof q.data === 'string' ? JSON.parse(q.data) : (q.data || {})
+                }));
+                setQuestions(parsedQuestions);
             }
         } catch (error) {
             toast.error('Error al cargar datos del quiz');
@@ -81,6 +85,7 @@ export function useQuizEditor({ isOpen, quizId, moduleId, lessonId, initialTitle
             image_url: '',
             points: 1,
             explanation: '',
+            data: {},
             options: [
                 { id: 'opt-1', option_text: '', is_correct: true, order_index: 0 },
                 { id: 'opt-2', option_text: '', is_correct: false, order_index: 1 }

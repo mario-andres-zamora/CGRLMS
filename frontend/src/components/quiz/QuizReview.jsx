@@ -26,22 +26,40 @@ export default function QuizReview({ results, questions, userAnswers }) {
                                 )}
 
                                 <div className="grid gap-2">
-                                    {q.options.map(opt => {
-                                        const isUserAnswer = userAnswers[q.id] === opt.id;
-                                        const isCorrect = opt.id === feedback.correctOptionId;
-
-                                        let bgColor = 'bg-slate-900/30 text-gray-400 border-white/5';
-                                        if (isCorrect) bgColor = 'bg-green-500/10 text-green-400 border-green-500/30';
-                                        else if (isUserAnswer && !isCorrect) bgColor = 'bg-red-500/10 text-red-400 border-red-500/30';
-
-                                        return (
-                                            <div key={opt.id} className={`p-3 rounded-xl border text-xs font-medium flex items-center justify-between ${bgColor}`}>
-                                                {opt.option_text}
-                                                {isCorrect && <CheckCircle2 className="w-4 h-4" />}
-                                                {isUserAnswer && !isCorrect && <XCircle className="w-4 h-4" />}
+                                    {q.question_type === 'mfa_defender' ? (
+                                        <div className={`p-4 rounded-xl text-left border ${feedback.isCorrect ? 'bg-indigo-900/10 border-indigo-500/30' : 'bg-red-900/10 border-red-500/30'}`}>
+                                            <div className={`flex items-center gap-2 font-bold mb-2 ${feedback.isCorrect ? 'text-indigo-400' : 'text-red-400'}`}>
+                                                {feedback.isCorrect ? <CheckCircle2 className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
+                                                {feedback.isCorrect ? '¡Misión Cumplida: Ataque Detenido!' : 'Ataque Exitoso: El MFA no fue completado a tiempo'}
                                             </div>
-                                        );
-                                    })}
+                                            <div className="text-xs text-slate-300 font-medium leading-relaxed mb-3">
+                                                Como acabas de experimentar, la contraseña por sí sola ya no es suficiente. En este escenario, el atacante logró obtener tus credenciales, pero se topó con un muro: el MFA (Autenticación de Múltiples Factores).
+                                            </div>
+                                            <div className="bg-slate-950 p-3 rounded-lg border border-white/5">
+                                                <div className="text-indigo-400 font-bold text-[11px] mb-1">¿Por qué el MFA es tu mejor aliado?</div>
+                                                <div className="text-[10px] text-slate-400">
+                                                    La importancia de activar y utilizar el MFA radica en que añade una capa de seguridad física o digital que el atacante no posee.
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        q.options.map(opt => {
+                                            const isUserAnswer = userAnswers[q.id] === opt.id;
+                                            const isCorrect = opt.id === feedback.correctOptionId;
+
+                                            let bgColor = 'bg-slate-900/30 text-gray-400 border-white/5';
+                                            if (isCorrect) bgColor = 'bg-green-500/10 text-green-400 border-green-500/30';
+                                            else if (isUserAnswer && !isCorrect) bgColor = 'bg-red-500/10 text-red-400 border-red-500/30';
+
+                                            return (
+                                                <div key={opt.id} className={`p-3 rounded-xl border text-xs font-medium flex items-center justify-between ${bgColor}`}>
+                                                    {opt.option_text}
+                                                    {isCorrect && <CheckCircle2 className="w-4 h-4" />}
+                                                    {isUserAnswer && !isCorrect && <XCircle className="w-4 h-4" />}
+                                                </div>
+                                            );
+                                        })
+                                    )}
                                 </div>
 
                                 {!feedback.isCorrect && (
