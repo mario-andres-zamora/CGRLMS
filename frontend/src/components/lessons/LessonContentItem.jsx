@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import DOMPurify from 'dompurify';
 import { PlayCircle, CheckCircle, CheckCircle2, XCircle, Download, FileText, Link as LinkIcon, Shield, Award, HelpCircle, ClipboardList, Upload, Zap, Eye, RotateCcw, Clock, AlertTriangle, Type, Lock, Unlock, CheckSquare, Smartphone, ShieldAlert, Terminal, Heart, MessageCircle, Share2, Camera, Calendar, Briefcase, Users, AtSign, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -1321,6 +1321,8 @@ function HackNeighborGame({ item, data, playSuccess, playError, markLinkAsVisite
 
 function MfaDefenderActivity({ item, data, visitedLinks, markLinkAsVisited, playSuccess, playError }) {
     const isMfaCompleted = visitedLinks.has(item.id);
+    const audioRef = useRef(null);
+    const { playSound } = useSoundStore();
     const [mfaStatus, setMfaStatus] = useState(isMfaCompleted ? 'won' : 'idle');
     const [mfaCode, setMfaCode] = useState('------');
     const [userMfaInput, setUserMfaInput] = useState('');
@@ -1344,7 +1346,32 @@ function MfaDefenderActivity({ item, data, visitedLinks, markLinkAsVisited, play
         setMfaCode(generateMfaCode());
         setRotateProgress(100);
         setUserMfaInput('');
+
+        if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
+        }
+        audioRef.current = playSound('/sounds/mistery.mp3');
+        if (audioRef.current) {
+            audioRef.current.loop = true;
+        }
     };
+
+    useEffect(() => {
+        if (mfaStatus !== 'playing' && audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
+        }
+    }, [mfaStatus]);
+
+    useEffect(() => {
+        return () => {
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current.currentTime = 0;
+            }
+        };
+    }, []);
 
     useEffect(() => {
         let interval;

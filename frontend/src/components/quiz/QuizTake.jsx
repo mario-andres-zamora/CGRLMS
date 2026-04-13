@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { ArrowLeft, Target, ChevronLeft, ChevronRight, ShieldAlert, Terminal, Smartphone, XCircle, CheckCircle2, Heart, MessageCircle, Share2, Search, Camera, Calendar, Briefcase, Users, AtSign, Lock, Eye, EyeOff } from 'lucide-react';
 import { HACK_PROFILES } from '../../utils/gamesData';
 
 
+import { useSoundStore } from '../../store/soundStore';
 
 function HackNeighborQuestion({ question, isAnswered, onWin }) {
     const [status, setStatus] = useState(isAnswered ? 'won' : 'browsing');
@@ -332,6 +333,9 @@ function MfaDefenderQuestion({ question, isAnswered, storedAnswer, onWin }) {
     const [timeLeft, setTimeLeft] = useState(hackTimeLimit);
     const [rotateProgress, setRotateProgress] = useState(100);
 
+    const { playSound } = useSoundStore();
+    const audioRef = useRef(null);
+
     const generateMfaCode = () => {
         return Math.floor(100000 + Math.random() * 900000).toString();
     };
@@ -343,8 +347,32 @@ function MfaDefenderQuestion({ question, isAnswered, storedAnswer, onWin }) {
         setMfaCode(generateMfaCode());
         setRotateProgress(100);
         setUserMfaInput('');
-        // No reseteamos mfaFails aquí para que persistan entre reintentos de la misma pregunta
+
+        if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
+        }
+        audioRef.current = playSound('/sounds/mistery.mp3');
+        if (audioRef.current) {
+            audioRef.current.loop = true;
+        }
     };
+
+    useEffect(() => {
+        if (mfaStatus !== 'playing' && audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
+        }
+    }, [mfaStatus]);
+
+    useEffect(() => {
+        return () => {
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current.currentTime = 0;
+            }
+        };
+    }, []);
 
     useEffect(() => {
         let interval;
