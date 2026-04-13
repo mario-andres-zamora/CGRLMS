@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { User, Mail, Briefcase, Clock, ShieldCheck, Activity, XCircle, History, Edit2, RefreshCcw, Trash2, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { User, Mail, Briefcase, Clock, ShieldCheck, Activity, XCircle, History, Edit2, RefreshCcw, Trash2, ChevronDown, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 
 const formatRelativeTime = (dateString) => {
     if (!dateString) return 'Nunca';
@@ -19,15 +19,63 @@ export default function UserTable({ users, currentUserId, onEdit, onReset, onDel
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [isPerPageOpen, setIsPerPageOpen] = useState(false);
+    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
     // Reset pagination when users list changes completely
     useEffect(() => {
         setCurrentPage(1);
     }, [users.length]);
 
-    const totalPages = Math.ceil(users.length / itemsPerPage);
+    const handleSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    const sortedUsers = useMemo(() => {
+        let sortableUsers = [...users];
+        if (sortConfig.key !== null) {
+            sortableUsers.sort((a, b) => {
+                let aValue = a[sortConfig.key];
+                let bValue = b[sortConfig.key];
+                
+                if (sortConfig.key === 'name') {
+                    aValue = `${a.first_name} ${a.last_name}`.toLowerCase();
+                    bValue = `${b.first_name} ${b.last_name}`.toLowerCase();
+                } else if (sortConfig.key === 'department') {
+                    aValue = a.department?.toLowerCase() || '';
+                    bValue = b.department?.toLowerCase() || '';
+                } else if (sortConfig.key === 'created_at') {
+                    aValue = new Date(a.created_at || 0).getTime();
+                    bValue = new Date(b.created_at || 0).getTime();
+                } else if (sortConfig.key === 'points') {
+                    aValue = Number(a.points || 0);
+                    bValue = Number(b.points || 0);
+                } else if (sortConfig.key === 'is_active') {
+                    aValue = a.is_active ? 1 : 0;
+                    bValue = b.is_active ? 1 : 0;
+                }
+
+                if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+                if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+        return sortableUsers;
+    }, [users, sortConfig]);
+
+    const totalPages = Math.ceil(sortedUsers.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
-    const paginatedUsers = users.slice(startIndex, startIndex + itemsPerPage);
+    const paginatedUsers = sortedUsers.slice(startIndex, startIndex + itemsPerPage);
+
+    const SortIndicator = ({ columnKey }) => {
+        if (sortConfig.key !== columnKey) return <ArrowUpDown className="w-3 h-3 ml-1.5 inline-block opacity-40 group-hover/th:opacity-100 transition-opacity" />;
+        return sortConfig.direction === 'asc' 
+            ? <ArrowUp className="w-3 h-3 ml-1.5 inline-block text-primary-400" /> 
+            : <ArrowDown className="w-3 h-3 ml-1.5 inline-block text-primary-400" />;
+    };
 
     return (
         <div className="bg-slate-900 border border-white/5 rounded-3xl shadow-2xl overflow-hidden relative group text-left flex flex-col">
@@ -37,11 +85,11 @@ export default function UserTable({ users, currentUserId, onEdit, onReset, onDel
                 <table className="w-full text-left border-collapse">
                     <thead>
                         <tr className="bg-white/5 border-b border-white/5">
-                            <th className="pl-4 md:pl-5 py-4 text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] text-left">Funcionario</th>
-                            <th className="px-3 py-4 text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] text-left">Unidad / Cargo</th>
-                            <th className="hidden md:table-cell px-3 py-4 text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] text-center">Protocolo de Acceso</th>
-                            <th className="px-3 py-4 text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] text-center">Nivel Académico</th>
-                            <th className="hidden lg:table-cell px-3 py-4 text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] text-center">Disponibilidad</th>
+                            <th onClick={() => handleSort('name')} className="group/th cursor-pointer pl-4 md:pl-5 py-4 text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] text-left hover:bg-white/5 transition-colors">Funcionario <SortIndicator columnKey="name" /></th>
+                            <th onClick={() => handleSort('department')} className="group/th cursor-pointer px-3 py-4 text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] text-left hover:bg-white/5 transition-colors">Unidad / Cargo <SortIndicator columnKey="department" /></th>
+                            <th onClick={() => handleSort('created_at')} className="group/th cursor-pointer hidden md:table-cell px-3 py-4 text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] text-center hover:bg-white/5 transition-colors">Protocolo de Acceso <SortIndicator columnKey="created_at" /></th>
+                            <th onClick={() => handleSort('points')} className="group/th cursor-pointer px-3 py-4 text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] text-center hover:bg-white/5 transition-colors">Nivel Académico <SortIndicator columnKey="points" /></th>
+                            <th onClick={() => handleSort('is_active')} className="group/th cursor-pointer hidden lg:table-cell px-3 py-4 text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] text-center hover:bg-white/5 transition-colors">Disponibilidad <SortIndicator columnKey="is_active" /></th>
                             <th className="pr-4 md:pr-5 py-4 text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] text-right">Acciones</th>
                         </tr>
                     </thead>
