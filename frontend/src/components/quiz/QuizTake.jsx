@@ -10,7 +10,14 @@ function HackNeighborQuestion({ question, isAnswered, onWin }) {
     const [passwordInput, setPasswordInput] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [lastError, setLastError] = useState(false);
-    const [revealedHints, setRevealedHints] = useState({}); // { hintIndex: true }
+    const [revealedHints, setRevealedHints] = useState(() => {
+        const saved = localStorage.getItem(`cgr_quiz_hints_${question.id}`);
+        return saved ? JSON.parse(saved) : {};
+    }); // { hintIndex: true }
+
+    useEffect(() => {
+        localStorage.setItem(`cgr_quiz_hints_${question.id}`, JSON.stringify(revealedHints));
+    }, [revealedHints, question.id]);
 
     // Seleccionar perfil basado en el ID de la pregunta para consistencia, 
     // o azar si se prefiere. Usamos el ID de la pregunta para que no cambie al refrescar.

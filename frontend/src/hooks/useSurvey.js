@@ -150,6 +150,8 @@ export function useSurvey() {
         nextQuestion,
         prevQuestion,
         handleSubmit,
-        setCurrentQuestionIndex
+        setCurrentQuestionIndex,
+        id,
+        navigate
     };
 }

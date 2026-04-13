@@ -22,7 +22,7 @@ export default function SurveyCompleted({ pointsEarned, onBack }) {
                     <div className="space-y-1">
                         <h1 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight">¡Encuesta Completada!</h1>
                         <p className="text-gray-400 font-bold uppercase tracking-widest text-xs md:text-sm">
-                            Tu retroalimentación es fundamental para mejorar la plataforma.
+                            Su retroalimentación es fundamental para mejorar la plataforma.
                         </p>
                     </div>
 

@@ -1211,7 +1211,14 @@ function HackNeighborGame({ item, data, playSuccess, playError, markLinkAsVisite
     const [passwordInput, setPasswordInput] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [lastError, setLastError] = useState(false);
-    const [revealedHints, setRevealedHints] = useState({}); // { hintIndex: true }
+    const [revealedHints, setRevealedHints] = useState(() => {
+        const saved = localStorage.getItem(`cgr_lesson_hints_${item.id}`);
+        return saved ? JSON.parse(saved) : {};
+    }); // { hintIndex: true }
+
+    useEffect(() => {
+        localStorage.setItem(`cgr_lesson_hints_${item.id}`, JSON.stringify(revealedHints));
+    }, [revealedHints, item.id]);
 
     const profile = useMemo(() => {
         const index = (item.id % HACK_PROFILES.length);

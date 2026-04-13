@@ -28,7 +28,7 @@ export default function SurveyIntro({ survey, questionsCount, onStart, onBack })
                         </div>
 
                         <p className="text-gray-300 text-lg md:text-xl font-medium leading-relaxed italic border-l-4 border-yellow-500/40 pl-8 py-2">
-                            {survey.description || 'Tu opinión es muy valiosa para nosotros. Por favor, tómate un momento para responder estas preguntas.'}
+                            {survey.description || 'Su opinión es muy importante. Por favor, tómese un momento para responder estas preguntas.'}
                         </p>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-white/5">
