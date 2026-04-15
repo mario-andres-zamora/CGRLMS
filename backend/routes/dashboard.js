@@ -17,11 +17,11 @@ router.get('/', authMiddleware, cacheMiddleware(300, true), async (req, res) => 
         const isStudentView = req.headers['x-view-as-student'] === 'true' || req.headers['X-View-As-Student'] === 'true';
         const isAdmin = req.user.role === 'admin' && !isStudentView;
 
-        // 1. Obtener todos los módulos (Admins ven todos, estudiantes solo publicados)
+        // 1. Obtener todos los módulos (Admins ven todos, estudiantes ven los publicados incluyendo futuros)
         const modules = await db.query(
-            `SELECT m.id, m.title, m.order_index, m.requires_previous
+            `SELECT m.id, m.title, m.order_index, m.requires_previous, m.release_date
              FROM modules m
-             WHERE 1=1 ${isAdmin ? '' : 'AND m.is_published = TRUE AND (m.release_date IS NULL OR m.release_date <= NOW())'}
+             WHERE 1=1 ${isAdmin ? '' : 'AND m.is_published = 1'}
              ORDER BY m.order_index ASC`
         );
 
@@ -46,7 +46,7 @@ router.get('/', authMiddleware, cacheMiddleware(300, true), async (req, res) => 
                 [userId, m.id]
             );
 
-            // Contar quizzes totales y aprobados (SOLO INDEPENDIENTES, los de lección ya se cuentan arriba)
+            // Contar quizzes totales y aprobados (SOLO INDEPENDIENTES)
             const [quizzesData] = await db.query(
                 `SELECT 
                     COUNT(*) as total,
@@ -69,10 +69,17 @@ router.get('/', authMiddleware, cacheMiddleware(300, true), async (req, res) => 
 
             if (isFullyCompleted) completedModulesCount++;
 
-            // Determinar si está bloqueado por el anterior
+            // Determinar si está bloqueado
             let isLocked = false;
             let lockReason = null;
-            if (m.requires_previous && !lastModuleCompleted && !isAdmin) {
+            let isUpcoming = false;
+
+            const releaseDate = m.release_date ? new Date(m.release_date) : null;
+            if (releaseDate && releaseDate > new Date() && !isAdmin) {
+                isLocked = true;
+                isUpcoming = true;
+                lockReason = "Próximamente";
+            } else if (m.requires_previous && !lastModuleCompleted && !isAdmin) {
                 isLocked = true;
                 lockReason = `Complete el módulo "${previousModuleTitle}"`;
             }
@@ -95,6 +102,7 @@ router.get('/', authMiddleware, cacheMiddleware(300, true), async (req, res) => 
                 status: isFullyCompleted ? 'completed' : (completedItems > 0 ? 'in_progress' : 'not_started'),
                 next_lesson_id: nextLesson?.id || null,
                 is_locked: isLocked,
+                is_upcoming: isUpcoming,
                 lock_reason: lockReason
             });
 

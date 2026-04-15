@@ -16,7 +16,6 @@ export default function Dashboard() {
     const navigate = useNavigate();
     const [stats, setStats] = useState(null);
     const [modules, setModules] = useState([]);
-    const [filterCompleted, setFilterCompleted] = useState(false);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -61,8 +60,6 @@ export default function Dashboard() {
                 <div className="lg:col-span-3">
                     <ModuleGrid
                         modules={modules}
-                        filterCompleted={filterCompleted}
-                        onToggleFilter={() => setFilterCompleted(!filterCompleted)}
                     />
                 </div>
 

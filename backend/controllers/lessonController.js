@@ -47,9 +47,12 @@ class LessonController {
 
     async createLesson(req, res) {
         try {
+            const lessonId = await lessonService.createLesson(req.body);
+            
+            // Limpiar caché después de la operación exitosa
             await clearCache('cache:/api/modules*');
             await clearCache('cache:/api/dashboard*');
-            const lessonId = await lessonService.createLesson(req.body);
+
             res.status(201).json({ success: true, lessonId });
         } catch (error) {
             logger.error('Error creando lección:', error);
@@ -60,11 +63,13 @@ class LessonController {
     async updateLesson(req, res) {
         try {
             const lessonId = req.params.id;
+            await lessonService.updateLesson(lessonId, req.body);
+
+            // Limpiar caché después de la operación exitosa
             await clearCache(`cache:/api/lessons/${lessonId}*`);
             await clearCache('cache:/api/modules*');
             await clearCache('cache:/api/dashboard*');
 
-            await lessonService.updateLesson(lessonId, req.body);
             res.json({ success: true, message: 'Lección actualizada' });
         } catch (error) {
             logger.error('Error actualizando lección:', error);
@@ -81,11 +86,13 @@ class LessonController {
                 return res.status(400).json({ error: 'Faltan parámetros requeridos (moduleId, orderedIds)' });
             }
 
+            await lessonService.reorderLessons(moduleId, orderedIds);
+
+            // Limpiar caché después de la operación exitosa
             await clearCache('cache:/api/modules*');
             await clearCache('cache:/api/lessons*');
             await clearCache('cache:/api/dashboard*');
 
-            await lessonService.reorderLessons(moduleId, orderedIds);
             res.json({ success: true, message: 'Lecciones reordenadas con éxito' });
         } catch (error) {
             logger.error('Error reordenando lecciones:', error);
@@ -96,11 +103,13 @@ class LessonController {
     async deleteLesson(req, res) {
         try {
             const lessonId = req.params.id;
+            await lessonService.deleteLesson(lessonId);
+
+            // Limpiar caché después de la operación exitosa
             await clearCache(`cache:/api/lessons/${lessonId}*`);
             await clearCache('cache:/api/modules*');
             await clearCache('cache:/api/dashboard*');
 
-            await lessonService.deleteLesson(lessonId);
             res.json({ success: true, message: 'Lección eliminada' });
         } catch (error) {
             logger.error('Error eliminando lección:', error);

@@ -52,6 +52,11 @@ class QuizController {
     async createQuiz(req, res) {
         try {
             const quizId = await quizService.createQuiz(req.body);
+
+            // Limpiar caché después de la operación exitosa
+            await clearCache('cache:/api/modules*');
+            await clearCache('cache:/api/dashboard*');
+
             res.status(201).json({ success: true, message: 'Quiz creado', quizId });
         } catch (error) {
             logger.error('Error creando quiz:', error);
@@ -75,6 +80,12 @@ class QuizController {
         try {
             const quizId = req.params.id;
             await quizService.updateQuiz(quizId, req.body);
+
+            // Limpiar caché después de la operación exitosa
+            await clearCache(`cache:/api/quizzes/${quizId}*`);
+            await clearCache('cache:/api/modules*');
+            await clearCache('cache:/api/dashboard*');
+
             res.json({ success: true, message: 'Quiz actualizado' });
         } catch (error) {
             logger.error('Error al actualizar quiz:', error);
@@ -119,6 +130,12 @@ class QuizController {
         try {
             const quizId = req.params.id;
             await quizService.deleteQuiz(quizId);
+
+            // Limpiar caché después de la operación exitosa
+            await clearCache(`cache:/api/quizzes/${quizId}*`);
+            await clearCache('cache:/api/modules*');
+            await clearCache('cache:/api/dashboard*');
+
             res.json({ success: true, message: 'Quiz eliminado' });
         } catch (error) {
             logger.error('Error al eliminar quiz:', error);

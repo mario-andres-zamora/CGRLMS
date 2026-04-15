@@ -84,13 +84,19 @@ const refreshReportsCache = async () => {
             LIMIT 50
         `);
 
-        // 4. Listado Detallado
+        // 4. Listado Detallado (con Insignias)
         const detailedUsers = await db.query(`
             SELECT 
                 u.id, u.first_name, u.last_name, u.email, u.department, u.position,
                 COALESCE(up_agg.completion_rate, 0) as progress,
                 COALESCE(up_agg.completed_modules, 0) as completed_modules,
-                ${totalModules} as total_modules
+                ${totalModules} as total_modules,
+                COALESCE((
+                    SELECT JSON_ARRAYAGG(JSON_OBJECT('name', b.name, 'icon', b.icon_name))
+                    FROM user_badges ub
+                    JOIN badges b ON ub.badge_id = b.id
+                    WHERE ub.user_id = u.id
+                ), '[]') as badges
             FROM users u
             LEFT JOIN (
                 SELECT 
@@ -144,7 +150,8 @@ const refreshReportsCache = async () => {
             atRisk: usersAtRisk,
             detailedUsers: detailedUsers.map(u => ({
                 ...u,
-                progress: Math.round(u.progress)
+                progress: Math.round(u.progress),
+                badges: typeof u.badges === 'string' ? JSON.parse(u.badges) : u.badges
             })),
             lastUpdated: new Date()
         };

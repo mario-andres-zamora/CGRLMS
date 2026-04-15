@@ -60,10 +60,13 @@ class ModuleController {
      */
     async createModule(req, res) {
         try {
+            const moduleId = await moduleService.createModule(req.body);
+            
+            // Limpiar caché después de la operación exitosa
             await clearCache('cache:/api/modules*');
             await clearCache('cache:/api/dashboard*');
+            await clearCache('cache:/api/reports*');
 
-            const moduleId = await moduleService.createModule(req.body);
             res.status(201).json({
                 success: true,
                 message: 'Módulo creado correctamente',
@@ -82,11 +85,13 @@ class ModuleController {
     async updateModule(req, res) {
         try {
             const moduleId = req.params.id;
-            await clearCache(`cache:/api/modules/${moduleId}*`);
+            await moduleService.updateModule(moduleId, req.body);
+
+            // Limpiar caché después de la operación exitosa
             await clearCache('cache:/api/modules*');
             await clearCache('cache:/api/dashboard*');
+            await clearCache('cache:/api/reports*');
 
-            await moduleService.updateModule(moduleId, req.body);
             res.json({ success: true, message: 'Módulo actualizado correctamente' });
         } catch (error) {
             logger.error('Error actualizando módulo:', error);
@@ -101,11 +106,13 @@ class ModuleController {
     async deleteModule(req, res) {
         try {
             const moduleId = req.params.id;
-            await clearCache(`cache:/api/modules/${moduleId}*`);
+            await moduleService.deleteModule(moduleId);
+
+            // Limpiar caché después de la operación exitosa
             await clearCache('cache:/api/modules*');
             await clearCache('cache:/api/dashboard*');
+            await clearCache('cache:/api/reports*');
 
-            await moduleService.deleteModule(moduleId);
             res.json({ success: true, message: 'Módulo eliminado correctamente' });
         } catch (error) {
             logger.error('Error eliminando módulo:', error);

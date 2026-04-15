@@ -1,5 +1,27 @@
-import React from 'react';
-import { Users, Search, Mail } from 'lucide-react';
+import { Users, Search, Mail, Award, ShieldCheck, Trophy, Medal, Crown, Target, Zap, ShieldAlert } from 'lucide-react';
+
+const BadgeIcon = ({ name, title }) => {
+    const icons = {
+        'Award': Award,
+        'ShieldCheck': ShieldCheck,
+        'Trophy': Trophy,
+        'Medal': Medal,
+        'Crown': Crown,
+        'Target': Target,
+        'Zap': Zap,
+        'ShieldAlert': ShieldAlert,
+        'Users': Users
+    };
+    const Icon = icons[name] || Award;
+    return (
+        <div className="group/badge relative">
+            <Icon className="w-4 h-4 text-primary-400 hover:text-secondary-400 transition-colors cursor-help" />
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-slate-900 border border-white/10 rounded-lg text-[8px] font-black text-white uppercase tracking-widest whitespace-nowrap opacity-0 group-hover/badge:opacity-100 transition-all pointer-events-none z-20 shadow-2xl">
+                {title}
+            </div>
+        </div>
+    );
+};
 
 export default function DetailedUserList({ users, searchTerm, onSearchChange }) {
     return (
@@ -34,6 +56,7 @@ export default function DetailedUserList({ users, searchTerm, onSearchChange }) 
                             <tr>
                                 <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Funcionario</th>
                                 <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Unidad / Área</th>
+                                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Insignias</th>
                                 <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Progreso</th>
                                 <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Módulos</th>
                             </tr>
@@ -57,6 +80,17 @@ export default function DetailedUserList({ users, searchTerm, onSearchChange }) 
                                     <td className="px-8 py-6 text-left">
                                         <p className="text-[11px] font-black text-gray-300 uppercase italic opacity-80">{u.department}</p>
                                         <p className="text-[9px] text-gray-500 font-bold uppercase tracking-tighter mt-0.5">{u.position}</p>
+                                    </td>
+                                    <td className="px-8 py-6">
+                                        <div className="flex items-center justify-center gap-2">
+                                            {u.badges && u.badges.length > 0 ? (
+                                                u.badges.map((b, i) => (
+                                                    <BadgeIcon key={i} name={b.icon} title={b.name} />
+                                                ))
+                                            ) : (
+                                                <span className="text-[9px] text-gray-700 font-bold uppercase italic opacity-40">Sin logros</span>
+                                            )}
+                                        </div>
                                     </td>
                                     <td className="px-8 py-6 text-left">
                                         <div className="w-full max-w-[150px] space-y-2">
