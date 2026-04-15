@@ -34,18 +34,18 @@ export default function PerformanceTable({ departments, searchTerm, onSearchChan
                                 )}
                             </div>
                         </th>
-                        <th className="px-8 py-5 text-center cursor-pointer group hover:bg-white/5 transition-colors" onClick={() => onSort('staff_count')}>
+                        <th className="px-8 py-5 text-center cursor-pointer group hover:bg-white/5 transition-colors" onClick={() => onSort('total_pax')}>
                             <div className="flex items-center justify-center gap-2">
                                 Total Pax
-                                {sortConfig.key === 'staff_count' && (
+                                {sortConfig.key === 'total_pax' && (
                                     sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 text-primary-400" /> : <ChevronDown className="w-3 h-3 text-primary-400" />
                                 )}
                             </div>
                         </th>
-                        <th className="px-8 py-5 text-center cursor-pointer group hover:bg-white/5 transition-colors" onClick={() => onSort('completed_count')}>
+                        <th className="px-8 py-5 text-center cursor-pointer group hover:bg-white/5 transition-colors" onClick={() => onSort('registered_count')}>
                             <div className="flex items-center justify-center gap-2">
-                                Completado
-                                {sortConfig.key === 'completed_count' && (
+                                Registrados
+                                {sortConfig.key === 'registered_count' && (
                                     sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 text-primary-400" /> : <ChevronDown className="w-3 h-3 text-primary-400" />
                                 )}
                             </div>
@@ -67,14 +67,14 @@ export default function PerformanceTable({ departments, searchTerm, onSearchChan
                             <td className="px-8 py-6">
                                 <p className="text-sm font-black text-white group-hover:text-primary-400 transition-colors uppercase text-left">{dept.department}</p>
                             </td>
-                            <td className="px-8 py-6 text-center text-left">
-                                <span className="text-xs font-black text-gray-300">{dept.staff_count}</span>
+                            <td className="px-8 py-6 text-center">
+                                <span className="text-xs font-black text-gray-300">{dept.total_pax}</span>
                             </td>
-                            <td className="px-8 py-6 text-center text-left">
-                                <span className="text-xs font-black text-white">{dept.completed_count || 0}</span>
-                                <span className="text-[10px] text-gray-500 ml-1">/ {dept.staff_count}</span>
+                            <td className="px-8 py-6 text-center">
+                                <span className="text-xs font-black text-white">{dept.registered_count || 0}</span>
+                                <span className="text-[10px] text-gray-500 ml-1">/ {dept.total_pax}</span>
                             </td>
-                            <td className="px-8 py-6 max-w-[200px] text-left">
+                            <td className="px-8 py-6 max-w-[200px]">
                                 <div className="flex items-center gap-4">
                                     <div className="flex-1 h-2 bg-slate-900 rounded-full overflow-hidden border border-white/5">
                                         <div

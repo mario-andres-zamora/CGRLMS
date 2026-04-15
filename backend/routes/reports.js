@@ -20,11 +20,12 @@ const refreshReportsCache = async () => {
         const [moduleData] = await db.query('SELECT COUNT(*) as total FROM modules WHERE is_published = TRUE');
         const totalModules = moduleData?.total || 1;
 
-        // 1. Estadísticas Globales
+        // 1. Estadísticas Globales (Directorio vs Registrados)
         const [globalStats] = await db.query(`
             SELECT 
-                COUNT(DISTINCT u.id) as total_staff,
-                AVG(up_agg.completion_rate) as avg_completion_rate
+                (SELECT COUNT(*) FROM staff_directory) as total_staff,
+                COUNT(u.id) as registered_staff,
+                SUM(COALESCE(up_agg.completion_rate, 0)) / GREATEST((SELECT COUNT(*) FROM staff_directory), 1) as avg_completion_rate
             FROM users u
             LEFT JOIN (
                 SELECT 
@@ -37,13 +38,19 @@ const refreshReportsCache = async () => {
             WHERE u.is_active = TRUE AND u.role = 'student'
         `);
 
-        // 2. Cumplimiento por Departamento
+        // 2. Cumplimiento por Departamento (Incluyendo Directorio Maestro)
         const deptCompliance = await db.query(`
             SELECT 
                 d.name as department,
-                COUNT(u.id) as staff_count,
-                AVG(COALESCE(up_agg.completion_rate, 0)) as avg_completion
+                COALESCE(dir.total_pax, 0) as total_pax,
+                COUNT(u.id) as registered_count,
+                SUM(COALESCE(up_agg.completion_rate, 0)) / GREATEST(COALESCE(dir.total_pax, 0), 1) as real_compliance
             FROM departments d
+            LEFT JOIN (
+                SELECT department, COUNT(*) as total_pax 
+                FROM staff_directory 
+                GROUP BY department
+            ) dir ON d.name = dir.department
             LEFT JOIN users u ON u.department = d.name AND u.is_active = TRUE AND u.role = 'student'
             LEFT JOIN (
                 SELECT 
@@ -53,8 +60,8 @@ const refreshReportsCache = async () => {
                 WHERE status = 'completed'
                 GROUP BY user_id
             ) up_agg ON u.id = up_agg.user_id
-            GROUP BY d.name
-            ORDER BY avg_completion DESC
+            GROUP BY d.name, dir.total_pax
+            ORDER BY real_compliance DESC
         `);
 
         // 3. Usuarios en Riesgo (Menos del 20%)
@@ -103,7 +110,7 @@ const refreshReportsCache = async () => {
             SELECT 
                 m.id,
                 m.title,
-                (SELECT COUNT(*) FROM users WHERE role = 'student' AND is_active = TRUE) as total_students,
+                (SELECT COUNT(*) FROM staff_directory) as total_students,
                 COUNT(DISTINCT up.user_id) as completed_count
             FROM modules m
             LEFT JOIN user_progress up ON up.module_id = m.id AND up.status = 'completed'
@@ -117,13 +124,16 @@ const refreshReportsCache = async () => {
         const reportData = {
             summary: {
                 totalStaff: globalStats.total_staff || 0,
+                registeredStaff: globalStats.registered_staff || 0,
                 avgCompletion: Math.round(globalStats.avg_completion_rate || 0),
                 totalCerts: certsCount.count || 0,
                 activeModules: totalModules
             },
             departments: deptCompliance.map(d => ({
-                ...d,
-                avg_completion: Math.round(d.avg_completion || 0)
+                department: d.department,
+                total_pax: d.total_pax,
+                registered_count: d.registered_count,
+                avg_completion: Math.round(d.real_compliance || 0)
             })),
             moduleCompliance: moduleCompliance.map(m => ({
                 ...m,

@@ -13,8 +13,11 @@ export default function ComplianceSummary({ summary }) {
                         <span className="text-[9px] font-black text-green-500 uppercase">Activos</span>
                     </div>
                 </div>
-                <p className="text-4xl font-black text-white">{summary.totalStaff}</p>
-                <p className="text-xs font-black text-gray-400 uppercase tracking-widest mt-2 px-1">Funcionarios en Sistema</p>
+                <div className="flex items-baseline gap-2">
+                    <p className="text-4xl font-black text-white">{summary.registeredStaff}</p>
+                    <p className="text-lg font-black text-gray-500 opacity-60">/ {summary.totalStaff}</p>
+                </div>
+                <p className="text-xs font-black text-gray-400 uppercase tracking-widest mt-2 px-1">Registrados vs Directorio</p>
             </div>
 
             <div className="card p-8 border-l-4 border-secondary-500 bg-slate-900/40 text-left">
