@@ -191,7 +191,7 @@ export default function SurveyEditorModal({ isOpen, onClose, surveyId, moduleId,
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md overflow-hidden">
+        <div className="fixed inset-0 z-[3000] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md overflow-hidden">
             <div className="card w-full max-w-5xl bg-[#0f172a] border-slate-700 p-0 flex flex-col max-h-[90vh] shadow-2xl animate-fade-in-up">
                 {/* Header */}
                 <div className="p-6 border-b border-white/5 bg-slate-900/50 flex justify-between items-center bg-gradient-to-r from-slate-900 to-[#1e293b]">

@@ -77,7 +77,7 @@ export default function UserEditModal({ user, departments, isOpen, onClose, onUp
     }));
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in text-left">
+        <div className="fixed inset-0 z-[3000] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in text-left">
             <div className="bg-[#121625] w-full max-w-xl p-0 overflow-hidden shadow-[0_30px_80px_rgba(0,0,0,0.6)] border border-white/5 rounded-3xl">
                 {/* Header Section */}
                 <div className="px-8 py-8 border-b border-white/5 flex justify-between items-start">

@@ -11,7 +11,7 @@ export default function ResourceModal({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-xl animate-fade-in">
+        <div className="fixed inset-0 z-[3000] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-xl animate-fade-in">
             <div className="relative w-full max-w-xl bg-slate-900 rounded-[3rem] border border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.8)] overflow-hidden">
                 <div className="p-10 border-b border-white/5 bg-slate-950/40">
                     <div className="flex items-center gap-5">

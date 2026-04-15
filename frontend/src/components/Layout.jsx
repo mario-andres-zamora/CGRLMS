@@ -219,7 +219,7 @@ export default function Layout() {
             </nav>
 
             {/* Main Content */}
-            <main className="w-full px-1 sm:px-2 lg:px-6 py-2 md:py-6 flex-grow">
+            <main className="w-full px-1 sm:px-2 lg:px-6 py-2 md:py-6 flex-grow relative z-10">
                 <Outlet />
             </main>
 

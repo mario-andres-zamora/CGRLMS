@@ -11,7 +11,7 @@ export default function AssignmentReviewModal({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+        <div className="fixed inset-0 z-[3000] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
             <div className="relative w-full max-w-4xl bg-[#0f121d] rounded-3xl border border-white/10 shadow-2xl flex flex-col max-h-[95vh]">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 via-green-400 to-emerald-500 rounded-t-3xl"></div>
                 
