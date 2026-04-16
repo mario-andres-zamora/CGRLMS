@@ -1,7 +1,7 @@
 import { TrendingUp, Award, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-export default function DashboardSidebar({ user, stats }) {
+export default function DashboardSidebar({ user, stats, onShowBadges }) {
     return (
         <div className="space-y-6 flex flex-col h-full animate-fade-in text-center">
             {/* Main Posición Global Card */}
@@ -42,17 +42,25 @@ export default function DashboardSidebar({ user, stats }) {
                     </div>
                 </div>
 
-                <Link to="/leaderboard" className="w-full py-3 rounded-xl border border-white/10 hover:border-white/20 transition-all text-white text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-3">
-                    VER TABLA COMPLETA <TrendingUp className="w-4 h-4" />
+                <Link 
+                    to="/leaderboard" 
+                    className="group relative w-full py-4 rounded-2xl border border-primary-500/20 bg-primary-500/5 hover:bg-primary-500/10 transition-all duration-300 text-white text-[10px] font-black uppercase tracking-normal flex items-center justify-center gap-2 overflow-hidden shadow-lg hover:shadow-primary-500/20 hover:border-primary-500/50 px-4"
+                >
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                    <span className="relative z-10 whitespace-nowrap">VER TABLA COMPLETA</span> 
+                    <TrendingUp className="w-4 h-4 text-primary-400 relative z-10 transition-all duration-300 group-hover:scale-110 shrink-0" />
                 </Link>
             </div>
 
             {/* Badges / Diplomas Grid */}
             <div className="grid grid-cols-2 gap-4">
-                <Link to="/profile" className="bg-[#111627] rounded-3xl p-6 border border-white/5 flex flex-col items-center justify-center gap-3 hover:bg-slate-800 transition-colors">
+                <button 
+                    onClick={onShowBadges}
+                    className="bg-[#111627] rounded-3xl p-6 border border-white/5 flex flex-col items-center justify-center gap-3 hover:bg-slate-800 transition-colors w-full"
+                >
                     <Award className="w-8 h-8 text-[#EF8843]" />
                     <span className="text-[10px] font-bold text-white uppercase tracking-widest">INSIGNIAS</span>
-                </Link>
+                </button>
                 <Link to="/profile" className="bg-[#111627] rounded-3xl p-6 border border-white/5 flex flex-col items-center justify-center gap-3 hover:bg-slate-800 transition-colors">
                     <CheckCircle className="w-8 h-8 text-[#6D71F9]" />
                     <span className="text-[10px] font-bold text-white uppercase tracking-widest">DIPLOMAS</span>

@@ -5,12 +5,8 @@ const logger = require('../config/logger');
 const db = require('../config/database');
 const { authMiddleware, adminMiddleware } = require('../middleware/auth');
 const { cacheMiddleware } = require('../middleware/cache');
+const badgeService = require('../services/badgeService');
 
-/**
- * @route   GET /api/dashboard
- * @desc    Obtener resumen de estadísticas y progreso para el usuario
- * @access  Private
- */
 router.get('/', authMiddleware, cacheMiddleware(300, true), async (req, res) => {
     try {
         const userId = req.user.id;
@@ -117,6 +113,9 @@ router.get('/', authMiddleware, cacheMiddleware(300, true), async (req, res) => 
             [userId]
         );
 
+        // 3. Obtener insignias del usuario
+        const userBadges = await badgeService.getUserBadges(userId);
+
         // 3. Rankings using Redis (Faster & Safer)
         const [userData] = await db.query(`SELECT email, department FROM users WHERE id = ?`, [userId]);
         const email = userData?.email;
@@ -195,6 +194,7 @@ router.get('/', authMiddleware, cacheMiddleware(300, true), async (req, res) => 
             departmentRank: departmentalRank,
             totalInDepartment,
             totalUsers: totalUsersCount,
+            badges: userBadges || [],
             completionPercentage: totalMandatoryItemsGlobally > 0
                 ? Math.round((completedMandatoryItemsGlobally / totalMandatoryItemsGlobally) * 100)
                 : 0

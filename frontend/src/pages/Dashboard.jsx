@@ -8,6 +8,7 @@ import DashboardBanner from '../components/dashboard/DashboardBanner';
 import ModuleGrid from '../components/dashboard/ModuleGrid';
 import DashboardSidebar from '../components/dashboard/DashboardSidebar';
 import DashboardLoading from '../components/dashboard/DashboardLoading';
+import BadgesModal from '../components/dashboard/BadgesModal';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -17,6 +18,7 @@ export default function Dashboard() {
     const [stats, setStats] = useState(null);
     const [modules, setModules] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [isBadgesModalOpen, setIsBadgesModalOpen] = useState(false);
 
     useEffect(() => {
         fetchDashboardData();
@@ -68,9 +70,16 @@ export default function Dashboard() {
                     <DashboardSidebar
                         user={user}
                         stats={stats}
+                        onShowBadges={() => setIsBadgesModalOpen(true)}
                     />
                 </aside>
             </div>
+
+            <BadgesModal 
+                isOpen={isBadgesModalOpen}
+                onClose={() => setIsBadgesModalOpen(false)}
+                badges={stats?.badges || []}
+            />
         </div>
     );
 }
