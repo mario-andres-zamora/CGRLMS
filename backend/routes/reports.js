@@ -25,7 +25,8 @@ const refreshReportsCache = async () => {
             SELECT 
                 (SELECT COUNT(*) FROM staff_directory) as total_staff,
                 COUNT(u.id) as registered_staff,
-                SUM(COALESCE(up_agg.completion_rate, 0)) / GREATEST((SELECT COUNT(*) FROM staff_directory), 1) as avg_completion_rate
+                SUM(COALESCE(up_agg.completion_rate, 0)) / GREATEST((SELECT COUNT(*) FROM staff_directory), 1) as avg_completion_rate,
+                SUM(CASE WHEN up_agg.completion_rate = 100 THEN 1 ELSE 0 END) as completed_count
             FROM users u
             LEFT JOIN (
                 SELECT 
@@ -117,21 +118,38 @@ const refreshReportsCache = async () => {
                 m.id,
                 m.title,
                 (SELECT COUNT(*) FROM staff_directory) as total_students,
-                COUNT(DISTINCT up.user_id) as completed_count
+                COUNT(DISTINCT u.id) as completed_count
             FROM modules m
             LEFT JOIN user_progress up ON up.module_id = m.id AND up.status = 'completed'
             LEFT JOIN users u ON up.user_id = u.id AND u.role = 'student' AND u.is_active = TRUE
             WHERE m.is_published = TRUE
             GROUP BY m.id
+            ORDER BY m.order_index DESC
         `);
 
         const [certsCount] = await db.query('SELECT COUNT(*) as count FROM certificates');
+
+        const [pointsData] = await db.query('SELECT SUM(points) as total FROM user_points');
+        const totalPoints = pointsData?.total || 0;
+
+        // Conteo de usuarios en línea (Redis)
+        let onlineUsers = 0;
+        if (redisClient && redisClient.isOpen) {
+            const keys = await redisClient.keys('online_user:*');
+            onlineUsers = keys.length;
+        }
 
         const reportData = {
             summary: {
                 totalStaff: globalStats.total_staff || 0,
                 registeredStaff: globalStats.registered_staff || 0,
+                pendingRegistration: (globalStats.total_staff || 0) - (globalStats.registered_staff || 0),
+                completed: Math.round(globalStats.completed_count || 0),
+                inProgress: Math.max(0, (globalStats.registered_staff || 0) - (globalStats.completed_count || 0)),
                 avgCompletion: Math.round(globalStats.avg_completion_rate || 0),
+                onlineUsers: onlineUsers,
+                totalPoints: totalPoints,
+                avgPointsPerUser: globalStats.registered_staff > 0 ? Math.round(totalPoints / globalStats.registered_staff) : 0,
                 totalCerts: certsCount.count || 0,
                 activeModules: totalModules
             },

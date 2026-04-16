@@ -1,12 +1,33 @@
-import { BarChart3 } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { BarChart3, ChevronDown } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LabelList } from 'recharts';
 
 export default function ComplianceCharts({ chartType, onTypeChange, data }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef(null);
     const yDataKey = chartType === 'departments' ? 'department' : 'title';
-    
+
+    // Simple click outside handler
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const options = [
+        { value: 'departments', label: 'Por Unidad/Área' },
+        { value: 'modules', label: 'Por Módulo' }
+    ];
+
+    const currentOption = options.find(o => o.value === chartType) || options[1];
+
     // Dynamic height based on data length (min 400px, max 1000px)
     const chartHeight = Math.max(400, Math.min(data.length * 40, 1000));
-    
+
     const getColorForName = (name) => {
         if (!name) return '#cbd5e1';
         let hash = 0;
@@ -23,14 +44,43 @@ export default function ComplianceCharts({ chartType, onTypeChange, data }) {
                     <BarChart3 className="w-6 h-6 text-primary-400" />
                     {chartType === 'departments' ? 'Cumplimiento por Unidad' : 'Cumplimiento por Módulo'}
                 </h3>
-                <select
-                    value={chartType}
-                    onChange={(e) => onTypeChange(e.target.value)}
-                    className="bg-slate-900 border border-white/10 text-white text-[10px] font-black uppercase tracking-widest rounded-xl px-4 py-2 outline-none focus:border-primary-500/50"
-                >
-                    <option value="departments">Por Unidad Administrativa</option>
-                    <option value="modules">Por Módulo Educativo</option>
-                </select>
+
+                {/* Custom Premium Dropdown */}
+                <div className="relative" ref={dropdownRef}>
+                    <button
+                        onClick={() => setIsOpen(!isOpen)}
+                        className={`
+                            flex items-center justify-between gap-3 min-w-[220px] px-5 py-2.5
+                            bg-slate-900/50 backdrop-blur-xl border ${isOpen ? 'border-primary-500/50 shadow-lg shadow-primary-500/10' : 'border-white/10'}
+                            rounded-xl text-white text-[10px] font-black uppercase tracking-widest
+                            transition-all duration-300 hover:bg-slate-800/80 hover:border-white/20
+                        `}
+                    >
+                        {currentOption.label}
+                        <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-300 ${isOpen ? 'rotate-180 text-primary-400' : ''}`} />
+                    </button>
+
+                    {isOpen && (
+                        <div className="absolute right-0 mt-2 w-full z-50 bg-slate-900/95 backdrop-blur-2xl border border-white/10 rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                            {options.map((option) => (
+                                <button
+                                    key={option.value}
+                                    onClick={() => {
+                                        onTypeChange(option.value);
+                                        setIsOpen(false);
+                                    }}
+                                    className={`
+                                        w-full text-left px-5 py-3 text-[10px] font-black uppercase tracking-widest
+                                        transition-colors duration-200
+                                        ${chartType === option.value ? 'bg-primary-500/20 text-primary-400' : 'text-gray-400 hover:bg-white/5 hover:text-white'}
+                                    `}
+                                >
+                                    {option.label}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
             <div style={{ height: `${chartHeight}px` }} className="w-full">
                 <ResponsiveContainer width="100%" height="100%">
@@ -50,7 +100,30 @@ export default function ComplianceCharts({ chartType, onTypeChange, data }) {
                         />
                         <Tooltip
                             cursor={{ fill: '#ffffff05' }}
-                            contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #ffffff10', color: '#fff' }}
+                            content={({ active, payload }) => {
+                                if (active && payload && payload.length) {
+                                    const data = payload[0].payload;
+                                    const count = chartType === 'departments' ? data.total_pax : data.total_students;
+                                    return (
+                                        <div className="bg-slate-900 border border-white/10 p-4 rounded-xl shadow-2xl backdrop-blur-xl">
+                                            <p className="text-[10px] font-black text-white uppercase tracking-wider mb-2 border-b border-white/5 pb-2">
+                                                {data[yDataKey]}
+                                            </p>
+                                            <div className="space-y-1">
+                                                <div className="flex items-center justify-between gap-8">
+                                                    <span className="text-[9px] font-black text-gray-400 uppercase">Cumplimiento:</span>
+                                                    <span className="text-[10px] font-black text-primary-400">{data.avg_completion}%</span>
+                                                </div>
+                                                <div className="flex items-center justify-between gap-8">
+                                                    <span className="text-[9px] font-black text-gray-400 uppercase">Total Funcionarios:</span>
+                                                    <span className="text-[10px] font-black text-white">{count}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                }
+                                return null;
+                            }}
                         />
                         <Bar dataKey="avg_completion" radius={[0, 4, 4, 0]} barSize={20}>
                             {data.map((entry, index) => (
@@ -59,9 +132,9 @@ export default function ComplianceCharts({ chartType, onTypeChange, data }) {
                                     fill={getColorForName(entry[yDataKey])}
                                 />
                             ))}
-                            <LabelList 
-                                dataKey="avg_completion" 
-                                position="right" 
+                            <LabelList
+                                dataKey="avg_completion"
+                                position="right"
                                 formatter={(val) => `${val}%`}
                                 style={{ fill: '#ffffff60', fontSize: '10px', fontWeight: 'bold' }}
                             />

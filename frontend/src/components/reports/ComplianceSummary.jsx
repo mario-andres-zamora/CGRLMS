@@ -1,59 +1,63 @@
 import React from 'react';
-import { Users, TrendingUp, Award, FileText } from 'lucide-react';
+import { Users, Zap, Radio } from 'lucide-react';
 
 export default function ComplianceSummary({ summary }) {
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* 1. Registrados vs Directorio */}
             <div className="card p-8 border-l-4 border-primary-500 bg-slate-900/40 text-left">
                 <div className="flex justify-between items-start mb-6">
                     <div className="p-3 bg-primary-500/10 rounded-2xl text-primary-400">
                         <Users className="w-7 h-7" />
                     </div>
                     <div className="px-2 py-1 bg-green-500/10 rounded-lg">
-                        <span className="text-[9px] font-black text-green-500 uppercase">Activos</span>
+                        <span className="text-[9px] font-black text-green-500 uppercase">Usuarios Registrados</span>
                     </div>
                 </div>
                 <div className="flex items-baseline gap-2">
                     <p className="text-4xl font-black text-white">{summary.registeredStaff}</p>
-                    <p className="text-lg font-black text-gray-500 opacity-60">/ {summary.totalStaff}</p>
+                    <p className="text-lg font-black text-gray-400 opacity-60">/ {summary.totalStaff}</p>
                 </div>
                 <p className="text-xs font-black text-gray-400 uppercase tracking-widest mt-2 px-1">Registrados vs Directorio</p>
             </div>
 
-            <div className="card p-8 border-l-4 border-secondary-500 bg-slate-900/40 text-left">
-                <div className="flex justify-between items-start mb-6">
-                    <div className="p-3 bg-secondary-500/10 rounded-2xl text-secondary-500">
-                        <TrendingUp className="w-7 h-7" />
+            {/* 2. En Línea (Tiempo Real) */}
+            <div className="card p-8 border-l-4 border-green-500 bg-slate-900/40 text-left overflow-hidden relative">
+                <div className="flex justify-between items-start mb-6 underline-none">
+                    <div className="p-3 bg-green-500/10 rounded-2xl text-green-400">
+                        <Radio className="w-7 h-7 animate-pulse" />
                     </div>
-                    <div className="flex items-center gap-1 text-[9px] font-black text-white bg-slate-800 px-3 py-1 rounded-full border border-white/5">
-                        PROMEDIO
+                    <div className="flex items-center gap-2 px-3 py-1 bg-green-500/10 rounded-full border border-green-500/20">
+                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                        <span className="text-[9px] font-black text-green-500 uppercase tracking-widest">En Tiempo Real</span>
                     </div>
                 </div>
                 <div className="flex items-baseline gap-2">
-                    <p className="text-4xl font-black text-white">{summary.avgCompletion}</p>
-                    <p className="text-xl font-black text-secondary-500">%</p>
+                    <p className="text-4xl font-black text-white">{summary.onlineUsers || 0}</p>
                 </div>
-                <p className="text-xs font-black text-gray-400 uppercase tracking-widest mt-2 px-1">Cumplimiento Global</p>
+                <p className="text-xs font-black text-gray-400 uppercase tracking-widest mt-2 px-1">Usuarios Activos Ahora</p>
+
+                {/* Subtle background glow */}
+                <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-green-500/5 blur-3xl rounded-full"></div>
             </div>
 
-            <div className="card p-8 border-l-4 border-green-500 bg-slate-900/40 text-left">
+            {/* 3. Gamificación (Puntos) */}
+            <div className="card p-8 border-l-4 border-purple-500 bg-slate-900/40 text-left">
                 <div className="flex justify-between items-start mb-6">
-                    <div className="p-3 bg-green-500/10 rounded-2xl text-green-500">
-                        <Award className="w-7 h-7" />
+                    <div className="p-3 bg-purple-500/10 rounded-2xl text-purple-500">
+                        <Zap className="w-7 h-7" />
+                    </div>
+                    <div className="px-2 py-1 bg-purple-500/10 rounded-lg">
+                        <span className="text-[9px] font-black text-purple-500 uppercase">Resumen de Puntos</span>
                     </div>
                 </div>
-                <p className="text-4xl font-black text-white">{summary.totalCerts}</p>
-                <p className="text-xs font-black text-gray-400 uppercase tracking-widest mt-2 px-1">Diplomas Emitidos</p>
-            </div>
-
-            <div className="card p-8 border-l-4 border-blue-500 bg-slate-900/40 text-left">
-                <div className="flex justify-between items-start mb-6">
-                    <div className="p-3 bg-blue-500/10 rounded-2xl text-blue-500">
-                        <FileText className="w-7 h-7" />
-                    </div>
+                <div className="flex items-baseline gap-2">
+                    <p className="text-4xl font-black text-white">{summary.totalPoints?.toLocaleString()}</p>
                 </div>
-                <p className="text-4xl font-black text-white">{summary.activeModules}</p>
-                <p className="text-xs font-black text-gray-400 uppercase tracking-widest mt-2 px-1">Módulos Publicados</p>
+                <div className="flex items-center justify-between mt-2 px-1">
+                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest">Puntos Totales Acumulados</p>
+                    <p className="text-[10px] font-black text-purple-400">Promedio: {summary.avgPointsPerUser}</p>
+                </div>
             </div>
         </div>
     );

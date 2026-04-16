@@ -1,5 +1,6 @@
 const db = require('../config/database');
 const logger = require('../config/logger');
+const redisClient = require('../config/redis');
 
 /**
  * Middleware de autenticación basado en Sesiones
@@ -15,6 +16,11 @@ const authMiddleware = async (req, res, next) => {
                 error: 'Sesión no iniciada',
                 message: 'No se detectó una sesión activa. Por favor inicie sesión.'
             });
+        }
+
+        // Marcar usuario como activo en Redis (expira en 5 minutos)
+        if (redisClient && redisClient.isOpen) {
+            redisClient.setEx(`online_user:${userId}`, 300, '1').catch(e => logger.error('Error setting online status:', e));
         }
 
         // Obtener usuario de la base de datos
