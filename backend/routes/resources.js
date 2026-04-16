@@ -42,7 +42,16 @@ const upload = multer({
  */
 router.post('/', authMiddleware, adminMiddleware, upload.single('file'), async (req, res) => {
     try {
+        logger.info('--- INTENTO DE CREACIÓN DE RECURSO ---');
+        logger.info('Body recibido:', JSON.stringify(req.body));
+        logger.info('Archivo recibido:', req.file ? req.file.filename : 'Ninguno');
+
         const { module_id, title, description, resource_type, url } = req.body;
+        
+        if (!title || !module_id) {
+            return res.status(400).json({ error: 'Título y ID de módulo son obligatorios' });
+        }
+
         let finalUrl = url;
 
         if (req.file) {
@@ -52,8 +61,10 @@ router.post('/', authMiddleware, adminMiddleware, upload.single('file'), async (
         const result = await db.query(
             `INSERT INTO resources (module_id, title, description, resource_type, url, file_size) 
              VALUES (?, ?, ?, ?, ?, ?)`,
-            [module_id, title, description, resource_type, finalUrl, req.file?.size || 0]
+            [parseInt(module_id), title, description, resource_type, finalUrl, req.file?.size || 0]
         );
+
+        logger.info(`✅ Recurso creado con ID: ${result.insertId}`);
 
         // Invalida caché del módulo
         await clearCache(`cache:/api/modules/${module_id}*`);
@@ -66,8 +77,11 @@ router.post('/', authMiddleware, adminMiddleware, upload.single('file'), async (
             url: finalUrl
         });
     } catch (error) {
-        logger.error('Error creando recurso:', error);
-        res.status(500).json({ error: 'Error al crear recurso' });
+        logger.error('❌ Error crítico creando recurso:', error);
+        res.status(500).json({ 
+            error: 'Error al crear recurso', 
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined 
+        });
     }
 });
 

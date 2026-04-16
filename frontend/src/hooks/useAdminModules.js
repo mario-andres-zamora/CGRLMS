@@ -330,8 +330,7 @@ export function useAdminModules() {
             const response = await axios({
                 method,
                 url,
-                data: formData,
-                headers: { 'Content-Type': 'multipart/form-data' }
+                data: formData
             });
 
             if (response.data.success) {
