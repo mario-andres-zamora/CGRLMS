@@ -33,32 +33,40 @@ export default function QuestionItem({
                             <Target className="w-3 h-3" /> Texto de la Pregunta
                         </label>
                         <textarea
-                            className="input-field bg-slate-950/50 border-white/10 font-bold text-white h-20"
+                            className={`input-field bg-slate-950/50 border-white/10 font-bold text-white transition-all ${
+                                ['mfa_defender', 'hack_neighbor'].includes(question.question_type) 
+                                ? 'h-32 text-lg' 
+                                : 'h-20 text-sm'
+                            }`}
                             placeholder="¿Cuál es el protocolo de seguridad...?"
                             value={question.question_text}
                             onChange={e => onUpdateQuestion(question.id, 'question_text', e.target.value)}
                         />
                     </div>
-                    <div className="w-64 space-y-2">
-                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex items-center gap-1.5 text-left">
-                            <ImageIcon className="w-3 h-3 text-secondary-500" /> Imagen (URL)
-                        </label>
-                        <input
-                            type="text"
-                            className="input-field bg-slate-950/50 border-white/10 text-[10px]"
-                            placeholder="https://ejemplo.com/imagen.jpg"
-                            value={question.image_url || ''}
-                            onChange={e => onUpdateQuestion(question.id, 'image_url', e.target.value)}
-                        />
-                        {question.image_url && (
-                            <div className="mt-2 relative group h-12 w-full overflow-hidden rounded-lg border border-white/5">
-                                <img src={question.image_url} alt="Vista previa" className="w-full h-full object-cover opacity-50 hover:opacity-100 transition-all" />
-                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                    <span className="text-[8px] bg-black/60 px-1.5 py-0.5 rounded text-white font-black uppercase">Vista Previa</span>
+
+                    {!['mfa_defender', 'hack_neighbor'].includes(question.question_type) && (
+                        <div className="w-64 space-y-2">
+                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex items-center gap-1.5 text-left">
+                                <ImageIcon className="w-3 h-3 text-secondary-500" /> Imagen (URL)
+                            </label>
+                            <input
+                                type="text"
+                                className="input-field bg-slate-950/50 border-white/10 text-[10px]"
+                                placeholder="https://ejemplo.com/imagen.jpg"
+                                value={question.image_url || ''}
+                                onChange={e => onUpdateQuestion(question.id, 'image_url', e.target.value)}
+                            />
+                            {question.image_url && (
+                                <div className="mt-2 relative group h-12 w-full overflow-hidden rounded-lg border border-white/5">
+                                    <img src={question.image_url} alt="Vista previa" className="w-full h-full object-cover opacity-50 hover:opacity-100 transition-all" />
+                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                        <span className="text-[8px] bg-black/60 px-1.5 py-0.5 rounded text-white font-black uppercase">Vista Previa</span>
+                                    </div>
                                 </div>
-                            </div>
-                        )}
-                    </div>
+                            )}
+                        </div>
+                    )}
+
                     <div className="w-24 space-y-2">
                         <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest text-left">Puntos</label>
                         <input
