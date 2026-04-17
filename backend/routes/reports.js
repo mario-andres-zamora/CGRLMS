@@ -112,16 +112,31 @@ const refreshReportsCache = async () => {
             ORDER BY progress DESC
         `);
 
-        // 5. Cumplimiento por Módulo
+        // 5. Cumplimiento por Módulo (con tiempo promedio)
         const moduleCompliance = await db.query(`
             SELECT 
                 m.id,
                 m.title,
+                m.order_index,
                 (SELECT COUNT(*) FROM staff_directory) as total_students,
-                COUNT(DISTINCT u.id) as completed_count
+                COUNT(DISTINCT u.id) as completed_count,
+                stats.avg_time
             FROM modules m
             LEFT JOIN user_progress up ON up.module_id = m.id AND up.status = 'completed'
             LEFT JOIN users u ON up.user_id = u.id AND u.role = 'student' AND u.is_active = TRUE
+            LEFT JOIN (
+                SELECT 
+                    comp.reference_id,
+                    AVG(TIMESTAMPDIFF(MINUTE, first_access.start_time, comp.created_at)) as avg_time
+                FROM gamification_activities comp
+                JOIN (
+                    SELECT user_id, module_id, MIN(created_at) as start_time
+                    FROM user_progress
+                    GROUP BY user_id, module_id
+                ) first_access ON first_access.user_id = comp.user_id AND first_access.module_id = comp.reference_id
+                WHERE comp.activity_type = 'module_completed'
+                GROUP BY comp.reference_id
+            ) stats ON m.id = stats.reference_id
             WHERE m.is_published = TRUE
             GROUP BY m.id
             ORDER BY m.order_index DESC
@@ -161,9 +176,10 @@ const refreshReportsCache = async () => {
             })),
             moduleCompliance: moduleCompliance.map(m => ({
                 ...m,
-                avg_completion: m.total_students > 0 
-                    ? Math.round((m.completed_count / m.total_students) * 100) 
-                    : 0
+                avg_completion: m.total_students > 0
+                    ? Math.round((m.completed_count / m.total_students) * 100)
+                    : 0,
+                avg_time: Math.round(m.avg_time || 0)
             })),
             atRisk: usersAtRisk,
             detailedUsers: detailedUsers.map(u => ({
@@ -178,7 +194,7 @@ const refreshReportsCache = async () => {
         if (redisClient && redisClient.isOpen) {
             await redisClient.setEx('reports:compliance', 7200, JSON.stringify(reportData));
         }
-        
+
         logger.info('✅ Caché de reportes actualizada correctamente.');
         return reportData;
     } catch (error) {
@@ -258,14 +274,14 @@ router.get('/compliance', authMiddleware, adminMiddleware, async (req, res) => {
 router.get('/completion-trend', authMiddleware, adminMiddleware, async (req, res) => {
     try {
         const { module_id, interval = 'weekly', startDate, endDate } = req.query;
-        
+
         if (!module_id) {
             return res.status(400).json({ error: 'ID de módulo es requerido' });
         }
 
         let dateFormat = '%Y-%m-%d';
         let groupBy = 'DATE(created_at)';
-        
+
         if (interval === 'monthly') {
             dateFormat = '%b %Y';
             groupBy = 'DATE_FORMAT(created_at, "%Y-%m")';
@@ -320,7 +336,7 @@ router.get('/completion-trend', authMiddleware, adminMiddleware, async (req, res
 router.get('/department-compliance', authMiddleware, adminMiddleware, async (req, res) => {
     try {
         const { module_id } = req.query;
-        
+
         if (!module_id) {
             return res.status(400).json({ error: 'ID de módulo es requerido' });
         }

@@ -10,6 +10,7 @@ import DistributionPie from '../components/reports/DistributionPie';
 import RiskAlerts from '../components/reports/RiskAlerts';
 import DetailedUserList from '../components/reports/DetailedUserList';
 import CompletionTrend from '../components/reports/CompletionTrend';
+import CompletionTimeChart from '../components/reports/CompletionTimeChart';
 
 export default function Reports() {
     const navigate = useNavigate();
@@ -78,6 +79,8 @@ export default function Reports() {
                                 avgCompletion={summary.avgCompletion}
                                 summary={summary}
                             />
+                            
+                            <CompletionTimeChart data={moduleCompliance} />
                         </div>
 
                         <div className="lg:col-span-3">
