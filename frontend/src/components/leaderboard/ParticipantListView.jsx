@@ -1,14 +1,14 @@
-import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, Trophy } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
-export default function ParticipantListView({ 
-    view, 
-    participants, 
-    loggedUser, 
-    currentUser, 
-    setView 
+export default function ParticipantListView({
+    view,
+    participants,
+    loggedUser,
+    currentUser,
+    setView
 }) {
-    
+
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -28,18 +28,26 @@ export default function ParticipantListView({
         <div className="space-y-6">
             <div className="space-y-3">
                 <div className="grid grid-cols-12 px-8 py-4 text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                    <div className="col-span-1 text-center">Pos</div>
-                    <div className="col-span-6 md:col-span-5 px-6">Funcionario</div>
+                    <div className="col-span-2 md:col-span-1 text-center">Posición</div>
+                    <div className="col-span-4 md:col-span-5 px-6">Funcionario</div>
                     <div className="hidden md:block col-span-3 text-center">Área / Unidad</div>
-                    <div className="col-span-5 md:col-span-3 text-right">Puntaje</div>
+                    <div className="col-span-6 md:col-span-3 text-right">Puntaje</div>
                 </div>
-                
+
                 {paginatedParticipants.map((p) => {
                     const isMe = p.email === loggedUser?.email?.toLowerCase();
                     return (
                         <div key={p.id} className={`grid grid-cols-12 items-center px-8 py-5 rounded-3xl border transition-all ${isMe ? 'bg-primary-500/10 border-primary-500/30 ring-1 ring-primary-500/20 shadow-xl' : 'bg-slate-800/20 border-white/5 hover:border-white/10 hover:bg-slate-800/30'}`}>
-                            <div className={`col-span-1 text-center font-black text-lg ${isMe ? 'text-primary-400' : 'text-gray-400'}`}>{p.rank_position}</div>
-                            <div className="col-span-6 md:col-span-5 flex items-center gap-4">
+                            <div className={`col-span-2 md:col-span-1 flex flex-col items-center justify-center font-black ${isMe ? 'text-primary-400' : 'text-gray-400'}`}>
+                                <span className="text-xl md:text-md leading-none italic">{p.rank_position}</span>
+                                {view !== 'global' && p.institutional_rank && (
+                                    <div className={`flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-lg border shadow-sm transition-all ${isMe ? 'bg-primary-500/20 border-primary-500/40 text-primary-300' : 'bg-slate-700/50 border-white/10 text-slate-200'}`}>
+                                        <Trophy className="w-3 h-3 text-amber-400 drop-shadow-[0_0_5px_rgba(251,191,36,0.4)]" />
+                                        <span className="text-[10px] font-black uppercase tracking-tight">#{p.institutional_rank}</span>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="col-span-4 md:col-span-5 flex items-center gap-4">
                                 <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-900 border border-white/5">
                                     <img src={(isMe ? loggedUser?.profilePicture : p.profile_picture) || `https://ui-avatars.com/api/?name=${p.first_name}+${p.last_name}&background=384A99&color=fff`} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                                 </div>
@@ -52,7 +60,7 @@ export default function ParticipantListView({
                                 </div>
                             </div>
                             <div className={`hidden md:block col-span-3 text-center text-[10px] font-bold ${isMe ? 'text-white/60' : 'text-gray-300'} uppercase italic leading-tight`}>{p.department}</div>
-                            <div className="col-span-12 md:col-span-3 text-right">
+                            <div className="col-span-6 md:col-span-3 text-right">
                                 <p className="text-xl font-black text-primary-400 italic leading-none">{p.points} PTS</p>
                                 <p className="text-[8px] text-gray-600 font-black uppercase tracking-[0.2em]">{p.level}</p>
                             </div>
@@ -70,12 +78,12 @@ export default function ParticipantListView({
             {/* Pagination Controls */}
             {(totalPages > 1 || participants.length > 10) && (
                 <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 bg-slate-900/40 rounded-2xl border border-white/5 gap-4">
-                    
+
                     {/* Rows per page selector */}
                     <div className="flex items-center gap-3">
                         <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Mostrar</span>
                         <div className="relative">
-                            <button 
+                            <button
                                 onClick={() => setIsPerPageOpen(!isPerPageOpen)}
                                 className="flex items-center gap-2 bg-slate-800/80 border border-white/10 hover:border-white/20 text-white text-xs font-black rounded-lg px-3 py-1.5 transition-all outline-none"
                             >
@@ -107,7 +115,7 @@ export default function ParticipantListView({
                     </div>
 
                     <div className="flex items-center gap-6">
-                        <button 
+                        <button
                             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                             disabled={currentPage === 1}
                             className="p-2 rounded-xl text-gray-500 hover:bg-slate-800 hover:text-white transition-colors disabled:opacity-30 disabled:pointer-events-none flex items-center gap-2"
@@ -115,12 +123,12 @@ export default function ParticipantListView({
                             <ChevronLeft className="w-5 h-5" />
                             <span className="hidden sm:inline text-xs font-black uppercase tracking-widest">Ant</span>
                         </button>
-                        
+
                         <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
                             <span className="text-primary-400 mx-1">{currentPage}</span> / <span className="text-white mx-1">{totalPages || 1}</span>
                         </div>
 
-                        <button 
+                        <button
                             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                             disabled={currentPage === totalPages || totalPages === 0}
                             className="p-2 rounded-xl text-gray-500 hover:bg-slate-800 hover:text-white transition-colors disabled:opacity-30 disabled:pointer-events-none flex items-center gap-2"
