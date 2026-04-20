@@ -15,7 +15,7 @@ COPY . .
 RUN mkdir -p logs
 
 # Exponer puerto
-EXPOSE 5000
+EXPOSE 5001
 
 # Usuario no-root para seguridad
 RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
