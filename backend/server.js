@@ -88,19 +88,10 @@ app.use(cors({
 
 // Middlewares de seguridad
 app.use(helmet({
-    contentSecurityPolicy: {
-        directives: {
-            defaultSrc: ["'self'"],
-            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-            fontSrc: ["'self'", "https://fonts.gstatic.com"],
-            scriptSrc: ["'self'", "https://accounts.google.com", "https://www.youtube.com", "https://s.ytimg.com"],
-            imgSrc: ["'self'", "data:", "https://lh3.googleusercontent.com", "https://ui-avatars.com", "https://*.googleusercontent.com", "https://i.ytimg.com", "https://www.transparenttextures.com"],
-            connectSrc: ["'self'", "https://accounts.google.com"],
-            frameSrc: ["'self'", "https://accounts.google.com", "https://www.youtube.com", "https://youtube.com"],
-        },
-    },
-    crossOriginResourcePolicy: false,
+    contentSecurityPolicy: false,
+    crossOriginResourcePolicy: { policy: "cross-origin" },
     crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" }, // Permite popups de Google
 }));
 
 // Confiar en 3 niveles de proxy (Cloudflare -> NPM -> Nginx local)
