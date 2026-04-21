@@ -139,9 +139,9 @@ app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    proxy: process.env.NODE_ENV === 'production', // Confía en el encabezado X-Forwarded-Proto en producción
+    proxy: true, // Siempre confiar en el proxy para las sesiones en este entorno
     cookie: {
-        secure: process.env.NODE_ENV === 'production',
+        secure: true, // Forzar secure ya que usamos HTTPS en mortasoft.com
         httpOnly: true,
         sameSite: 'lax',
         maxAge: 24 * 60 * 60 * 1000 // 24 horas
