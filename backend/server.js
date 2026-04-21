@@ -43,6 +43,7 @@ const surveyRoutes = require('./routes/surveys');
 const certificateRoutes = require('./routes/certificates');
 const { authMiddleware, adminMiddleware } = require('./middleware/auth');
 const maintenanceMiddleware = require('./middleware/maintenance');
+const errorMiddleware = require('./middleware/errorMiddleware');
 const { initializeDatabase } = require('./services/dbInitService');
 
 // Inicializar esquemas de base de datos sync/async
@@ -263,5 +264,8 @@ process.on('SIGTERM', async () => {
     await db.end();
     process.exit(0);
 });
+
+// Middleware de errores global (Debe ir después de todas las rutas)
+app.use(errorMiddleware);
 
 module.exports = app;
