@@ -76,7 +76,7 @@ export default function Layout() {
                             </div>
                             <div className="hidden lg:block">
                                 <h1 className="text-[13px] xl:text-[15px] font-black bg-gradient-to-r from-white via-white to-gray-400 bg-clip-text text-transparent tracking-tighter leading-none">
-                                    CGR <span className="text-secondary-500 font-black">SEGUR@</span>
+                                    M <span className="text-secondary-500 font-black">IA</span>
                                 </h1>
                             </div>
                         </div>
