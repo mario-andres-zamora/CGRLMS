@@ -101,16 +101,17 @@ app.use(helmet({
     crossOriginEmbedderPolicy: false,
 }));
 
-// Confiar en todos los proxies (necesario para Cloudflare + Nginx)
-app.set('trust proxy', true);
+// Confiar en 3 niveles de proxy (Cloudflare -> NPM -> Nginx local)
+app.set('trust proxy', 3);
 
 // Rate limiting
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutos
-    max: parseInt(process.env.RATE_LIMIT_MAX) || 1000, // configurable mediante .env
+    max: parseInt(process.env.RATE_LIMIT_MAX) || 1000, 
     message: 'Demasiadas solicitudes desde esta IP, por favor intente más tarde.',
     standardHeaders: true,
     legacyHeaders: false,
+    validate: { trustProxy: false }, // Desactivar validación estricta de trust proxy para evitar 500
 });
 
 app.use('/api/', limiter);
