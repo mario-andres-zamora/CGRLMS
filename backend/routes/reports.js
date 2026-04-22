@@ -368,4 +368,41 @@ router.get('/department-compliance', authMiddleware, adminMiddleware, async (req
     }
 });
 
+/**
+ * @route   GET /api/reports/module-completions-detail
+ * @desc    Obtener listado detallado de personas que terminaron un módulo
+ * @access  Private/Admin
+ */
+router.get('/module-completions-detail', authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+        const { module_id } = req.query;
+
+        if (!module_id) {
+            return res.status(400).json({ error: 'ID de módulo es requerido' });
+        }
+
+        const completions = await db.query(`
+            SELECT 
+                CONCAT_WS(' ', u.first_name, u.last_name) as full_name, 
+                u.email, 
+                m.title as module_name, 
+                ga.created_at as completion_date
+            FROM gamification_activities ga
+            JOIN users u ON ga.user_id = u.id
+            JOIN modules m ON ga.reference_id = m.id
+            WHERE ga.activity_type = 'module_completed'
+              AND ga.reference_id = ?
+            ORDER BY ga.created_at DESC
+        `, [module_id]);
+
+        res.json({
+            success: true,
+            data: completions
+        });
+    } catch (error) {
+        logger.error('Error obteniendo detalle de finalizaciones:', error);
+        res.status(500).json({ error: 'Error al cargar el detalle de finalizaciones' });
+    }
+});
+
 module.exports = router;

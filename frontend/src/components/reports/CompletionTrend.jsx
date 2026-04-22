@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { TrendingUp, Calendar, Filter, ChevronDown, Check } from 'lucide-react';
+import { TrendingUp, Calendar, Filter, ChevronDown, Check, Download } from 'lucide-react';
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -12,6 +12,7 @@ export default function CompletionTrend({ modules = [] }) {
     const [endDate, setEndDate] = useState('');
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [downloading, setDownloading] = useState(false);
 
     // Dropdown States
     const [isModuleOpen, setIsModuleOpen] = useState(false);
@@ -66,6 +67,47 @@ export default function CompletionTrend({ modules = [] }) {
 
     const currentModule = modules.find(m => String(m.id) === String(selectedModule));
     const currentInterval = intervalOptions.find(o => o.value === interval);
+
+    const handleDownloadCSV = async () => {
+        if (!selectedModule) return;
+        setDownloading(true);
+        try {
+            const response = await axios.get(`${API_URL}/reports/module-completions-detail?module_id=${selectedModule}`, {
+                withCredentials: true
+            });
+            
+            if (response.data.success && response.data.data.length > 0) {
+                const csvData = response.data.data.map(row => ({
+                    Nombre: row.full_name,
+                    Correo: row.email,
+                    Modulo: row.module_name,
+                    'Fecha de Finalizacion': new Date(row.completion_date).toLocaleString('es-CR')
+                }));
+
+                const headers = Object.keys(csvData[0]);
+                const csvRows = [
+                    headers.join(','),
+                    ...csvData.map(row => headers.map(header => `"${row[header]}"`).join(','))
+                ].join('\n');
+
+                const blob = new Blob(["\ufeff" + csvRows], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                if (link.download !== undefined) {
+                    const url = URL.createObjectURL(blob);
+                    link.setAttribute('href', url);
+                    link.setAttribute('download', `finalizaciones_${currentModule?.title?.replace(/\s+/g, '_') || 'modulo'}.csv`);
+                    link.style.visibility = 'hidden';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
+            }
+        } catch (error) {
+            console.error('Error downloading CSV:', error);
+        } finally {
+            setDownloading(false);
+        }
+    };
 
     return (
         <div className="card p-8 space-y-6">
@@ -141,7 +183,6 @@ export default function CompletionTrend({ modules = [] }) {
                         )}
                     </div>
 
-                    {/* Custom Range Inputs */}
                     {interval === 'custom' && (
                         <div className="flex items-center gap-3 animate-in fade-in slide-in-from-right-2 duration-400">
                             <div className="relative">
@@ -165,6 +206,21 @@ export default function CompletionTrend({ modules = [] }) {
                             </div>
                         </div>
                     )}
+
+                    {/* Download CSV Button */}
+                    <button
+                        onClick={handleDownloadCSV}
+                        disabled={!selectedModule || downloading}
+                        className={`
+                            flex items-center gap-2 px-5 py-2.5
+                            bg-primary-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest
+                            transition-all duration-300 hover:bg-primary-600 hover:shadow-lg hover:shadow-primary-500/25
+                            disabled:opacity-50 disabled:cursor-not-allowed
+                        `}
+                    >
+                        <Download className={`w-3.5 h-3.5 ${downloading ? 'animate-bounce' : ''}`} />
+                        {downloading ? 'Descargando...' : 'Descargar Detalle'}
+                    </button>
                 </div>
             </div>
 
