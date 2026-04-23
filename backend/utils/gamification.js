@@ -357,7 +357,7 @@ const refreshLeaderboardCache = async () => {
 
         const instRanking = await db.query(
             `SELECT 
-                sd.full_name, u.first_name, u.last_name, u.profile_picture, sd.department, LOWER(sd.email) as email,
+                sd.full_name, u.first_name, u.last_name, u.profile_picture, sd.department, LOWER(sd.email) as email, u.id as user_id,
                 COALESCE(up.points, 0) as points, 
                 COALESCE(up.level, 'Novato') as level,
                 RANK() OVER (ORDER BY COALESCE(up.points, -1) DESC, sd.full_name ASC) as rank_position
@@ -367,12 +367,28 @@ const refreshLeaderboardCache = async () => {
              ORDER BY points DESC, sd.full_name ASC`
         );
 
+        const allBadges = await db.query(
+            `SELECT ub.user_id, b.image_url, b.name, b.icon_name 
+             FROM user_badges ub 
+             JOIN badges b ON ub.badge_id = b.id
+             ORDER BY ub.earned_at DESC`
+        );
+
+        const userBadgesMap = {};
+        if (Array.isArray(allBadges)) {
+            allBadges.forEach(b => {
+                if (!userBadgesMap[b.user_id]) userBadgesMap[b.user_id] = [];
+                userBadgesMap[b.user_id].push(b);
+            });
+        }
+
         const institutionalLeaderboard = instRanking.map(r => ({
             ...r,
             id: r.email,
             first_name: r.first_name || r.full_name.split(' ')[0],
             last_name: r.last_name || r.full_name.split(' ').slice(1).join(' '),
-            rank_position: r.rank_position
+            rank_position: r.rank_position,
+            badges: r.user_id ? (userBadgesMap[r.user_id] || []) : []
         }));
 
         const departmentRanking = await db.query(

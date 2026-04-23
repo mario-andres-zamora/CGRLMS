@@ -57,6 +57,19 @@ export default function ParticipantListView({
                                         {isMe && <span className="ml-2 text-[8px] bg-primary-500 text-white px-1.5 py-0.5 rounded">TÚ</span>}
                                     </p>
                                     <p className={`text-[10px] ${isMe ? 'text-white/60' : 'text-gray-300'} font-bold uppercase md:hidden italic`}>{p.department}</p>
+                                    {p.badges && p.badges.length > 0 && (
+                                        <div className="flex flex-wrap gap-1 mt-1.5">
+                                            {p.badges.map((badge, idx) => (
+                                                <img 
+                                                    key={idx}
+                                                    src={`/images/badges/${badge.image_url}`}
+                                                    alt={badge.name}
+                                                    title={badge.name}
+                                                    className="w-5 h-5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] hover:scale-110 transition-transform"
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             <div className={`hidden md:block col-span-3 text-center text-[10px] font-bold ${isMe ? 'text-white/60' : 'text-gray-300'} uppercase italic leading-tight`}>{p.department}</div>
