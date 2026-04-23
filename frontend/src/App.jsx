@@ -34,6 +34,7 @@ import DisabledAccount from './pages/DisabledAccount';
 
 // Components
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/AdminRoute';
 import Layout from './components/Layout';
 import ToastSoundEffect from './components/ToastSoundEffect';
 import AppToaster from './components/AppToaster';
@@ -68,22 +69,24 @@ function App() {
               <Route path="/profile" element={<Profile />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
 
-              {/* Ruta de administrador */}
-              <Route path="/admin" element={<AdminPanel />} />
-              <Route path="/admin/modules" element={<AdminModules />} />
-              <Route path="/admin/reports" element={<Reports />} />
-              <Route path="/admin/users" element={<AdminUsers />} />
-              <Route path="/admin/users/:userId/profile" element={<Profile />} />
-              <Route path="/admin/directory" element={<AdminDirectory />} />
-              <Route path="/admin/areas" element={<AdminDepartments />} />
-              <Route path="/admin/badges" element={<AdminBadges />} />
-              <Route path="/admin/settings" element={<AdminSettings />} />
-              <Route path="/admin/assignments" element={<AdminAssignments />} />
-              <Route path="/admin/phishing" element={<AdminPhishing />} />
-              <Route path="/admin/interactions" element={<AdminInteractions />} />
-              <Route path="/admin/surveys" element={<AdminSurveys />} />
-              <Route path="/admin/surveys/:id" element={<AdminSurveyDetail />} />
-              <Route path="/admin/lessons/:id/editor" element={<AdminLessonEditor />} />
+              {/* Rutas de administrador protegidas */}
+              <Route element={<AdminRoute />}>
+                <Route path="/admin" element={<AdminPanel />} />
+                <Route path="/admin/modules" element={<AdminModules />} />
+                <Route path="/admin/reports" element={<Reports />} />
+                <Route path="/admin/users" element={<AdminUsers />} />
+                <Route path="/admin/users/:userId/profile" element={<Profile />} />
+                <Route path="/admin/directory" element={<AdminDirectory />} />
+                <Route path="/admin/areas" element={<AdminDepartments />} />
+                <Route path="/admin/badges" element={<AdminBadges />} />
+                <Route path="/admin/settings" element={<AdminSettings />} />
+                <Route path="/admin/assignments" element={<AdminAssignments />} />
+                <Route path="/admin/phishing" element={<AdminPhishing />} />
+                <Route path="/admin/interactions" element={<AdminInteractions />} />
+                <Route path="/admin/surveys" element={<AdminSurveys />} />
+                <Route path="/admin/surveys/:id" element={<AdminSurveyDetail />} />
+                <Route path="/admin/lessons/:id/editor" element={<AdminLessonEditor />} />
+              </Route>
             </Route>
 
             {/* Rutas protegidas a pantalla completa (sin Layout) */}
