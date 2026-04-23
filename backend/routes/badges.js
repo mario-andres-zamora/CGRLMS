@@ -45,4 +45,11 @@ router.get('/user/:userId', authMiddleware, badgeController.getUserBadges);
  */
 router.post('/award', authMiddleware, adminMiddleware, badgeController.awardBadge);
 
+/**
+ * @route   POST /api/badges/award-by-email
+ * @desc    Asignar manualmente una insignia a un usuario usando su correo
+ * @access  Private/Admin
+ */
+router.post('/award-by-email', authMiddleware, adminMiddleware, badgeController.awardBadgeByEmail);
+
 module.exports = router;

@@ -12,18 +12,18 @@ class BadgeService {
     }
 
     async createBadge(badgeData) {
-        const { name, description, icon_name, image_url, criteria_type, criteria_value } = badgeData;
+        const { name, description, icon_name, image_url, criteria_type, criteria_value, points } = badgeData;
         
         const result = await db.query(
-            'INSERT INTO badges (name, description, icon_name, image_url, criteria_type, criteria_value) VALUES (?, ?, ?, ?, ?, ?)',
-            [name, description, icon_name || 'Award', image_url || null, criteria_type || 'manual', criteria_value || null]
+            'INSERT INTO badges (name, description, icon_name, image_url, criteria_type, criteria_value, points) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [name, description, icon_name || 'Award', image_url || null, criteria_type || 'manual', criteria_value || null, points ?? 10]
         );
         
         return result.insertId;
     }
 
     async updateBadge(id, badgeData) {
-        const { name, description, icon_name, image_url, criteria_type, criteria_value } = badgeData;
+        const { name, description, icon_name, image_url, criteria_type, criteria_value, points } = badgeData;
         
         // Use COALESCE to keep existing values if new ones are null/undefined
         return await db.query(
@@ -33,9 +33,10 @@ class BadgeService {
                 icon_name = COALESCE(?, icon_name), 
                 image_url = COALESCE(?, image_url),
                 criteria_type = COALESCE(?, criteria_type), 
-                criteria_value = COALESCE(?, criteria_value) 
+                criteria_value = COALESCE(?, criteria_value),
+                points = COALESCE(?, points)
             WHERE id = ?`,
-            [name ?? null, description ?? null, icon_name ?? null, image_url ?? null, criteria_type ?? null, criteria_value ?? null, id]
+            [name ?? null, description ?? null, icon_name ?? null, image_url ?? null, criteria_type ?? null, criteria_value ?? null, points ?? null, id]
         );
     }
 

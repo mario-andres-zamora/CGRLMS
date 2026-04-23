@@ -16,11 +16,15 @@ export function useBadges() {
         image_url: 'inicio-seguridad.svg',
         icon_name: 'Award', // kept for safety, but UI will use image_url
         criteria_type: 'manual',
-        criteria_value: null
+        criteria_value: null,
+        points: 10
     });
 
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [badgeToDelete, setBadgeToDelete] = useState(null);
+
+    const [isAwardModalOpen, setIsAwardModalOpen] = useState(false);
+    const [badgeToAward, setBadgeToAward] = useState(null);
 
     useEffect(() => {
         fetchBadges();
@@ -63,7 +67,8 @@ export function useBadges() {
                 image_url: 'inicio-seguridad.svg', 
                 icon_name: 'Award', 
                 criteria_type: 'manual', 
-                criteria_value: null 
+                criteria_value: null,
+                points: 10
             });
             fetchBadges();
             return true;
@@ -89,6 +94,19 @@ export function useBadges() {
         }
     };
 
+    const handleAward = async (badgeId, email) => {
+        try {
+            const response = await axios.post(`${API_URL}/badges/award-by-email`, { email, badgeId });
+            toast.success(response.data.message || 'Insignia otorgada correctamente');
+            setIsAwardModalOpen(false);
+            setBadgeToAward(null);
+            return true;
+        } catch (error) {
+            toast.error(error.response?.data?.error || 'Error al otorgar la insignia');
+            return false;
+        }
+    };
+
     const filteredBadges = useMemo(() => {
         return badges.filter(b =>
             b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -104,7 +122,8 @@ export function useBadges() {
             image_url: 'inicio-seguridad.svg', 
             icon_name: 'Award', 
             criteria_type: 'manual', 
-            criteria_value: null 
+            criteria_value: null,
+            points: 10
         });
         setIsModalOpen(true);
     };
@@ -125,6 +144,8 @@ export function useBadges() {
         setIsModalOpen,
         isDeleteModalOpen,
         setIsDeleteModalOpen,
+        isAwardModalOpen,
+        badgeToAward,
         formData,
         setFormData,
         editingBadge,
@@ -141,6 +162,17 @@ export function useBadges() {
                     setBadgeToDelete(null);
                     setIsDeleteModalOpen(false);
                 }
+            },
+            award: {
+                open: (badge) => {
+                    setBadgeToAward(badge);
+                    setIsAwardModalOpen(true);
+                },
+                close: () => {
+                    setBadgeToAward(null);
+                    setIsAwardModalOpen(false);
+                },
+                submit: handleAward
             },
             refresh: fetchBadges,
             openCreate: openCreateModal,

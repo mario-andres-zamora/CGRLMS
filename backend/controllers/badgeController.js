@@ -84,6 +84,38 @@ class BadgeController {
             res.status(500).json({ error: 'Error al asignar la insignia' });
         }
     }
+
+    async awardBadgeByEmail(req, res) {
+        try {
+            const { email, badgeId } = req.body;
+            if (!email || !badgeId) {
+                return res.status(400).json({ error: 'Correo e insignia son obligatorios' });
+            }
+
+            const db = require('../config/database');
+            const [user] = await db.query('SELECT id FROM users WHERE email = ?', [email]);
+            if (!user) {
+                return res.status(404).json({ error: 'Usuario no encontrado con ese correo' });
+            }
+
+            // Usar utils/badges.js para que asigne también los puntos
+            const badgesUtil = require('../utils/badges');
+            const result = await badgesUtil.awardBadge(user.id, badgeId);
+
+            if (result && result.error) {
+                return res.status(500).json({ error: 'Error interno al asignar insignia' });
+            }
+
+            if (result && result.awarded === false) {
+                return res.status(400).json({ error: result.message || 'El usuario ya tiene esta insignia' });
+            }
+
+            res.json({ success: true, message: 'Insignia asignada correctamente y puntos sumados' });
+        } catch (error) {
+            logger.error('Error al asignar insignia por email:', error);
+            res.status(500).json({ error: 'Error al asignar la insignia' });
+        }
+    }
 }
 
 module.exports = new BadgeController();

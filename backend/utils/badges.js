@@ -18,18 +18,22 @@ async function awardBadge(userId, badgeId) {
         if (result.affectedRows > 0) {
             logger.info(`Insignia otorgada: ${badge.name} al usuario ${userId}`);
             
-            // Otorgar 10 puntos extra por insignia ganada
-            await db.query(
-                `INSERT INTO gamification_activities (user_id, activity_type, points_earned, reference_id) 
-                 VALUES (?, 'badge_earned', 10, ?)`,
-                [userId, badgeId]
-            );
+            // Otorgar puntos extra por insignia ganada según su configuración (default 10)
+            const pointsToAward = badge.points !== undefined && badge.points !== null ? badge.points : 10;
+            
+            if (pointsToAward > 0) {
+                await db.query(
+                    `INSERT INTO gamification_activities (user_id, activity_type, points_earned, reference_id) 
+                     VALUES (?, 'badge_earned', ?, ?)`,
+                    [userId, pointsToAward, badgeId]
+                );
 
-            await db.query(
-                `INSERT INTO user_points (user_id, points) VALUES (?, 10) 
-                 ON DUPLICATE KEY UPDATE points = points + 10`,
-                [userId]
-            );
+                await db.query(
+                    `INSERT INTO user_points (user_id, points) VALUES (?, ?) 
+                     ON DUPLICATE KEY UPDATE points = points + ?`,
+                    [userId, pointsToAward, pointsToAward]
+                );
+            }
 
             // Sincronizar con Redis para ranking (obtener puntos totales primero)
             try {

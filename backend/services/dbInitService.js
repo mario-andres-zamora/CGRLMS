@@ -82,6 +82,11 @@ const initializeDatabase = async () => {
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         `);
 
+        // Actualizar tabla de insignias para incluir puntos
+        await db.query(`
+            ALTER TABLE badges ADD COLUMN IF NOT EXISTS points INT DEFAULT 10;
+        `);
+
         logger.info('✅ Estructura de base de datos verificada y actualizada.');
     } catch (error) {
         logger.error('❌ Error inicializando base de datos:', error);

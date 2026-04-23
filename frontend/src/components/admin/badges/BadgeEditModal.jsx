@@ -1,23 +1,9 @@
 import React from 'react';
 import { Edit2, Plus, Info } from 'lucide-react';
 
-const badgeImages = [
-    'bienvenida-seguridad.svg',
-    'ciber-prestigio.png',
-    'ciber-prestigio.svg',
-    'club-velocidad.svg',
-    'desafio-aceptado.svg',
-    'enfrentamiento-seguridad.svg',
-    'era-ciberseguridad.svg',
-    'gran-poder-seguridad.svg',
-    'inicio-seguridad.svg',
-    'mas-seguridad.svg',
-    'mejor-sabana.svg',
-    'racha-encendida.svg',
-    'seguridad-contra-peor.svg',
-    'seguridad-legendaria.svg',
-    'seguridad-sin-igual.svg'
-];
+// Obtenemos todas las imágenes de la carpeta dinámicamente usando Vite
+const imagesContext = import.meta.glob('/public/images/badges/*.{svg,png,jpg,jpeg,gif}');
+const badgeImages = Object.keys(imagesContext).map(path => path.split('/').pop());
 
 export default function BadgeEditModal({ isOpen, onClose, editingBadge, formData, setFormData, onSave }) {
     if (!isOpen) return null;
@@ -43,7 +29,7 @@ export default function BadgeEditModal({ isOpen, onClose, editingBadge, formData
                         />
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left mb-8">
                         <div className="space-y-3">
                             <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1 block text-left">Nombre</label>
                             <input
@@ -65,6 +51,17 @@ export default function BadgeEditModal({ isOpen, onClose, editingBadge, formData
                                     <option key={img} value={img}>{img.split('.')[0].replace(/-/g, ' ')}</option>
                                 ))}
                             </select>
+                        </div>
+                        <div className="space-y-3">
+                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1 block text-left">Puntos</label>
+                            <input
+                                type="number"
+                                value={formData.points ?? 10}
+                                onChange={(e) => setFormData({ ...formData, points: parseInt(e.target.value) || 0 })}
+                                className="w-full px-5 py-4 bg-slate-900 border border-white/10 rounded-2xl text-white font-medium focus:outline-none focus:border-primary-500 transition-all font-bold placeholder:text-gray-800"
+                                placeholder="Ej: 10"
+                                min="0"
+                            />
                         </div>
                     </div>
 

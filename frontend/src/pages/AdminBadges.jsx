@@ -7,6 +7,7 @@ import ConfirmModal from '../components/ConfirmModal';
 import BadgeHeader from '../components/admin/badges/BadgeHeader';
 import BadgeGrid from '../components/admin/badges/BadgeGrid';
 import BadgeEditModal from '../components/admin/badges/BadgeEditModal';
+import BadgeAwardModal from '../components/admin/badges/BadgeAwardModal';
 
 export default function AdminBadges() {
     const navigate = useNavigate();
@@ -18,6 +19,8 @@ export default function AdminBadges() {
         isModalOpen, 
         setIsModalOpen, 
         isDeleteModalOpen, 
+        isAwardModalOpen,
+        badgeToAward,
         formData, 
         setFormData, 
         editingBadge, 
@@ -57,6 +60,7 @@ export default function AdminBadges() {
                 badges={filteredBadges}
                 onEdit={actions.openEdit}
                 onDelete={actions.delete.open}
+                onAward={actions.award.open}
             />
 
             {/* Edit Modal */}
@@ -78,6 +82,14 @@ export default function AdminBadges() {
                 message={`¿Estás seguro de que deseas eliminar la insignia "${badgeToDelete?.name}"? Los funcionarios que ya la han ganado la conservarán en su perfil, pero ya no podrá ser otorgada a nuevos usuarios.`}
                 confirmText="Eliminar permanentemente"
                 isDestructive={true}
+            />
+
+            {/* Award Modal */}
+            <BadgeAwardModal
+                isOpen={isAwardModalOpen}
+                onClose={actions.award.close}
+                badge={badgeToAward}
+                onAward={actions.award.submit}
             />
         </div>
     );
