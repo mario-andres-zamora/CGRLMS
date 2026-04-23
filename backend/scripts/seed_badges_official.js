@@ -118,24 +118,43 @@ async function seedBadges() {
                 icon_name: 'Shield',
                 image_url: 'enfrentamiento-seguridad.svg',
                 criteria_type: 'manual',
-                criteria_value: null
+            },
+            {
+                name: 'Enlace con el Operador',
+                description: 'Has sabido cuándo levantar el auricular. Esta insignia reconoce tu inteligencia para pedir soporte externo y optimizar tu rendimiento en la simulación.',
+                icon_name: 'PhoneCall',
+                image_url: 'enlace-operador.svg',
+                criteria_type: 'manual',
+                criteria_value: null,
+                points: 10
+            },
+            {
+                name: 'Anomalía del Sistema',
+                description: 'Has encontrado un fallo en la Matrix que no debería existir. Al reportarlo, has demostrado que tu percepción va más allá de lo que la Matrix intenta mostrarte.',
+                icon_name: 'AlertTriangle',
+                image_url: 'anomalia-sistema.svg',
+                criteria_type: 'manual',
+                criteria_value: null,
+                points: 50
             }
         ];
 
         for (const badge of badges) {
-            // Usamos INSERT IGNORE o comprobamos si existe por nombre
+            // Asignamos 10 puntos por defecto si no está definido en el objeto
+            const badgePoints = badge.points || 10;
+            
             const existing = await db.query('SELECT id FROM badges WHERE name = ?', [badge.name]);
             if (existing && existing.length > 0) {
                 logger.info(`Actualizando insignia: ${badge.name}`);
                 await db.query(
-                    'UPDATE badges SET description = ?, icon_name = ?, image_url = ?, criteria_type = ?, criteria_value = ? WHERE name = ?',
-                    [badge.description, badge.icon_name, badge.image_url, badge.criteria_type, badge.criteria_value, badge.name]
+                    'UPDATE badges SET description = ?, icon_name = ?, image_url = ?, criteria_type = ?, criteria_value = ?, points = ? WHERE name = ?',
+                    [badge.description, badge.icon_name, badge.image_url, badge.criteria_type, badge.criteria_value, badgePoints, badge.name]
                 );
             } else {
                 logger.info(`Insertando nueva insignia: ${badge.name}`);
                 await db.query(
-                    'INSERT INTO badges (name, description, icon_name, image_url, criteria_type, criteria_value) VALUES (?, ?, ?, ?, ?, ?)',
-                    [badge.name, badge.description, badge.icon_name, badge.image_url, badge.criteria_type, badge.criteria_value]
+                    'INSERT INTO badges (name, description, icon_name, image_url, criteria_type, criteria_value, points) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                    [badge.name, badge.description, badge.icon_name, badge.image_url, badge.criteria_type, badge.criteria_value, badgePoints]
                 );
             }
         }
