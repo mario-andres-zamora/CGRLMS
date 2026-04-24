@@ -25,7 +25,7 @@ export default function LoginHeader() {
                     transition={{ delay: 0.4 }}
                     className="text-5xl md:text-6xl font-black text-white tracking-tighter leading-none"
                 >
-                    CGR <span className="text-secondary-500">SEGUR@</span>
+                    Modelo Integrado de Aprendizaje<span className="text-secondary-500"> (MIA)</span>
                 </motion.h1>
                 <motion.p
                     initial={{ opacity: 0 }}
@@ -33,7 +33,7 @@ export default function LoginHeader() {
                     transition={{ delay: 0.5 }}
                     className="text-gray-500 font-bold uppercase tracking-[0.3em] text-[10px] md:text-xs"
                 >
-                    Programa de Concientización en Ciberseguridad
+                    Contraloría General de la República
                 </motion.p>
             </div>
         </div>

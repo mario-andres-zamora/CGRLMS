@@ -8,7 +8,7 @@ export default function LoginCard({ onLogin, isLoading }) {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.6, duration: 0.5 }}
-            className="w-full glass-card overflow-hidden rounded-[2.5rem] border border-white/5 shadow-[0_40px_100px_rgba(0,0,0,0.6)] relative group"
+            className="w-full glass-card overflow-hidden rounded-[2.5rem] bg-white/10 backdrop-blur-2xl border border-white/20 shadow-[0_40px_100px_rgba(0,0,0,0.6)] relative group"
         >
             {/* Interactive hover gradient */}
             <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 via-transparent to-secondary-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
@@ -25,7 +25,7 @@ export default function LoginCard({ onLogin, isLoading }) {
                         disabled={isLoading}
                         whileHover={{ scale: 1.02, translateY: -2 }}
                         whileTap={{ scale: 0.98 }}
-                        className="w-full group relative flex items-center justify-center gap-4 bg-gradient-to-b from-white to-gray-50 text-[#0d1127] px-8 py-5 rounded-2xl font-black text-lg transition-all duration-300 shadow-[0_10px_40px_rgba(0,0,0,0.3)] hover:shadow-[0_20px_60px_rgba(56,74,153,0.3)] disabled:opacity-70 disabled:pointer-events-none overflow-hidden border border-white"
+                        className="w-full group relative flex items-center justify-center gap-4 bg-gradient-to-b from-white to-gray-50 text-[#161b33] px-8 py-5 rounded-2xl font-black text-lg transition-all duration-300 shadow-[0_10px_40px_rgba(0,0,0,0.3)] hover:shadow-[0_20px_60px_rgba(56,74,153,0.3)] disabled:opacity-70 disabled:pointer-events-none overflow-hidden border border-white"
                     >
                         {/* Animated Shimmer Overlay */}
                         <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/60 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite] pointer-events-none z-20"></div>
@@ -35,7 +35,7 @@ export default function LoginCard({ onLogin, isLoading }) {
 
                         {isLoading ? (
                             <div className="flex items-center gap-3 relative z-30">
-                                <div className="w-6 h-6 border-[3px] border-[#0d1127]/10 border-t-[#384A99] rounded-full animate-spin"></div>
+                                <div className="w-6 h-6 border-[3px] border-[#161b33]/10 border-t-[#384A99] rounded-full animate-spin"></div>
                                 <span className="animate-pulse">Sincronizando...</span>
                             </div>
                         ) : (

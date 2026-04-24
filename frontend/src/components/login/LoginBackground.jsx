@@ -16,11 +16,11 @@ export default function LoginBackground() {
     return (
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
             {/* Base Background Gradient */}
-            <div className="absolute inset-0 bg-[#0d1127]"></div>
+            <div className="absolute inset-0 bg-[#1e2648]"></div>
 
             {/* Glowing Blobs */}
-            <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary-500/10 rounded-full blur-[120px]"></div>
-            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-secondary-950/20 rounded-full blur-[120px]"></div>
+            <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary-500/25 rounded-full blur-[120px]"></div>
+            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-secondary-500/15 rounded-full blur-[120px]"></div>
 
             {/* Moving Grid - Infinite Scrolling */}
             <motion.div

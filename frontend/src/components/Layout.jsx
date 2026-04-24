@@ -51,7 +51,7 @@ export default function Layout() {
     const isAdmin = user?.role === 'admin' && !viewAsStudent;
 
     return (
-        <div className="min-h-screen bg-[#0d1127] flex flex-col">
+        <div className="min-h-screen bg-[#161b33] flex flex-col">
             <ScrollToTop />
 
             {/* Admin Student View Banner */}
@@ -62,7 +62,7 @@ export default function Layout() {
             )}
 
             {/* Navbar */}
-            <nav className="bg-[#0d1127]/90 backdrop-blur-md border-b border-primary-500/10 sticky top-0 z-50">
+            <nav className="bg-[#161b33]/90 backdrop-blur-md border-b border-primary-500/10 sticky top-0 z-50">
                 <div className="w-full px-4 sm:px-6 xl:px-8">
                     <div className="flex justify-between items-center h-20">
                         {/* Logo */}
@@ -76,7 +76,7 @@ export default function Layout() {
                             </div>
                             <div className="hidden lg:block">
                                 <h1 className="text-[13px] xl:text-[15px] font-black bg-gradient-to-r from-white via-white to-gray-400 bg-clip-text text-transparent tracking-tighter leading-none">
-                                    CGR <span className="text-secondary-500 font-black">SEGUR@</span>
+                                    M <span className="text-secondary-500 font-black">IA</span>
                                 </h1>
                             </div>
                         </div>
@@ -123,12 +123,12 @@ export default function Layout() {
                                         <img
                                             src={user?.profilePicture || `https://ui-avatars.com/api/?name=${user?.firstName}+${user?.lastName}&background=384A99&color=fff`}
                                             alt={user?.firstName}
-                                            className="w-7 h-7 xl:w-8 xl:h-8 rounded-full border-2 border-[#0d1127] object-cover"
+                                            className="w-7 h-7 xl:w-8 xl:h-8 rounded-full border-2 border-[#161b33] object-cover"
                                             referrerPolicy="no-referrer"
                                         />
                                     </div>
                                     {user?.role === 'admin' && (
-                                        <div className="absolute -top-1 -right-1 w-2.5 h-2.5 xl:w-3 xl:h-3 bg-secondary-500 rounded-full border-2 border-[#0d1127] shadow-sm"></div>
+                                        <div className="absolute -top-1 -right-1 w-2.5 h-2.5 xl:w-3 xl:h-3 bg-secondary-500 rounded-full border-2 border-[#161b33] shadow-sm"></div>
                                     )}
                                 </div>
                                 <div className="hidden lg:flex flex-col overflow-hidden min-w-0 flex-1 max-w-[15vw] xl:max-w-[20vw]">
@@ -175,7 +175,7 @@ export default function Layout() {
 
                 {/* Mobile Menu */}
                 {isMobileMenuOpen && (
-                    <div className="md:hidden border-t border-primary-500/10 bg-[#0d1127]/95 backdrop-blur-md">
+                    <div className="md:hidden border-t border-primary-500/10 bg-[#161b33]/95 backdrop-blur-md">
                         <div className="px-4 py-4 space-y-2">
                             {NAV_ITEMS.map((item) => (
                                 <NavLink
@@ -225,7 +225,7 @@ export default function Layout() {
 
             {/* Footer - Hidden in Quiz/Survey views to avoid overlap */}
             {!location.pathname.includes('/quiz/') && !location.pathname.includes('/survey/') && (
-                <footer className="mt-auto border-t border-primary-500/10 bg-[#0d1127]/50 backdrop-blur-sm relative z-0">
+                <footer className="mt-auto border-t border-primary-500/10 bg-[#161b33]/50 backdrop-blur-sm relative z-0">
                     <div className="w-full px-4 sm:px-6 lg:px-12 py-6">
                         <div className="flex flex-col sm:flex-row justify-between items-center gap-6">
                             <div className="flex items-center gap-4 opacity-70">

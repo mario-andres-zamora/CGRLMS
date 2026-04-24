@@ -191,7 +191,7 @@ export function useLessonView() {
                                 icon: '🏆',
                                 style: {
                                     border: '1px solid rgba(229, 123, 60, 0.4)',
-                                    background: '#0d1127'
+                                    background: '#161b33'
                                 }
                             }
                         );

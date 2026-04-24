@@ -10,7 +10,7 @@ export default function Login() {
     const { googleLogin, isLoading } = useLogin();
 
     return (
-        <div className="min-h-screen flex flex-col bg-[#0d1127] relative overflow-hidden">
+        <div className="min-h-screen flex flex-col bg-[#1e2648] relative overflow-hidden">
             <LoginBackground />
 
             <div className="flex-1 flex flex-col items-center justify-center p-4 relative z-10 py-12">

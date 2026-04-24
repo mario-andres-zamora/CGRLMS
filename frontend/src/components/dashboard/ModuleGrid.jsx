@@ -28,7 +28,7 @@ export default function ModuleGrid({ modules }) {
                 ) : (
                     <div className="col-span-full py-24 text-center bg-[#0B0F1C] rounded-[2rem] border border-dashed border-white/5">
                         <p className="text-gray-500 font-bold uppercase tracking-widest text-xs opacity-60">
-                            No se detectan módulos en esta región de datos.
+                            No hay módulos disponibles en este momento.
                         </p>
                     </div>
                 )}
@@ -58,13 +58,12 @@ function ModuleCard({ module, navigate }) {
     return (
         <div
             onClick={handleCardClick}
-            className={`group relative flex flex-col p-6 rounded-[2rem] border transition-all cursor-pointer overflow-hidden shadow-2xl ${
-                isCompleted 
-                ? 'bg-emerald-500/[0.03] border-emerald-500/20 hover:border-emerald-500/40' 
-                : isUpcoming 
-                    ? 'bg-slate-900/40 border-white/5 opacity-80 hover:opacity-100'
-                    : 'bg-[#151B2E] border-white/5 hover:border-white/10'
-            }`}
+            className={`group relative flex flex-col p-6 rounded-[2rem] border transition-all cursor-pointer overflow-hidden shadow-2xl ${isCompleted
+                    ? 'bg-emerald-500/[0.03] border-emerald-500/20 hover:border-emerald-500/40'
+                    : isUpcoming
+                        ? 'bg-slate-900/40 border-white/5 opacity-80 hover:opacity-100'
+                        : 'bg-[#151B2E] border-white/5 hover:border-white/10'
+                }`}
         >
             {/* Completion Badge Overlay */}
             {isCompleted && (
@@ -72,9 +71,8 @@ function ModuleCard({ module, navigate }) {
             )}
 
             <div className="flex justify-between items-start mb-6 relative z-10 min-h-[48px] text-left">
-                <h3 className={`text-base font-bold leading-tight line-clamp-3 transition-colors ${
-                    isCompleted ? 'text-emerald-400' : isUpcoming ? 'text-gray-400' : 'text-white'
-                }`}>
+                <h3 className={`text-base font-bold leading-tight line-clamp-3 transition-colors ${isCompleted ? 'text-emerald-400' : isUpcoming ? 'text-gray-400' : 'text-white'
+                    }`}>
                     {module.title}
                 </h3>
                 {isCompleted && <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-1 drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]" />}
@@ -87,9 +85,8 @@ function ModuleCard({ module, navigate }) {
                             initial={{ opacity: 0.8 }}
                             animate={{ opacity: [0.8, 1, 0.8] }}
                             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                            className={`w-full py-5 flex flex-col items-center justify-center gap-2 rounded-2xl border px-4 ${
-                                isUpcoming ? 'bg-slate-900/60 border-white/5 text-gray-600' : 'bg-orange-500/5 border-orange-500/10 text-orange-400/60'
-                            }`}
+                            className={`w-full py-5 flex flex-col items-center justify-center gap-2 rounded-2xl border px-4 ${isUpcoming ? 'bg-slate-900/60 border-white/5 text-gray-600' : 'bg-orange-500/5 border-orange-500/10 text-orange-400/60'
+                                }`}
                         >
                             <div className="flex items-center gap-2.5 text-[10px] font-bold uppercase tracking-[0.2em]">
                                 {isUpcoming ? <CyberCat className="w-6 h-6 opacity-30" variant="static" color="#64748B" /> : <Lock className="w-3.5 h-3.5" />}
@@ -101,7 +98,7 @@ function ModuleCard({ module, navigate }) {
                                 </p>
                             )}
                         </motion.div>
-                        
+
                         {isUpcoming && (
                             <div className="w-full py-3 rounded-xl bg-slate-800/40 text-gray-600 text-[9px] font-bold uppercase tracking-[0.2em] border border-white/5 flex items-center justify-center gap-2 cursor-not-allowed">
                                 PRÓXIMAMENTE
@@ -117,11 +114,10 @@ function ModuleCard({ module, navigate }) {
                             </div>
                             <div className={`h-1.5 rounded-full overflow-hidden ${isCompleted ? 'bg-emerald-950/30' : 'bg-slate-950'}`}>
                                 <div
-                                    className={`h-full transition-all duration-1000 shadow-sm ${
-                                        isCompleted 
-                                        ? 'bg-gradient-to-r from-emerald-600 to-teal-500' 
-                                        : 'bg-gradient-to-r from-[#EF8843] to-[#E56B24]'
-                                    }`}
+                                    className={`h-full transition-all duration-1000 shadow-sm ${isCompleted
+                                            ? 'bg-gradient-to-r from-emerald-600 to-teal-500'
+                                            : 'bg-gradient-to-r from-[#EF8843] to-[#E56B24]'
+                                        }`}
                                     style={{ width: `${module.progress || 0}%` }}
                                 ></div>
                             </div>
@@ -130,13 +126,12 @@ function ModuleCard({ module, navigate }) {
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
-                                  handleNavigation();
+                                handleNavigation();
                             }}
-                            className={`w-full py-3 rounded-xl text-[9px] font-bold uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 group/btn shadow-xl border ${
-                                isCompleted
-                                ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500 hover:text-white'
-                                : 'bg-gradient-to-r from-[#EF8843] to-[#E56B24] text-white border-transparent shadow-orange-500/10'
-                            }`}
+                            className={`w-full py-3 rounded-xl text-[9px] font-bold uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 group/btn shadow-xl border ${isCompleted
+                                    ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500 hover:text-white'
+                                    : 'bg-gradient-to-r from-[#EF8843] to-[#E56B24] text-white border-transparent shadow-orange-500/10'
+                                }`}
                         >
                             {isCompleted ? (
                                 <>FINALIZADO <CheckCircle2 className="w-4 h-4 group-hover/btn:scale-110 transition-transform" /></>

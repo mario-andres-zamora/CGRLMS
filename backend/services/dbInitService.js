@@ -12,6 +12,7 @@ const initializeDatabase = async () => {
                 user_id INT NOT NULL,
                 content_id INT NOT NULL,
                 completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                response_data JSON COMMENT 'Almacena respuestas de interactivos dentro de lecciones',
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
                 FOREIGN KEY (content_id) REFERENCES lesson_contents(id) ON DELETE CASCADE,
                 UNIQUE KEY unique_user_content (user_id, content_id),
@@ -19,6 +20,14 @@ const initializeDatabase = async () => {
                 INDEX idx_content_id (content_id)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         `);
+
+        // Migración: Añadir response_data si la tabla ya existía sin ella
+        const [columns] = await db.query("SHOW COLUMNS FROM user_content_progress LIKE 'response_data'");
+        if (columns.length === 0) {
+            logger.info('➕ Añadiendo columna missing response_data a user_content_progress...');
+            await db.query("ALTER TABLE user_content_progress ADD COLUMN response_data JSON AFTER completed_at");
+        }
+
 
         // Crear tablas de encuestas si no existen
         await db.query(`
@@ -80,11 +89,6 @@ const initializeDatabase = async () => {
                 FOREIGN KEY (question_id) REFERENCES survey_questions(id) ON DELETE CASCADE,
                 FOREIGN KEY (option_id) REFERENCES survey_options(id) ON DELETE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-        `);
-
-        // Actualizar tabla de insignias para incluir puntos
-        await db.query(`
-            ALTER TABLE badges ADD COLUMN IF NOT EXISTS points INT DEFAULT 10;
         `);
 
         logger.info('✅ Estructura de base de datos verificada y actualizada.');

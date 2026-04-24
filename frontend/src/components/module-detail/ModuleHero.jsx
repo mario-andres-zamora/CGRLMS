@@ -20,7 +20,7 @@ export default function ModuleHero({ module, onBack, onStart, onCelebrate }) {
                         if (module.image_url) e.target.src = module.image_url;
                     }}
                 />
-                <div className="absolute inset-0 bg-gradient-to-r from-[#0d1127] via-[#0d1127]/60 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-[#161b33] via-[#161b33]/60 to-transparent"></div>
             </div>
 
             <div className="relative z-10 p-8 md:p-10 flex flex-col md:flex-row gap-8 items-center">

@@ -4,7 +4,7 @@ export default function DashboardBanner({ user, stats }) {
     return (
         <div className="space-y-2 md:space-y-3">
             {/* Banner Principal del Curso */}
-            <div className="relative w-full h-24 md:h-32 rounded-[1.5rem] overflow-hidden bg-[#0d1127] border border-white/5 shadow-2xl">
+            <div className="relative w-full h-24 md:h-32 rounded-[1.5rem] overflow-hidden bg-[#161b33] border border-white/5 shadow-2xl">
                 <img
                     src={primaryBanner}
                     alt="Banner Principal del Curso"
@@ -21,7 +21,7 @@ export default function DashboardBanner({ user, stats }) {
                         alt="Dashboard Hero"
                         className="w-full h-full object-cover opacity-20 group-hover:scale-105 transition-transform duration-10000"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#0d1127] via-[#0d1127]/60 to-transparent"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#161b33] via-[#161b33]/60 to-transparent"></div>
                 </div>
 
                 <div className="relative z-10 px-4 py-3 md:px-8 md:py-4 flex flex-col md:flex-row justify-between items-center gap-6">

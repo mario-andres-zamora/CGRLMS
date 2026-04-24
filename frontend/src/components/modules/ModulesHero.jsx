@@ -11,7 +11,7 @@ export default function ModulesHero() {
                     alt="Hero Background"
                     className="w-full h-full object-cover opacity-20"
                 />
-                <div className="absolute inset-0 bg-gradient-to-r from-[#0d1127] via-[#0d1127]/80 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-[#161b33] via-[#161b33]/80 to-transparent"></div>
             </div>
 
             <div className="relative z-10 p-6 md:p-8 flex flex-col lg:flex-row justify-between items-center gap-6">

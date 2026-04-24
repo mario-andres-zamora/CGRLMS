@@ -470,6 +470,7 @@ CREATE TABLE IF NOT EXISTS user_content_progress (
     user_id INT NOT NULL,
     content_id INT NOT NULL,
     completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    response_data JSON COMMENT 'Almacena respuestas de interactivos dentro de lecciones',
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (content_id) REFERENCES lesson_contents(id) ON DELETE CASCADE,
     UNIQUE KEY unique_user_content (user_id, content_id),
