@@ -5,15 +5,24 @@ class EmailService {
     constructor() {
         this.transporter = nodemailer.createTransport({
             host: process.env.EMAIL_HOST,
-            port: process.env.EMAIL_PORT,
-            secure: false, // false para puerto 587
-            requireTLS: true,
+            port: parseInt(process.env.EMAIL_PORT),
+            secure: false, // true para 465, false para otros
             auth: {
                 user: process.env.EMAIL_USER,
                 pass: process.env.EMAIL_PASSWORD,
             },
             tls: {
-                rejectUnauthorized: false // Ayuda con certificados locales/docker
+                // Requerido para Gmail y otros servicios modernos
+                rejectUnauthorized: false
+            }
+        });
+
+        // Verificar conexión al inicio
+        this.transporter.verify((error, success) => {
+            if (error) {
+                logger.error('Error en conexión SMTP:', error);
+            } else {
+                logger.info('Servidor de correo listo para enviar mensajes');
             }
         });
     }
@@ -42,123 +51,26 @@ class EmailService {
             badgePath = path.join(assetsPath, 'shield.svg');
         }
 
-        // ... (resto del HTML igual) ...
-
         const htmlContent = `
         <!DOCTYPE html>
         <html>
         <head>
             <meta charset="utf-8">
             <style>
-                body {
-                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                    background-color: #04060b;
-                    margin: 0;
-                    padding: 0;
-                    color: #ffffff;
-                }
-                .container {
-                    max-width: 600px;
-                    margin: 20px auto;
-                    background-color: #0b0f1c;
-                    border-radius: 24px;
-                    border: 1px solid rgba(255,255,255,0.05);
-                    overflow: hidden;
-                    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-                }
-                .header {
-                    background-color: #0d111d;
-                    padding: 40px 20px;
-                    text-align: center;
-                    border-bottom: 2px solid #EF8843;
-                }
-                .logo-institucional {
-                    width: 120px;
-                    margin-bottom: 20px;
-                }
-                .header-title {
-                    margin-top: 10px;
-                }
-                .cgr-segura-logo {
-                    width: 300px;
-                    height: auto;
-                }
-                .content {
-                    padding: 40px;
-                    text-align: center;
-                }
-                .badge-container {
-                    margin: 30px auto;
-                    width: 200px;
-                    height: 200px;
-                    background-color: #111627;
-                    border-radius: 40px;
-                    border: 1px solid rgba(255,255,255,0.1);
-                    text-align: center; /* Centrado horizontal */
-                    line-height: 200px; /* Centrado vertical básico */
-                    box-shadow: 0 15px 30px rgba(0,0,0,0.3);
-                }
-                .badge-image {
-                    width: 140px;
-                    height: 140px;
-                    vertical-align: middle; /* Centrado vertical */
-                    object-fit: contain;
-                }
-                .congrats {
-                    color: #EF8843;
-                    text-transform: uppercase;
-                    font-weight: 900;
-                    letter-spacing: 2px;
-                    font-size: 14px;
-                    margin-bottom: 10px;
-                }
-                h1 {
-                    font-size: 26px;
-                    margin: 0 0 15px 0;
-                    font-weight: 800;
-                    letter-spacing: -0.5px;
-                    color: #ffffff;
-                }
-                p {
-                    color: #94a3b8;
-                    line-height: 1.6;
-                    font-size: 15px;
-                }
-                .badge-name {
-                    color: #ffffff;
-                    font-weight: 700;
-                    font-size: 22px;
-                    margin: 20px 0 5px 0;
-                }
-                .badge-desc {
-                    color: #64748b;
-                    font-size: 14px;
-                    font-style: italic;
-                    margin-bottom: 35px;
-                    max-width: 80%;
-                    margin-left: auto;
-                    margin-right: auto;
-                }
-                .button {
-                    display: inline-block;
-                    background-color: #384A99;
-                    color: #ffffff !important;
-                    text-decoration: none;
-                    padding: 16px 40px;
-                    border-radius: 16px;
-                    font-weight: 800;
-                    font-size: 12px;
-                    text-transform: uppercase;
-                    letter-spacing: 1px;
-                }
-                .footer {
-                    background-color: rgba(0,0,0,0.2);
-                    padding: 30px;
-                    text-align: center;
-                    font-size: 11px;
-                    color: #475569;
-                    border-top: 1px solid rgba(255,255,255,0.05);
-                }
+                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #04060b; margin: 0; padding: 0; color: #ffffff; }
+                .container { max-width: 600px; margin: 20px auto; background-color: #0b0f1c; border-radius: 24px; border: 1px solid rgba(255,255,255,0.05); overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+                .header { background-color: #0d111d; padding: 40px 20px; text-align: center; border-bottom: 2px solid #EF8843; }
+                .logo-institucional { width: 120px; margin-bottom: 20px; }
+                .content { padding: 40px; text-align: center; }
+                .badge-container { margin: 30px auto; width: 200px; height: 200px; background-color: #111627; border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); text-align: center; line-height: 200px; box-shadow: 0 15px 30px rgba(0,0,0,0.3); }
+                .badge-image { width: 140px; height: 140px; vertical-align: middle; object-fit: contain; }
+                .congrats { color: #EF8843; text-transform: uppercase; font-weight: 900; letter-spacing: 2px; font-size: 14px; margin-bottom: 10px; }
+                h1 { font-size: 26px; margin: 0 0 15px 0; font-weight: 800; letter-spacing: -0.5px; color: #ffffff; }
+                p { color: #94a3b8; line-height: 1.6; font-size: 15px; }
+                .badge-name { color: #ffffff; font-weight: 700; font-size: 22px; margin: 20px 0 5px 0; }
+                .badge-desc { color: #64748b; font-size: 14px; font-style: italic; margin-bottom: 35px; max-width: 80%; margin-left: auto; margin-right: auto; }
+                .button { display: inline-block; background-color: #384A99; color: #ffffff !important; text-decoration: none; padding: 16px 40px; border-radius: 16px; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+                .footer { background-color: rgba(0,0,0,0.2); padding: 30px; text-align: center; font-size: 11px; color: #475569; border-top: 1px solid rgba(255,255,255,0.05); }
             </style>
         </head>
         <body>
@@ -222,7 +134,78 @@ class EmailService {
             logger.info(`Email de insignia enviado a: ${userEmail}`);
         } catch (error) {
             logger.error(`Error enviando email de insignia a ${userEmail}:`, error);
-            throw error; // Re-lanzamos para que el controlador lo capture
+            throw error;
+        }
+    }
+
+    /**
+     * Envía un correo de invitación a funcionarios que no han ingresado
+     */
+    async sendInvitationEmail(userEmail, userName) {
+        const path = require('path');
+        const fs = require('fs');
+        const assetsPath = path.resolve(__dirname, '../assets/images');
+
+        const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <style>
+                body { font-family: 'Segoe UI', sans-serif; background-color: #04060b; margin: 0; padding: 0; color: #ffffff; }
+                .container { max-width: 600px; margin: 20px auto; background-color: #0b0f1c; border-radius: 24px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
+                .header { background-color: #0d111d; padding: 40px 20px; text-align: center; border-bottom: 2px solid #EF8843; }
+                .logo-institucional { width: 120px; }
+                .content { padding: 40px; text-align: center; }
+                h1 { font-size: 26px; font-weight: 800; color: #ffffff; margin-bottom: 20px; }
+                p { color: #94a3b8; line-height: 1.6; font-size: 16px; margin-bottom: 30px; }
+                .button { display: inline-block; background-color: #384A99; color: #ffffff !important; text-decoration: none; padding: 16px 40px; border-radius: 16px; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+                .footer { background-color: rgba(0,0,0,0.2); padding: 30px; text-align: center; font-size: 11px; color: #475569; border-top: 1px solid rgba(255,255,255,0.05); }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <img src="cid:logo_institucional" alt="CGR" class="logo-institucional">
+                    <div style="margin-top: 10px;">
+                        <span style="color: #ffffff; font-size: 38px; font-weight: 900;">CGR</span>
+                        <span style="color: #EF8843; font-size: 38px; font-weight: 900;"> SEGUR@</span>
+                    </div>
+                </div>
+                <div class="content">
+                    <h1>¡Hola, ${userName}!</h1>
+                    <p>Te invitamos a formar parte del <strong>Programa de Concientización en Ciberseguridad</strong> de la Contraloría General de la República.</p>
+                    <p>Tu participación es fundamental para fortalecer la seguridad digital de nuestra institución. Ingresa hoy mismo y comienza tu camino de aprendizaje.</p>
+                    <a href="https://cgrsegura.cgr.go.cr" class="button">Ingresar a la Plataforma</a>
+                </div>
+                <div class="footer">
+                    &copy; 2026 Contraloría General de la República de Costa Rica<br>
+                    Programa de Concientización en Ciberseguridad
+                </div>
+            </div>
+        </body>
+        </html>
+        `;
+
+        const attachments = [
+            {
+                filename: 'logo-cgr-blanco.png',
+                path: path.join(assetsPath, 'Logotipo-CGR-blanco-transp.png'),
+                cid: 'logo_institucional'
+            }
+        ];
+
+        try {
+            await this.transporter.sendMail({
+                from: process.env.EMAIL_FROM,
+                to: userEmail,
+                subject: '🛡️ Invitación: Programa de Concientización en Ciberseguridad CGR Segur@',
+                html: htmlContent,
+                attachments: attachments
+            });
+            logger.info(`Email de invitación enviado a: ${userEmail}`);
+        } catch (error) {
+            logger.error(`Error enviando email de invitación a ${userEmail}:`, error);
         }
     }
 }

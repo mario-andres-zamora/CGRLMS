@@ -100,6 +100,7 @@ export default function Reports() {
                         <div className="lg:col-span-3">
                             <RiskAlerts 
                                 atRisk={atRisk}
+                                departments={departments}
                                 onSendReminders={handleSendReminders}
                             />
                         </div>

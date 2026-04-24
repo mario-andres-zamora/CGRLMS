@@ -97,15 +97,23 @@ export function useReports() {
         document.body.removeChild(link);
     };
 
-    const handleSendReminders = () => {
-        toast.promise(
-            new Promise(resolve => setTimeout(resolve, 2000)),
-            {
-                loading: 'Preparando correos para funcionarios en riesgo...',
-                success: 'Recordatorios enviados correctamente',
-                error: 'Error al enviar recordatorios',
+    const handleSendReminders = async (department) => {
+        if (!department) {
+            toast.error('Por favor selecciona una unidad primero');
+            return;
+        }
+
+        const toastId = toast.loading(`Enviando invitaciones a la unidad: ${department}...`);
+        try {
+            const response = await axios.post(`${API_URL}/reports/remind-unregistered`, { department });
+            if (response.data.success) {
+                toast.success(response.data.message, { id: toastId, duration: 5000 });
+            } else {
+                throw new Error(response.data.error || 'Error desconocido');
             }
-        );
+        } catch (error) {
+            toast.error(error.response?.data?.error || 'Error al enviar invitaciones masivas', { id: toastId });
+        }
     };
 
     const filteredUsers = useMemo(() => {

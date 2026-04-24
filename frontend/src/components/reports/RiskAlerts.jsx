@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { AlertTriangle, CheckCircle2, Mail, ChevronLeft, ChevronRight, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-export default function RiskAlerts({ atRisk, onSendReminders }) {
+export default function RiskAlerts({ atRisk, departments = [], onSendReminders }) {
     const [currentPage, setCurrentPage] = useState(1);
+    const [selectedDept, setSelectedDept] = useState('');
     const itemsPerPage = 5;
 
     const totalPages = Math.ceil(atRisk.length / itemsPerPage);
@@ -27,7 +28,7 @@ export default function RiskAlerts({ atRisk, onSendReminders }) {
     return (
         <div className="card bg-red-500/5 border-red-500/20 p-8 space-y-6 relative overflow-hidden group text-left">
             <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 rounded-bl-full blur-[80px] group-hover:bg-red-500/20 transition-all"></div>
-            
+
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="space-y-1">
                     <h3 className="text-lg font-black text-red-400 uppercase tracking-tight flex items-center gap-3">
@@ -70,7 +71,7 @@ export default function RiskAlerts({ atRisk, onSendReminders }) {
                             <th className="px-4 py-3 text-[8px] font-black text-gray-400 uppercase tracking-widest text-right">Acción</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5 block sm:table-row-group w-full max-h-[300px] overflow-y-auto w-full">
+                    <tbody className="divide-y divide-white/5 block sm:table-row-group w-full max-h-[300px] overflow-y-auto">
                         {paginatedItems.length > 0 ? paginatedItems.map((user, idx) => (
                             <tr key={idx} className="hover:bg-red-500/5 transition-colors block sm:table-row w-full">
                                 <td className="px-4 py-3 block sm:table-cell">
@@ -84,7 +85,7 @@ export default function RiskAlerts({ atRisk, onSendReminders }) {
                                     <span className="text-[11px] font-black text-red-500">{Math.round(user.progress)}%</span>
                                 </td>
                                 <td className="px-4 py-3 text-right block sm:table-cell">
-                                    <button 
+                                    <button
                                         onClick={() => handleIndividualReminder(`${user.first_name} ${user.last_name}`)}
                                         className="p-2 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-lg transition-all duration-300 group/btn shadow-lg shadow-red-500/0 hover:shadow-red-500/20"
                                         title="Enviar recordatorio individual"
@@ -107,12 +108,35 @@ export default function RiskAlerts({ atRisk, onSendReminders }) {
                 </table>
             </div>
 
-            <button
-                onClick={onSendReminders}
-                className="w-full py-5 bg-red-500 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-red-400 transition-all shadow-xl shadow-red-500/20 active:scale-95 flex items-center justify-center gap-3"
-            >
-                <Mail className="w-4 h-4" /> Enviar Recordatorio Masivo
-            </button>
+            <div className="space-y-4">
+                <div className="flex flex-col gap-2">
+                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest px-1">Seleccionar Unidad para Invitaciones</label>
+                    <select
+                        value={selectedDept}
+                        onChange={(e) => setSelectedDept(e.target.value)}
+                        className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-[10px] font-bold text-white focus:outline-none focus:border-red-500/50 transition-all appearance-none cursor-pointer"
+                    >
+                        <option value="">-- Seleccionar Área --</option>
+                        {departments.map((dept, idx) => (
+                            <option key={idx} value={dept.department}>{dept.department}</option>
+                        ))}
+                    </select>
+                </div>
+
+                <button
+                    onClick={() => onSendReminders(selectedDept)}
+                    disabled={!selectedDept}
+                    className={`w-full py-5 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all shadow-xl flex items-center justify-center gap-3 active:scale-95 ${selectedDept
+                            ? 'bg-red-500 text-white hover:bg-red-400 shadow-red-500/20'
+                            : 'bg-white/5 text-gray-500 cursor-not-allowed opacity-50'
+                        }`}
+                >
+                    <Mail className="w-4 h-4" /> Enviar Invitación a No Registrados
+                </button>
+                <p className="text-[9px] text-gray-500 text-center font-bold italic">
+                    * Se enviará un correo a todos los funcionarios del área que aún no han ingresado a la plataforma.
+                </p>
+            </div>
         </div>
     );
 }

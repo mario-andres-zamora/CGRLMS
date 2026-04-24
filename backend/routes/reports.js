@@ -405,4 +405,60 @@ router.get('/module-completions-detail', authMiddleware, adminMiddleware, async 
     }
 });
 
+/**
+ * @route   POST /api/reports/remind-unregistered
+ * @desc    Enviar correos de invitación a funcionarios que no han ingresado a la plataforma
+ * @access  Private/Admin
+ */
+router.post('/remind-unregistered', authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+        const { department } = req.body;
+
+        if (!department) {
+            return res.status(400).json({ error: 'El nombre del departamento es requerido' });
+        }
+
+        // 1. Encontrar funcionarios en el directorio que NO tengan usuario creado
+        const pendingUsers = await db.query(`
+            SELECT s.full_name, s.email 
+            FROM staff_directory s 
+            LEFT JOIN users u ON s.email = u.email 
+            WHERE s.department = ? AND u.id IS NULL
+        `, [department]);
+
+        if (pendingUsers.length === 0) {
+            return res.json({ success: true, message: 'No hay funcionarios pendientes de registro en este departamento.' });
+        }
+
+        const emailService = require('../services/emailService');
+        let sentCount = 0;
+        let errorCount = 0;
+
+        // 2. Enviar correos de forma secuencial (para no saturar el servidor de correo)
+        // Usamos un bucle simple con await
+        for (const user of pendingUsers) {
+            try {
+                await emailService.sendInvitationEmail(user.email, user.full_name);
+                sentCount++;
+                // Pequeño delay de 200ms entre correos
+                await new Promise(resolve => setTimeout(resolve, 200));
+            } catch (err) {
+                errorCount++;
+                logger.error(`Fallo al enviar invitación a ${user.email}:`, err);
+            }
+        }
+
+        res.json({ 
+            success: true, 
+            message: `Proceso finalizado. Invitaciones enviadas: ${sentCount}. Fallidos: ${errorCount}.`,
+            sentCount,
+            errorCount
+        });
+
+    } catch (error) {
+        logger.error('Error en proceso de recordatorio masivo:', error);
+        res.status(500).json({ error: 'Error interno al procesar los recordatorios' });
+    }
+});
+
 module.exports = router;
