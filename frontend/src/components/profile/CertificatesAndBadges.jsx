@@ -31,7 +31,7 @@ export default function CertificatesAndBadges({ certificates, badges, stats, onC
                 ) : (
                     <div className="p-8 rounded-3xl bg-slate-800/10 border border-dashed border-white/5 text-center">
                         <Award className="w-10 h-10 text-gray-700 mx-auto mb-3 opacity-20" />
-                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Completa módulos para obtener títulos oficiales</p>
+                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">No has obtenido certificados todavia</p>
                     </div>
                 )}
             </div>
@@ -91,7 +91,7 @@ export default function CertificatesAndBadges({ certificates, badges, stats, onC
                             </div>
                         </div>
                     ))}
-                    
+
                     {/* Placeholder for locked badges */}
                     {[...Array(Math.max(0, 8 - (badges?.length || 0)))].map((_, i) => (
                         <div key={`locked-${i}`} className="flex flex-col gap-3 opacity-20 grayscale transition-opacity hover:opacity-30">

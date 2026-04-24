@@ -4,7 +4,7 @@ const logger = require('../config/logger');
 /**
  * Automáticamente revisa y asigna insignias según criterios específicos.
  */
-async function awardBadge(userId, badgeId) {
+async function awardBadge(userId, badgeId, shouldNotify = false) {
     try {
         const [badge] = await db.query('SELECT * FROM badges WHERE id = ?', [badgeId]);
         if (!badge) return null;
@@ -18,6 +18,19 @@ async function awardBadge(userId, badgeId) {
         if (result.affectedRows > 0) {
             logger.info(`Insignia otorgada: ${badge.name} al usuario ${userId}`);
             
+            // Obtener datos del usuario para el correo
+            let userEmail = null;
+            let userName = null;
+            try {
+                const [userData] = await db.query('SELECT email, first_name FROM users WHERE id = ?', [userId]);
+                if (userData) {
+                    userEmail = userData.email;
+                    userName = userData.first_name;
+                }
+            } catch (userError) {
+                logger.error('Error obteniendo datos de usuario para email de insignia:', userError);
+            }
+
             // Otorgar puntos extra por insignia ganada según su configuración (default 10)
             const pointsToAward = badge.points !== undefined && badge.points !== null ? badge.points : 10;
             
@@ -33,6 +46,21 @@ async function awardBadge(userId, badgeId) {
                      ON DUPLICATE KEY UPDATE points = points + ?`,
                     [userId, pointsToAward, pointsToAward]
                 );
+            }
+
+            // Enviar notificación por correo (ahora esperamos el resultado para informar al admin)
+            let emailSent = false;
+            let emailError = null;
+
+            if (shouldNotify && userEmail) {
+                const emailService = require('../services/emailService');
+                try {
+                    await emailService.sendBadgeNotification(userEmail, userName || 'Usuario', badge);
+                    emailSent = true;
+                } catch (err) {
+                    emailError = err.message;
+                    logger.error('Error en trigger de email de insignia:', err);
+                }
             }
 
             // Sincronizar con Redis para ranking (obtener puntos totales primero)
@@ -62,7 +90,7 @@ async function awardBadge(userId, badgeId) {
                 logger.error('Error invalidando caché tras insignia:', cacheError);
             }
 
-            return { awarded: true, badge };
+            return { awarded: true, badge, emailSent, emailError };
         }
 
         return { awarded: false, message: 'Ya tiene la insignia' };

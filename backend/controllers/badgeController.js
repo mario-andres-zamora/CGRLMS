@@ -77,8 +77,22 @@ class BadgeController {
                 return res.status(400).json({ error: 'Usuario e insignia son obligatorios' });
             }
 
-            await badgeService.awardBadge(userId, badgeId);
-            res.json({ success: true, message: 'Insignia asignada correctamente' });
+            const result = await badgeService.awardBadge(userId, badgeId, true);
+            
+            // Informar sobre el estado del correo
+            let message = 'Insignia asignada correctamente.';
+            if (result && result.emailSent) {
+                message += ' Notificación enviada por correo.';
+            } else if (result && result.emailError) {
+                message += ` Pero hubo un error con el correo: ${result.emailError}`;
+            }
+
+            res.json({ 
+                success: true, 
+                message,
+                emailSent: result ? result.emailSent : false,
+                emailError: result ? result.emailError : null
+            });
         } catch (error) {
             logger.error('Error al asignar insignia:', error);
             res.status(500).json({ error: 'Error al asignar la insignia' });
@@ -100,7 +114,7 @@ class BadgeController {
 
             // Usar utils/badges.js para que asigne también los puntos
             const badgesUtil = require('../utils/badges');
-            const result = await badgesUtil.awardBadge(user.id, badgeId);
+            const result = await badgesUtil.awardBadge(user.id, badgeId, true);
 
             if (result && result.error) {
                 return res.status(500).json({ error: 'Error interno al asignar insignia' });
@@ -110,7 +124,20 @@ class BadgeController {
                 return res.status(400).json({ error: result.message || 'El usuario ya tiene esta insignia' });
             }
 
-            res.json({ success: true, message: 'Insignia asignada correctamente y puntos sumados' });
+            // Informar sobre el estado del correo
+            let message = 'Insignia asignada correctamente y puntos sumados.';
+            if (result.emailSent) {
+                message += ' Notificación enviada por correo.';
+            } else if (result.emailError) {
+                message += ` Pero hubo un error con el correo: ${result.emailError}`;
+            }
+
+            res.json({ 
+                success: true, 
+                message,
+                emailSent: result.emailSent,
+                emailError: result.emailError
+            });
         } catch (error) {
             logger.error('Error al asignar insignia por email:', error);
             res.status(500).json({ error: 'Error al asignar la insignia' });

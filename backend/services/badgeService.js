@@ -54,12 +54,9 @@ class BadgeService {
         `, [userId]);
     }
 
-    async awardBadge(userId, badgeId) {
-        // INSERT IGNORE to prevent duplicate badges for the same user
-        return await db.query(
-            'INSERT IGNORE INTO user_badges (user_id, badge_id) VALUES (?, ?)',
-            [userId, badgeId]
-        );
+    async awardBadge(userId, badgeId, shouldNotify = false) {
+        const badgesUtil = require('../utils/badges');
+        return await badgesUtil.awardBadge(userId, badgeId, shouldNotify);
     }
 }
 
