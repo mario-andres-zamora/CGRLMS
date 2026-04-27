@@ -52,10 +52,15 @@ export default function ParticipantListView({
                                     <img src={(isMe ? loggedUser?.profilePicture : p.profile_picture) || `https://ui-avatars.com/api/?name=${p.first_name}+${p.last_name}&background=384A99&color=fff`} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                                 </div>
                                 <div className="px-2">
-                                    <p className={`font-black uppercase text-sm ${isMe ? 'text-primary-400' : 'text-white'}`}>
-                                        {p.first_name} {p.last_name}
-                                        {isMe && <span className="ml-2 text-[8px] bg-primary-500 text-white px-1.5 py-0.5 rounded">TÚ</span>}
-                                    </p>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <p className={`font-black uppercase text-sm ${isMe ? 'text-primary-400' : 'text-white'}`}>
+                                            {p.first_name} {p.last_name}
+                                            {isMe && <span className="ml-2 text-[8px] bg-primary-500 text-white px-1.5 py-0.5 rounded whitespace-nowrap">TÚ</span>}
+                                        </p>
+                                        <span className={`text-[8px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest border whitespace-nowrap ${isMe ? 'bg-primary-500/20 border-primary-500/40 text-primary-300' : 'bg-slate-700/50 border-white/10 text-gray-400'}`}>
+                                            {p.level}
+                                        </span>
+                                    </div>
                                     <p className={`text-[10px] ${isMe ? 'text-white/60' : 'text-gray-300'} font-bold uppercase md:hidden italic`}>{p.department}</p>
                                     {p.badges && p.badges.length > 0 && (
                                         <div className="flex flex-wrap gap-1 mt-1.5">
@@ -75,7 +80,6 @@ export default function ParticipantListView({
                             <div className={`hidden md:block col-span-3 text-center text-[10px] font-bold ${isMe ? 'text-white/60' : 'text-gray-300'} uppercase italic leading-tight`}>{p.department}</div>
                             <div className="col-span-6 md:col-span-3 text-right">
                                 <p className="text-xl font-black text-primary-400 italic leading-none">{p.points} PTS</p>
-                                <p className="text-[8px] text-gray-600 font-black uppercase tracking-[0.2em]">{p.level}</p>
                             </div>
                         </div>
                     );

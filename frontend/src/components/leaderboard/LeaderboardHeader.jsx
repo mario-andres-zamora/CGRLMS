@@ -29,6 +29,11 @@ export default function LeaderboardHero({ currentUser }) {
                         <Trophy className="w-5 h-5 text-primary-400 absolute -top-2 opacity-50" />
                         <span className="text-3xl md:text-4xl font-black text-white">#{currentUser?.globalRank || '--'}</span>
                         <span className="text-[9px] font-bold text-gray-500 tracking-widest uppercase text-center px-2">Rango CGR</span>
+                        {currentUser?.level && (
+                            <div className="absolute -bottom-2 bg-primary-600 text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest border border-primary-400">
+                                {currentUser.level}
+                            </div>
+                        )}
                     </div>
 
                     {/* Dept Rank Card */}
