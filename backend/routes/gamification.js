@@ -79,13 +79,16 @@ router.get('/leaderboard', authMiddleware, cacheMiddleware(60, true), async (req
         }
 
         const [userPointsData] = await db.query('SELECT points, level FROM user_points WHERE user_id = ?', [userId]);
+        const levels = await getLevels(true);
+        const levelIdx = levels.findIndex(l => l.name === userPointsData?.level);
+        const formattedLevel = `Nivel ${levelIdx !== -1 ? levelIdx + 1 : 1}: ${userPointsData?.level || 'Novato'}`;
 
         res.json({
             success: true,
             currentUser: {
                 userId,
                 points: userPointsData?.points || 0,
-                level: userPointsData?.level || 'Novato',
+                level: formattedLevel,
                 globalRank: myGlobalRankPos,
                 deptRank: myDeptRankPos,
                 department

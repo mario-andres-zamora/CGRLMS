@@ -376,12 +376,19 @@ const refreshLeaderboardCache = async () => {
             });
         }
 
+        const levels = await module.exports.getLevels(true);
+        const levelMap = {};
+        levels.forEach((l, idx) => {
+            levelMap[l.name] = idx + 1;
+        });
+
         const institutionalLeaderboard = instRanking.map(r => ({
             ...r,
             id: r.email,
             first_name: r.first_name || r.full_name.split(' ')[0],
             last_name: r.last_name || r.full_name.split(' ').slice(1).join(' '),
             rank_position: r.rank_position,
+            level: `Nivel ${levelMap[r.level] || 1}: ${r.level}`,
             badges: r.user_id ? (userBadgesMap[r.user_id] || []) : []
         }));
 
