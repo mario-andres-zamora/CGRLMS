@@ -116,6 +116,44 @@ export function useReports() {
         }
     };
 
+    const handleSendRiskReminders = async (users) => {
+        if (!users || users.length === 0) {
+            toast.error('No hay funcionarios en riesgo para notificar');
+            return;
+        }
+
+        const toastId = toast.loading(`Enviando alertas de riesgo a ${users.length} funcionarios...`);
+        try {
+            const response = await axios.post(`${API_URL}/reports/remind-at-risk`, { users });
+            if (response.data.success) {
+                toast.success(response.data.message, { id: toastId, duration: 5000 });
+            } else {
+                throw new Error(response.data.error || 'Error desconocido');
+            }
+        } catch (error) {
+            toast.error(error.response?.data?.error || 'Error al enviar alertas masivas', { id: toastId });
+        }
+    };
+
+    const handleSendIndividualRiskReminder = async (user) => {
+        const toastId = toast.loading(`Enviando alerta individual a ${user.first_name}...`);
+        try {
+            const response = await axios.post(`${API_URL}/reports/remind-individual-at-risk`, { 
+                email: user.email, 
+                first_name: user.first_name, 
+                last_name: user.last_name, 
+                progress: user.progress 
+            });
+            if (response.data.success) {
+                toast.success(response.data.message, { id: toastId, duration: 5000 });
+            } else {
+                throw new Error(response.data.error || 'Error desconocido');
+            }
+        } catch (error) {
+            toast.error(error.response?.data?.error || 'Error al enviar alerta individual', { id: toastId });
+        }
+    };
+
     const filteredUsers = useMemo(() => {
         if (!reportData?.detailedUsers) return [];
         return reportData.detailedUsers.filter(u =>
@@ -162,6 +200,8 @@ export function useReports() {
         requestSort,
         handleExportCSV,
         handleSendReminders,
+        handleSendRiskReminders,
+        handleSendIndividualRiskReminder,
         filteredUsers,
         sortedDepartments,
         refreshReports,

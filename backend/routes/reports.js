@@ -145,6 +145,18 @@ const refreshReportsCache = async () => {
 
         const [certsCount] = await db.query('SELECT COUNT(*) as count FROM certificates');
 
+        // 6. Estadísticas de Insignias
+        const badgeStats = await db.query(`
+            SELECT 
+                b.name, 
+                b.icon_name, 
+                COUNT(ub.user_id) as earned_count
+            FROM badges b
+            LEFT JOIN user_badges ub ON b.id = ub.badge_id
+            GROUP BY b.id
+            ORDER BY earned_count DESC
+        `);
+
         const [pointsData] = await db.query('SELECT SUM(points) as total FROM user_points');
         const totalPoints = pointsData?.total || 0;
 
@@ -169,6 +181,11 @@ const refreshReportsCache = async () => {
                 totalCerts: certsCount.count || 0,
                 activeModules: totalModules
             },
+            badgeStats: badgeStats.map(b => ({
+                name: b.name,
+                icon: b.icon_name,
+                earned_count: b.earned_count
+            })),
             departments: deptCompliance.map(d => ({
                 department: d.department,
                 total_pax: d.total_pax,
@@ -458,6 +475,72 @@ router.post('/remind-unregistered', authMiddleware, adminMiddleware, async (req,
     } catch (error) {
         logger.error('Error en proceso de recordatorio masivo:', error);
         res.status(500).json({ error: 'Error interno al procesar los recordatorios' });
+    }
+});
+
+/**
+ * @route   POST /api/reports/remind-at-risk
+ * @desc    Enviar correos de recordatorio a todos los funcionarios con avance < 20%
+ * @access  Private/Admin
+ */
+router.post('/remind-at-risk', authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+        const { users } = req.body;
+
+        if (!users || !Array.isArray(users)) {
+            return res.status(400).json({ error: 'La lista de usuarios es requerida' });
+        }
+
+        const emailService = require('../services/emailService');
+        let sentCount = 0;
+        let errorCount = 0;
+
+        for (const user of users) {
+            try {
+                await emailService.sendRiskReminder(user.email, `${user.first_name} ${user.last_name}`, Math.round(user.progress));
+                sentCount++;
+                await new Promise(resolve => setTimeout(resolve, 200));
+            } catch (err) {
+                errorCount++;
+                logger.error(`Fallo al enviar alerta de riesgo a ${user.email}:`, err);
+            }
+        }
+
+        res.json({ 
+            success: true, 
+            message: `Proceso finalizado. Alertas enviadas: ${sentCount}. Fallidos: ${errorCount}.`,
+            sentCount,
+            errorCount
+        });
+    } catch (error) {
+        logger.error('Error en proceso de alerta masiva de riesgo:', error);
+        res.status(500).json({ error: 'Error interno al procesar las alertas' });
+    }
+});
+
+/**
+ * @route   POST /api/reports/remind-individual-at-risk
+ * @desc    Enviar correo de recordatorio individual a un funcionario con avance < 20%
+ * @access  Private/Admin
+ */
+router.post('/remind-individual-at-risk', authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+        const { email, first_name, last_name, progress } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ error: 'El email del funcionario es requerido' });
+        }
+
+        const emailService = require('../services/emailService');
+        await emailService.sendRiskReminder(email, `${first_name} ${last_name}`, Math.round(progress));
+
+        res.json({ 
+            success: true, 
+            message: `Alerta enviada correctamente a ${first_name} ${last_name}.`
+        });
+    } catch (error) {
+        logger.error('Error en alerta individual de riesgo:', error);
+        res.status(500).json({ error: 'Error al enviar la alerta individual' });
     }
 });
 

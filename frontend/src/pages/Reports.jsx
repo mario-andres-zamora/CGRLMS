@@ -11,6 +11,7 @@ import RiskAlerts from '../components/reports/RiskAlerts';
 import DetailedUserList from '../components/reports/DetailedUserList';
 import CompletionTrend from '../components/reports/CompletionTrend';
 import CompletionTimeChart from '../components/reports/CompletionTimeChart';
+import BadgeStatsChart from '../components/reports/BadgeStatsChart';
 
 export default function Reports() {
     const navigate = useNavigate();
@@ -28,6 +29,8 @@ export default function Reports() {
         requestSort,
         handleExportCSV,
         handleSendReminders,
+        handleSendRiskReminders,
+        handleSendIndividualRiskReminder,
         filteredUsers,
         sortedDepartments,
         refreshReports,
@@ -43,7 +46,7 @@ export default function Reports() {
 
     if (!reportData) return null;
 
-    const { summary, departments, atRisk, moduleCompliance } = reportData;
+    const { summary, departments, atRisk, moduleCompliance, badgeStats } = reportData;
     const activeChartData = (chartType === 'departments' ? departments : moduleCompliance) || [];
 
     return (
@@ -83,6 +86,10 @@ export default function Reports() {
                             <CompletionTimeChart data={moduleCompliance} />
                         </div>
 
+                        <div className="lg:col-span-2">
+                            <BadgeStatsChart data={badgeStats} loading={loading} />
+                        </div>
+
                         <div className="lg:col-span-3">
                             <CompletionTrend modules={moduleCompliance} />
                         </div>
@@ -102,6 +109,8 @@ export default function Reports() {
                                 atRisk={atRisk}
                                 departments={departments}
                                 onSendReminders={handleSendReminders}
+                                onSendRiskReminders={handleSendRiskReminders}
+                                onSendIndividualRiskReminder={handleSendIndividualRiskReminder}
                             />
                         </div>
                     </div>

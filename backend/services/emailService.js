@@ -208,6 +208,84 @@ class EmailService {
             logger.error(`Error enviando email de invitación a ${userEmail}:`, error);
         }
     }
+
+    /**
+     * Envía un correo de recordatorio a usuarios con avance crítico
+     */
+    async sendRiskReminder(userEmail, userName, progress) {
+        const path = require('path');
+        const assetsPath = path.resolve(__dirname, '../assets/images');
+
+        const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <style>
+                body { font-family: 'Segoe UI', sans-serif; background-color: #04060b; margin: 0; padding: 0; color: #ffffff; }
+                .container { max-width: 600px; margin: 20px auto; background-color: #0b0f1c; border-radius: 24px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
+                .header { background-color: #0d111d; padding: 40px 20px; text-align: center; border-bottom: 2px solid #ef4444; }
+                .logo-institucional { width: 120px; }
+                .content { padding: 40px; text-align: center; }
+                h1 { font-size: 26px; font-weight: 800; color: #ffffff; margin-bottom: 20px; }
+                p { color: #94a3b8; line-height: 1.6; font-size: 16px; margin-bottom: 30px; }
+                .progress-box { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 20px; border-radius: 16px; margin-bottom: 30px; }
+                .progress-value { color: #ef4444; font-size: 32px; font-weight: 900; }
+                .button { display: inline-block; background-color: #ef4444; color: #ffffff !important; text-decoration: none; padding: 16px 40px; border-radius: 16px; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+                .footer { background-color: rgba(0,0,0,0.2); padding: 30px; text-align: center; font-size: 11px; color: #475569; border-top: 1px solid rgba(255,255,255,0.05); }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <img src="cid:logo_institucional" alt="CGR" class="logo-institucional">
+                    <div style="margin-top: 10px;">
+                        <span style="color: #ffffff; font-size: 38px; font-weight: 900;">CGR</span>
+                        <span style="color: #ef4444; font-size: 38px; font-weight: 900;"> SEGUR@</span>
+                    </div>
+                </div>
+                <div class="content">
+                    <h1>¡Atención, ${userName}!</h1>
+                    <p>Hemos notado que tu avance en el <strong>Programa de Concientización CGR Segur@</strong> se encuentra en un nivel crítico.</p>
+                    
+                    <div class="progress-box">
+                        <div style="text-transform: uppercase; font-size: 10px; font-weight: 800; color: #94a3b8; letter-spacing: 1px; margin-bottom: 5px;">Tu avance actual</div>
+                        <div class="progress-value">${progress}%</div>
+                    </div>
+
+                    <p>La ciberseguridad es responsabilidad de todos. Te invitamos a retomar el curso y completar los módulos pendientes para fortalecer nuestras defensas institucionales.</p>
+                    <a href="https://cgrsegura.cgr.go.cr/dashboard" class="button">Continuar mi Capacitación</a>
+                </div>
+                <div class="footer">
+                    &copy; 2026 Contraloría General de la República de Costa Rica<br>
+                    Programa de Concientización en Ciberseguridad
+                </div>
+            </div>
+        </body>
+        </html>
+        `;
+
+        const attachments = [
+            {
+                filename: 'logo-cgr-blanco.png',
+                path: path.join(assetsPath, 'Logotipo-CGR-blanco-transp.png'),
+                cid: 'logo_institucional'
+            }
+        ];
+
+        try {
+            await this.transporter.sendMail({
+                from: process.env.EMAIL_FROM,
+                to: userEmail,
+                subject: '⚠️ Recordatorio: Tu avance en CGR Segur@ es crítico',
+                html: htmlContent,
+                attachments: attachments
+            });
+            logger.info(`Email de alerta de riesgo enviado a: ${userEmail}`);
+        } catch (error) {
+            logger.error(`Error enviando email de alerta a ${userEmail}:`, error);
+        }
+    }
 }
 
 module.exports = new EmailService();
