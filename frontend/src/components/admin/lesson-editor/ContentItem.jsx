@@ -59,15 +59,15 @@ export default function ContentItem({
                 </div>
                 
                 <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[10px] font-black text-primary-500/40 uppercase tracking-widest">{getTypeLabel(item.content_type)}</span>
+                    <span className="text-[10px] font-black text-primary-400 uppercase tracking-widest">{getTypeLabel(item.content_type)}</span>
                     <div className="w-1 h-1 bg-white/10 rounded-full"></div>
-                    <span className="text-[10px] font-bold text-gray-600">ID: {item.id}</span>
+                    <span className="text-[10px] font-bold text-white/40">ID: {item.id}</span>
                 </div>
 
                 {/* Data Previews */}
                 {item.data?.text && (
                     <div className="bg-black/20 p-3 rounded-xl border border-white/5 mt-2">
-                        <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed italic">{item.data.text}</p>
+                        <p className="text-xs text-gray-400 line-clamp-2 leading-relaxed italic">{item.data.text}</p>
                     </div>
                 )}
                 {item.content_type === 'interactive_input' && item.data?.description && (
@@ -77,12 +77,12 @@ export default function ContentItem({
                                 {item.data.validation_type === 'free' ? 'Reflexión Libre' : item.data.validation_type === 'exact' ? 'Validación Exacta' : 'Validación Regex'}
                             </span>
                         </div>
-                        <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed italic">{item.data.description}</p>
+                        <p className="text-xs text-gray-400 line-clamp-2 leading-relaxed italic">{item.data.description}</p>
                     </div>
                 )}
                 {item.content_type === 'password_tester' && item.data?.description && (
                     <div className="bg-black/20 p-3 rounded-xl border border-white/5 mt-2">
-                        <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed italic">{item.data.description}</p>
+                        <p className="text-xs text-gray-400 line-clamp-2 leading-relaxed italic">{item.data.description}</p>
                     </div>
                 )}
                 {item.content_type === 'mfa_defender' && item.data?.description && (
@@ -92,7 +92,7 @@ export default function ContentItem({
                                 {item.data.hack_time || 20}s Límite (Rotación {item.data.rotate_time || 5}s)
                             </span>
                         </div>
-                        <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed italic">{item.data.description}</p>
+                        <p className="text-xs text-gray-400 line-clamp-2 leading-relaxed italic">{item.data.description}</p>
                     </div>
                 )}
                 {item.content_type === 'multiple_choice' && item.data?.description && (
@@ -102,7 +102,7 @@ export default function ContentItem({
                                 {item.data.options?.length || 0} Opciones
                             </span>
                         </div>
-                        <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed italic">{item.data.description}</p>
+                        <p className="text-xs text-gray-400 line-clamp-2 leading-relaxed italic">{item.data.description}</p>
                     </div>
                 )}
                 {item.data?.url && (
