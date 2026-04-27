@@ -8,6 +8,8 @@
 - **Backend**: Node.js + Express
 - **Base de Datos**: MariaDB 11.2
 - **Cache**: Redis 7.2
+- **Email Service**: Nodemailer + SMTP (Gmail TLS)
+- **Procesamiento de Imágenes**: CairoSVG (Conversión SVG a PNG de alta fidelidad)
 - **Autenticación**: Google OAuth 2.0
 - **Containerización**: Docker + Docker Compose
 - **Reverse Proxy**: Nginx
@@ -28,281 +30,101 @@
 
 #### **Protección**
 - Helmet.js para headers de seguridad
-- CORS configurado
-- Rate limiting
-- Validación de inputs
+- CORS configurado para dominios institucionales
+- Rate limiting preventivo
+- Validación de inputs con Express Validator
 - SQL injection prevention (prepared statements)
-- XSS protection
+- Protección XSS y CSRF
 
 ### 📚 Funcionalidades del LMS
 
 #### **Para Estudiantes (Funcionarios)**
 1. **Dashboard Personal**
-   - Progreso general del curso
-   - Módulos completados
-   - Puntos y nivel de gamificación
-   - Próximas actividades
-
+   - Progreso general y módulos completados
+   - Sistema de gamificación con puntos y niveles
 2. **Módulos de Aprendizaje**
-   - 8 módulos completos (Febrero - Diciembre 2026)
-   - Lecciones interactivas
-   - Videos educativos
-   - Recursos descargables (PDFs, documentos)
-
-3. **Evaluaciones**
-   - Quizzes por módulo
-   - Múltiples intentos (máx. 3)
-   - Retroalimentación inmediata
-   - Puntaje mínimo: 80%
-
-4. **Gamificación "Guardianes de la CGR"**
-   - Sistema de puntos
-   - 4 niveles: Novato → Defensor → Guardián → CISO Honorario
-   - Insignias por logros
-   - Tabla de clasificación (Leaderboard)
-
-5. **Simulacros de Phishing**
-   - 3 campañas programadas (Feb, Jun, Dic)
-   - Tracking de clicks y reportes
-   - Puntos por reportar correctamente
-
-6. **Certificación**
-   - Certificado digital al completar
-   - Código único de verificación
-   - Descarga en PDF
+   - 8 módulos temáticos con lecciones interactivas y videos
+3. **Insignias y Logros**
+   - **Notificaciones por Email**: Recepción de correos premium al ganar insignias
+   - Formato de imagen de alta fidelidad (PNG con fallback SVG)
+4. **Certificación**
+   - Emisión de certificados digitales únicos al finalizar el curso
 
 #### **Para Administradores**
-1. **Gestión de Usuarios**
-   - Ver todos los funcionarios
-   - Activar/desactivar cuentas
-   - Asignar roles (student, instructor, admin)
-
-2. **Gestión de Contenido**
-   - Crear/editar módulos
-   - Agregar lecciones y recursos
-   - Publicar/despublicar contenido
-
+1. **Alertas de Riesgo**
+   - Identificación de funcionarios con avance crítico (<20%)
+   - **Envío Masivo de Invitaciones**: Funcionalidad para invitar por área a funcionarios que aún no han ingresado a la plataforma.
+2. **Gestión de Insignias**
+   - Asignación manual de logros con notificación inmediata por correo.
 3. **Reportes y Analíticas**
-   - Progreso general del curso
-   - Tasas de completación
-   - Resultados de quizzes
-   - Efectividad de simulacros de phishing
-   - Logs de actividad
+   - Tendencias de cumplimiento y estadísticas por departamento en tiempo real.
 
-4. **Simulacros de Phishing**
-   - Programar campañas
-   - Ver resultados por usuario
-   - Estadísticas de clicks/reportes
+### 📧 Sistema de Notificaciones
+El sistema incluye un servicio de correo electrónico robusto configurado en `backend/services/emailService.js`.
 
-### 🗄️ Estructura de Base de Datos
+- **Diseño Premium**: Plantillas HTML con tema oscuro, logos institucionales embebidos (CIDs) y diseño responsive.
+- **Seguridad**: Autenticación mediante TLS (puerto 587) y Contraseñas de Aplicación de Google.
+- **Fidelidad Visual**: Las insignias se convierten automáticamente de SVG a PNG en el servidor para garantizar visibilidad en todos los clientes de correo (Gmail, Outlook, iOS).
 
-#### **Tablas Principales**
-1. `users` - Funcionarios del sistema
-2. `modules` - 8 módulos del curso
-3. `lessons` - Lecciones dentro de módulos
-4. `quizzes` - Evaluaciones
-5. `quiz_questions` - Preguntas de evaluaciones
-6. `quiz_options` - Opciones de respuesta
-7. `user_progress` - Progreso de cada usuario
-8. `quiz_attempts` - Intentos de evaluaciones
-9. `user_points` - Puntos y nivel de gamificación
-10. `gamification_activities` - Historial de puntos
-11. `phishing_simulations` - Campañas de phishing
-12. `phishing_results` - Resultados por usuario
-13. `certificates` - Certificados emitidos
-14. `resources` - Recursos adicionales
-15. `notifications` - Notificaciones del sistema
-16. `activity_logs` - Logs de auditoría
+### 🚀 Configuración y Despliegue
 
-### 🚀 Cómo Ejecutar el Sistema
+#### **Variables de Entorno (.env)**
+Es crítico configurar correctamente los parámetros de correo para el funcionamiento de las insignias:
 
-#### **Requisitos Previos**
-- Docker y Docker Compose instalados
-- Cuenta de Google Cloud con OAuth configurado
-- Credenciales de Google OAuth (Client ID y Secret)
-
-#### **Configuración Inicial**
-
-1. **Clonar y configurar variables de entorno**
-```bash
-cd cgr-lms
-cp backend/.env.example backend/.env
-```
-
-2. **Editar backend/.env con tus credenciales**
 ```env
-GOOGLE_CLIENT_ID=tu-client-id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=tu-client-secret
+# Email Config
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=tu.usuario@cgr.go.cr
+EMAIL_PASSWORD=tu_contraseña_de_aplicacion_sin_espacios
+EMAIL_FROM=Seguridad de la Información <seguridad.informacion@cgr.go.cr>
 ```
 
-3. **Crear archivo .env en la raíz para el frontend**
-```env
-VITE_API_URL=http://localhost:5000/api
-VITE_GOOGLE_CLIENT_ID=tu-client-id.apps.googleusercontent.com
-```
-
-4. **Levantar todos los servicios**
+#### **Levantar el entorno**
 ```bash
-docker-compose up -d
+# Construir y levantar contenedores
+docker-compose up -d --build
+
+# Verificar estado
+docker ps
 ```
 
-5. **Verificar que todos los servicios estén corriendo**
-```bash
-docker-compose ps
+### 🛠️ Herramientas de Mantenimiento
+
+#### **Scripts de Prueba de Email**
+Ubicados en `backend/scratch/`, permiten validar el diseño de los correos sin afectar a usuarios reales:
+
+```powershell
+# Probar email de invitación
+docker exec cgrsegura-backend node /app/scratch/test_invitation.js
+
+# Probar email de insignia
+docker exec cgrsegura-backend node /app/scratch/test_badge_email.js
 ```
 
-#### **Acceso al Sistema**
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:5000
-- **Health Check**: http://localhost:5000/health
-
-#### **Usuarios de Prueba**
-- Admin: admin@cgr.go.cr
-- Funcionario: funcionario@cgr.go.cr
+#### **Conversión de Insignias**
+Si se agregan nuevas insignias en SVG, se deben procesar para generar sus versiones PNG:
+```powershell
+docker exec cgrsegura-backend python3 /app/convert_high_quality.py
+```
 
 ### 💾 Backup y Recuperación
 
-El sistema requiere respaldos periódicos tanto de la base de datos como de los archivos subidos por los usuarios (certificados, recursos, fotos de perfil).
-
-#### **1. Respaldo de Base de Datos (MariaDB)**
-
-Para realizar un respaldo manual de la base de datos `cgr_lms`:
-
+#### **Respaldo de Base de Datos**
 ```powershell
-# Crear un backup completo
-docker exec cgr-lms-mariadb mariadb-dump -u cgr_user -p"cgr_password_2026" cgr_lms > backup_$(Get-Date -Format "yyyyMMdd_HHmm").sql
+docker exec cgrsegura-mariadb mariadb-dump -u cgr_user -pcgr_password_2026 cgr_lms > backup_$(Get-Date -Format "yyyyMMdd").sql
 ```
 
-#### **2. Restauración de Base de Datos**
-
-Para restaurar un archivo SQL en el contenedor:
-
+#### **Limpieza de Cache**
 ```powershell
-# Restaurar desde un archivo .sql
-cat backup_archivo.sql | docker exec -i cgr-lms-mariadb mariadb -u cgr_user -p"cgr_password_2026" cgr_lms
+docker exec cgrsegura-redis redis-cli FLUSHALL
 ```
 
-#### **3. Respaldo de Archivos (Uploads)**
-
-Los archivos subidos se encuentran en el volumen persistente `./uploads`. Se recomienda comprimir esta carpeta periódicamente:
-
-```powershell
-# Comprimir carpeta de uploads
-Compress-Archive -Path ./uploads/* -DestinationPath ./backups/uploads_$(Get-Date -Format "yyyyMMdd").zip
-```
-
-#### **4. Automatización (Recomendación)**
-
-Se recomienda configurar una tarea programada (Windows Task Scheduler) que ejecute un script de PowerShell para automatizar estos respaldos diariamente a las 00:00.
-
-### 📁 Estructura del Proyecto
-
-```
-cgr-lms/
-├── backend/
-│   ├── config/
-│   │   ├── database.js       # Conexión MariaDB
-│   │   └── logger.js          # Winston logger
-│   ├── middleware/
-│   │   └── auth.js            # Autenticación JWT
-│   ├── routes/
-│   │   ├── auth.js            # Google OAuth
-│   │   ├── modules.js         # Módulos del curso
-│   │   ├── users.js           # Gestión de usuarios
-│   │   ├── quizzes.js         # Evaluaciones
-│   │   ├── progress.js        # Progreso del usuario
-│   │   ├── gamification.js    # Sistema de puntos
-│   │   └── phishing.js        # Simulacros
-│   ├── logs/                  # Archivos de log
-│   ├── .env.example
-│   ├── Dockerfile
-│   ├── package.json
-│   └── server.js              # Servidor principal
-├── src/
-│   ├── components/
-│   │   ├── Layout.jsx         # Layout principal
-│   │   └── ProtectedRoute.jsx # Rutas protegidas
-│   ├── pages/
-│   │   ├── Login.jsx          # Login con Google
-│   │   ├── Dashboard.jsx      # Dashboard principal
-│   │   ├── Modules.jsx        # Lista de módulos
-│   │   ├── ModuleDetail.jsx   # Detalle de módulo
-│   │   ├── LessonView.jsx     # Vista de lección
-│   │   ├── QuizView.jsx       # Vista de quiz
-│   │   ├── Profile.jsx        # Perfil de usuario
-│   │   ├── Leaderboard.jsx    # Tabla de clasificación
-│   │   └── AdminPanel.jsx     # Panel de administración
-│   ├── store/
-│   │   └── authStore.js       # Estado de autenticación
-│   ├── App.jsx
-│   ├── main.jsx
-│   └── index.css
-├── database/
-│   └── init.sql               # Schema de base de datos
-├── nginx/
-│   └── nginx.conf             # Configuración Nginx
-├── docker-compose.yml
-├── tailwind.config.js
-├── postcss.config.js
-└── package.json
-```
-
-### 🎨 Diseño UI/UX
-
-#### **Características del Diseño**
-- ✨ Tema oscuro moderno (dark mode)
-- 🎭 Glassmorphism effects
-- 🌈 Gradientes vibrantes
-- ⚡ Animaciones suaves con Framer Motion
-- 📱 Totalmente responsive (mobile-first)
-- ♿ Accesible (WCAG 2.1)
-
-#### **Paleta de Colores**
-- **Primary**: Azul (#3b82f6)
-- **Secondary**: Teal (#14b8a6)
-- **Accent**: Naranja (#f59e0b)
-- **Success**: Verde (#10b981)
-- **Danger**: Rojo (#ef4444)
-- **Background**: Slate oscuro (#0f172a)
-
-### 📈 Módulos del Curso
-
-1. **Módulo 1** (Febrero): Fundamentos de Seguridad
-2. **Módulo 2** (Marzo): Protección de Datos
-3. **Módulo 3** (Abril): IA y Ciberseguridad
-4. **Módulo 4** (Mayo): Malware y Amenazas
-5. **Módulo 5** (Julio): Redes y Comunicaciones
-6. **Módulo 6** (Agosto): Teletrabajo Seguro
-7. **Módulo 7** (Octubre): Gestión de Incidentes
-8. **Módulo 8** (Noviembre): Aspectos Avanzados
-
-### 📝 Notas Importantes
-
-1. **Google OAuth**: Necesitas crear un proyecto en Google Cloud Console y configurar las credenciales OAuth 2.0
-2. **Dominio**: El sistema solo permite login con correos @cgr.go.cr
-3. **Seguridad**: Cambiar todas las contraseñas y secrets en producción
-4. **Backups**: Configurar backups diarios de MariaDB
-5. **Logs**: Los logs se guardan en `backend/logs/`
-6. **Escalabilidad**: El sistema puede escalar horizontalmente agregando más instancias del backend
-
-### 🎯 Objetivos Cumplidos
-
-✅ Arquitectura completa con Docker Compose
-✅ Autenticación con Google OAuth
-✅ Base de datos MariaDB con schema completo
-✅ Cache con Redis para sesiones
-✅ Backend API con Express y seguridad centralizada (Error Handling, Express Validator)
-✅ Frontend React con diseño moderno predecible
-✅ Sistema de gamificación con líder en tiempo real
-✅ Módulos, lecciones, quizzes y perfil interconectados
-✅ Soporte para 700 usuarios concurrentes
-✅ Responsive design
-✅ Simulacros de phishing
-✅ Sistema de certificación
-✅ Refactorización del Backend usando Node.js Best Practices
+### 🎨 Identidad Visual
+- **Tema**: Dark Mode Institucional
+- **Colores**: Blanco (#FFFFFF), Naranja CGR (#EF8843), Slate Oscuro (#0F172A)
+- **Tipografía**: Segoe UI / Sans Serif
 
 ---
-
-**Desarrollado para**: Contraloría General de la República de Costa Rica
-**Programa**: CGR Segur@ - Capacitación en Ciberseguridad 2026
-**Basado en**: ISO/IEC 27001:2022
+**CGR Segur@ 2026** - Contraloría General de la República de Costa Rica.
+Basado en normativas internacionales de ciberseguridad.

@@ -80,7 +80,7 @@ export default function Leaderboard() {
         .filter(u => {
             const matchesSearch = `${u.first_name} ${u.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 u.department?.toLowerCase().includes(searchTerm.toLowerCase());
-            const matchesLevel = filterLevel === 'all' || u.level === filterLevel;
+            const matchesLevel = filterLevel === 'all' || u.level?.includes(filterLevel);
             return matchesSearch && matchesLevel;
         })
         .sort((a, b) => (a.rank_position || 9999) - (b.rank_position || 9999));

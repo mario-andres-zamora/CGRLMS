@@ -79,13 +79,16 @@ router.get('/leaderboard', authMiddleware, cacheMiddleware(60, true), async (req
         }
 
         const [userPointsData] = await db.query('SELECT points, level FROM user_points WHERE user_id = ?', [userId]);
+        const levels = await getLevels(true);
+        const levelIdx = levels.findIndex(l => l.name === userPointsData?.level);
+        const formattedLevel = `Nivel ${levelIdx !== -1 ? levelIdx + 1 : 1}: ${userPointsData?.level || 'Novato'}`;
 
         res.json({
             success: true,
             currentUser: {
                 userId,
                 points: userPointsData?.points || 0,
-                level: userPointsData?.level || 'Novato',
+                level: formattedLevel,
                 globalRank: myGlobalRankPos,
                 deptRank: myDeptRankPos,
                 department
@@ -146,6 +149,9 @@ router.put('/settings', authMiddleware, adminMiddleware, async (req, res) => {
                 );
             }
             await getLevels(true); // Refrescar caché
+            // Sincronizar niveles de todos los usuarios en segundo plano para reflejar los nuevos umbrales
+            const { syncAllUsersLevels } = require('../utils/gamification');
+            syncAllUsersLevels().catch(err => logger.error('Error in background mass sync after settings update:', err));
         }
 
         // points removal handled here (nothing to do as we only process levels if present)
@@ -164,12 +170,12 @@ router.put('/settings', authMiddleware, adminMiddleware, async (req, res) => {
  */
 router.post('/leaderboard/refresh', authMiddleware, adminMiddleware, async (req, res) => {
     try {
-        const { clearCache } = require('../middleware/cache');
-        
-        // 1. Recalcular la data central
-        await refreshLeaderboardCache();
+        // 1. Recalcular la data central e invalidar niveles
+        const { syncAllUsersLevels } = require('../utils/gamification');
+        await syncAllUsersLevels();
         
         // 2. Invalidar todos los resultados cacheados por usuario del endpoint de leaderboard
+        const { clearCache } = require('../middleware/cache');
         await clearCache('cache:/api/gamification/leaderboard*');
         
         res.json({ success: true, message: 'Ranking actualizado correctamente' });

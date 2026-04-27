@@ -226,8 +226,8 @@ class LessonService {
         await db.query(`INSERT INTO user_points (user_id, points) VALUES (?, ?) ON DUPLICATE KEY UPDATE points = points + ?`, [userId, pointsAwarded, pointsAwarded]);
         await db.query(`INSERT INTO gamification_activities (user_id, activity_type, points_earned, reference_id) VALUES (?, 'lesson_completed', ?, ?)`, [userId, pointsAwarded, lessonId]);
 
-        const levelSync = await syncUserLevel(userId);
         const moduleSync = await checkAndRecordModuleCompletion(userId, lesson.module_id, isAdminView);
+        const levelSync = await syncUserLevel(userId);
         const badgeSync = await checkAllBadges(userId, {
             moduleId: lesson.module_id,
             isModuleCompletion: moduleSync?.completed && moduleSync?.newlyRecorded

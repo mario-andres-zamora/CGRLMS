@@ -75,7 +75,7 @@ export default function ParticipantListView({
                             <div className={`hidden md:block col-span-3 text-center text-[10px] font-bold ${isMe ? 'text-white/60' : 'text-gray-300'} uppercase italic leading-tight`}>{p.department}</div>
                             <div className="col-span-6 md:col-span-3 text-right">
                                 <p className="text-xl font-black text-primary-400 italic leading-none">{p.points} PTS</p>
-                                <p className="text-[8px] text-gray-600 font-black uppercase tracking-[0.2em]">{p.level}</p>
+                                <p className="text-[10px] text-secondary-500 font-black uppercase tracking-widest mt-1">{p.level}</p>
                             </div>
                         </div>
                     );

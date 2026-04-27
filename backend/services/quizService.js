@@ -284,8 +284,8 @@ class QuizService {
             }
         }
 
-        const levelSync = await syncUserLevel(userId);
         const moduleSync = await checkAndRecordModuleCompletion(userId, quiz.module_id, isAdminView);
+        const levelSync = await syncUserLevel(userId);
         
         let badgeSync = null;
         if (passed) {

@@ -244,11 +244,12 @@ const checkAndRecordModuleCompletion = async (userId, moduleId, isAdmin = false)
             );
             if (incompleteLessons.count > 0) return { completed: false };
 
-            // Verificar quizzes obligatorios no aprobados
+            // Verificar quizzes obligatorios no aprobados (Solo quizzes independientes del módulo)
             const [incompleteQuizzes] = await db.query(
                 `SELECT COUNT(*) as count FROM quizzes q
                  WHERE q.module_id = ? 
-                 ${isAdmin ? '' : 'AND q.is_published = TRUE'}
+                 AND q.lesson_id IS NULL
+                 ${isAdmin ? "" : "AND q.is_published = TRUE"}
                  AND q.id NOT IN (
                     SELECT quiz_id FROM quiz_attempts WHERE user_id = ? AND passed = TRUE
                  )`,
@@ -263,17 +264,27 @@ const checkAndRecordModuleCompletion = async (userId, moduleId, isAdmin = false)
         const shouldGenerate = moduleData ? !!moduleData.generates_certificate : true;
 
         if (shouldGenerate) {
-            // Generar Certificado
-            const certificateCode = `CERT-${userId}-${moduleId}-${Date.now()}`;
-            await db.query(
-                `INSERT INTO certificates (user_id, module_id, issued_at, certificate_code) 
-                 VALUES (?, ?, NOW(), ?)`,
-                [userId, moduleId, certificateCode]
+            // EVITAR DUPLICADOS: Verificar si ya existe el certificado
+            const [existingCert] = await db.query(
+                "SELECT id FROM certificates WHERE user_id = ? AND module_id = ?",
+                [userId, moduleId]
             );
+
+            if (!existingCert) {
+                // Generar Certificado con código único
+                const certificateCode = `CERT-${userId}-${moduleId}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+                await db.query(
+                    `INSERT INTO certificates (user_id, module_id, issued_at, certificate_code) 
+                     VALUES (?, ?, NOW(), ?)`,
+                    [userId, moduleId, certificateCode]
+                );
+            }
         }
 
         // 5. Registrar actividad y dar puntos (solo si es nuevo)
         let bonusPoints = 0;
+        let levelingUp = null;
+
         if (!existingActivity) {
             // Calcular bonus dinámico
             bonusPoints = await calculateDynamicModuleBonus(userId, moduleId);
@@ -285,30 +296,21 @@ const checkAndRecordModuleCompletion = async (userId, moduleId, isAdmin = false)
             );
 
             // Sumar puntos al balance
-            // Actualizar puntos
             await db.query(
                 `INSERT INTO user_points (user_id, points) VALUES (?, ?) 
                  ON DUPLICATE KEY UPDATE points = points + ?`,
                 [userId, bonusPoints, bonusPoints]
             );
 
-            // Obtener nuevo balance
-            const [newPoints] = await db.query(
-                `SELECT points FROM user_points WHERE user_id = ?`,
-                [userId]
-            );
+            // Sincronizar Nivel (CRITICAL FIX: Awarding points must trigger level check)
+            levelingUp = await syncUserLevel(userId);
 
-            // Sincronizar con Redis para ranking en tiempo real
-            if (newPoints && newPoints.points !== undefined) {
-                await updateUserScore(userId, newPoints.points);
-
-                // Limpiar el caché de la ruta de ranking para este usuario y patrones globales
-                try {
-                    const { clearCache } = require('../middleware/cache');
-                    await clearCache('cache:/api/gamification/leaderboard*');
-                } catch (cacheErr) {
-                    console.error('Error invalidando caché tras módulo:', cacheErr);
-                }
+            // Limpiar el caché de la ruta de ranking para este usuario y patrones globales
+            try {
+                const { clearCache } = require('../middleware/cache');
+                await clearCache('cache:/api/gamification/leaderboard*');
+            } catch (cacheErr) {
+                console.error('Error invalidando caché tras módulo:', cacheErr);
             }
         }
 
@@ -316,6 +318,7 @@ const checkAndRecordModuleCompletion = async (userId, moduleId, isAdmin = false)
             completed: true,
             newlyRecorded: !existingActivity,
             bonusPoints,
+            levelingUp,
             certificateGenerated: shouldGenerate,
             generatesCertificate: shouldGenerate,
             id: moduleId
@@ -382,12 +385,19 @@ const refreshLeaderboardCache = async () => {
             });
         }
 
+        const levels = await module.exports.getLevels(true);
+        const levelMap = {};
+        levels.forEach((l, idx) => {
+            levelMap[l.name] = idx + 1;
+        });
+
         const institutionalLeaderboard = instRanking.map(r => ({
             ...r,
             id: r.email,
             first_name: r.first_name || r.full_name.split(' ')[0],
             last_name: r.last_name || r.full_name.split(' ').slice(1).join(' '),
             rank_position: r.rank_position,
+            level: `Nivel ${levelMap[r.level] || 1}: ${r.level}`,
             badges: r.user_id ? (userBadgesMap[r.user_id] || []) : []
         }));
 
@@ -436,10 +446,37 @@ const refreshLeaderboardCache = async () => {
     }
 };
 
+/**
+ * Función de utilidad para sincronizar los niveles de TODOS los usuarios.
+ * Útil tras cambios en la configuración de niveles o para corregir inconsistencias.
+ */
+const syncAllUsersLevels = async () => {
+    try {
+        const users = await db.query('SELECT user_id FROM user_points');
+        logger.info(`Iniciando sincronización masiva para ${users.length} usuarios...`);
+        
+        let updatedCount = 0;
+        for (const user of users) {
+            const result = await syncUserLevel(user.user_id);
+            if (result && result.leveledUp) {
+                updatedCount++;
+            }
+        }
+        
+        await refreshLeaderboardCache();
+        logger.info(`✅ Sincronización masiva completada. ${updatedCount} usuarios actualizaron su nombre de nivel.`);
+        return { total: users.length, updated: updatedCount };
+    } catch (error) {
+        logger.error('Error en syncAllUsersLevels:', error);
+        throw error;
+    }
+};
+
 module.exports = {
     getLevels,
     calculateLevel,
     syncUserLevel,
+    syncAllUsersLevels,
     getSystemSettings,
     checkAndRecordModuleCompletion,
     updateUserScore,
