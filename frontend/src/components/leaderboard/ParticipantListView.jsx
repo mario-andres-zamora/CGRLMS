@@ -57,7 +57,7 @@ export default function ParticipantListView({
                                             {p.first_name} {p.last_name}
                                             {isMe && <span className="ml-2 text-[8px] bg-primary-500 text-white px-1.5 py-0.5 rounded whitespace-nowrap">TÚ</span>}
                                         </p>
-                                        <span className={`text-[8px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest border whitespace-nowrap ${isMe ? 'bg-primary-500/20 border-primary-500/40 text-primary-300' : 'bg-slate-700/50 border-white/10 text-gray-400'}`}>
+                                        <span className={`text-[8px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest border whitespace-nowrap ${isMe ? 'bg-secondary-500/20 border-secondary-500/40 text-secondary-400' : 'bg-secondary-900/40 border-secondary-500/20 text-secondary-500'}`}>
                                             {p.level}
                                         </span>
                                     </div>

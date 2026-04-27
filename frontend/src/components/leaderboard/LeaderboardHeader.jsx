@@ -30,7 +30,7 @@ export default function LeaderboardHero({ currentUser }) {
                         <span className="text-3xl md:text-4xl font-black text-white">#{currentUser?.globalRank || '--'}</span>
                         <span className="text-[9px] font-bold text-gray-500 tracking-widest uppercase text-center px-2">Rango CGR</span>
                         {currentUser?.level && (
-                            <div className="absolute -bottom-2 bg-primary-600 text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest border border-primary-400">
+                            <div className="absolute -bottom-2 bg-secondary-600 text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest border border-secondary-400 whitespace-nowrap">
                                 {currentUser.level}
                             </div>
                         )}
@@ -41,6 +41,11 @@ export default function LeaderboardHero({ currentUser }) {
                         <Crown className="w-6 h-6 text-secondary-500 absolute -top-3 -rotate-12 drop-shadow-[0_0_10px_rgba(229,123,60,0.5)]" />
                         <span className="text-3xl md:text-4xl font-black text-white">#{currentUser?.deptRank || '--'}</span>
                         <span className="text-[9px] font-bold text-secondary-500 tracking-widest uppercase text-center px-2">Rango Área</span>
+                        {currentUser?.level && (
+                            <div className="absolute -bottom-2 bg-secondary-600 text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest border border-secondary-400 whitespace-nowrap">
+                                {currentUser.level}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
