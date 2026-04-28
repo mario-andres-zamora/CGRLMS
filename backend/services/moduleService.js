@@ -35,12 +35,14 @@ class ModuleService {
             module.points_to_earn = module.calculated_points; // Sobrescribir con el cálculo dinámico
 
             const [lessonProgress] = await db.query(
-                `SELECT COUNT(*) as completed_count FROM user_progress WHERE user_id = ? AND module_id = ? AND status = 'completed'`,
+                `SELECT COUNT(*) as completed_count FROM user_progress up 
+                 JOIN lessons l ON up.lesson_id = l.id 
+                 WHERE up.user_id = ? AND up.module_id = ? AND up.status = 'completed' AND l.is_optional = FALSE`,
                 [userId, module.id]
             );
 
             const [quizProgress] = await db.query(
-                `SELECT COUNT(DISTINCT quiz_id) as passed_count FROM quiz_attempts WHERE user_id = ? AND passed = TRUE AND quiz_id IN (SELECT id FROM quizzes WHERE module_id = ? AND is_published = TRUE)`,
+                `SELECT COUNT(DISTINCT quiz_id) as passed_count FROM quiz_attempts WHERE user_id = ? AND passed = TRUE AND quiz_id IN (SELECT id FROM quizzes WHERE module_id = ? AND is_published = TRUE AND lesson_id IS NULL)`,
                 [userId, module.id]
             );
 
@@ -131,10 +133,15 @@ class ModuleService {
             );
 
             if (prevModule) {
-                const [lessonProgress] = await db.query(`SELECT COUNT(*) as completed_count FROM user_progress WHERE user_id = ? AND module_id = ? AND status = 'completed'`, [userId, prevModule.id]);
+                const [lessonProgress] = await db.query(
+                    `SELECT COUNT(*) as completed_count FROM user_progress up 
+                     JOIN lessons l ON up.lesson_id = l.id 
+                     WHERE up.user_id = ? AND up.module_id = ? AND up.status = 'completed' AND l.is_optional = FALSE`, 
+                    [userId, prevModule.id]
+                );
                 const [totalRequired] = await db.query(`SELECT COUNT(*) as total FROM lessons WHERE module_id = ? AND is_optional = FALSE AND is_published = TRUE`, [prevModule.id]);
-                const [quizProgress] = await db.query(`SELECT COUNT(DISTINCT quiz_id) as passed_count FROM quiz_attempts WHERE user_id = ? AND passed = TRUE AND quiz_id IN (SELECT id FROM quizzes WHERE module_id = ? AND is_published = TRUE)`, [userId, prevModule.id]);
-                const [totalQuizzes] = await db.query(`SELECT COUNT(*) as total FROM quizzes WHERE module_id = ? AND is_published = TRUE`, [prevModule.id]);
+                const [quizProgress] = await db.query(`SELECT COUNT(DISTINCT quiz_id) as passed_count FROM quiz_attempts WHERE user_id = ? AND passed = TRUE AND quiz_id IN (SELECT id FROM quizzes WHERE module_id = ? AND is_published = TRUE AND lesson_id IS NULL)`, [userId, prevModule.id]);
+                const [totalQuizzes] = await db.query(`SELECT COUNT(*) as total FROM quizzes WHERE module_id = ? AND is_published = TRUE AND lesson_id IS NULL`, [prevModule.id]);
 
                 const isCompleted = (lessonProgress.completed_count >= totalRequired.total) && (quizProgress.passed_count >= totalQuizzes.total);
                 if (!isCompleted) {

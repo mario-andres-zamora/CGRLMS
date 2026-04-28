@@ -56,6 +56,7 @@ class QuizController {
             // Limpiar caché después de la operación exitosa
             await clearCache('cache:/api/modules*');
             await clearCache('cache:/api/dashboard*');
+            await clearCache('cache:/api/lessons*');
 
             res.status(201).json({ success: true, message: 'Quiz creado', quizId });
         } catch (error) {
@@ -85,6 +86,7 @@ class QuizController {
             await clearCache(`cache:/api/quizzes/${quizId}*`);
             await clearCache('cache:/api/modules*');
             await clearCache('cache:/api/dashboard*');
+            await clearCache('cache:/api/lessons*');
 
             res.json({ success: true, message: 'Quiz actualizado' });
         } catch (error) {
@@ -135,6 +137,7 @@ class QuizController {
             await clearCache(`cache:/api/quizzes/${quizId}*`);
             await clearCache('cache:/api/modules*');
             await clearCache('cache:/api/dashboard*');
+            await clearCache('cache:/api/lessons*');
 
             res.json({ success: true, message: 'Quiz eliminado' });
         } catch (error) {

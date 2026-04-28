@@ -150,6 +150,8 @@ router.post('/:id/submit', authMiddleware, async (req, res) => {
         // Limpiar caché
         await clearCache(`cache:/api/lessons/*u${userId}*`);
         await clearCache(`cache:/api/dashboard*u${userId}*`);
+        await clearCache(`cache:/api/modules*u${userId}*`);
+        await clearCache('cache:/api/gamification/leaderboard*');
 
         // Sincronizar nivel
         const levelSync = await syncUserLevel(userId);

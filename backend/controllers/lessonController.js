@@ -50,6 +50,7 @@ class LessonController {
             const lessonId = await lessonService.createLesson(req.body);
             
             // Limpiar caché después de la operación exitosa
+            await clearCache('cache:/api/lessons*');
             await clearCache('cache:/api/modules*');
             await clearCache('cache:/api/dashboard*');
 
@@ -66,7 +67,7 @@ class LessonController {
             await lessonService.updateLesson(lessonId, req.body);
 
             // Limpiar caché después de la operación exitosa
-            await clearCache(`cache:/api/lessons/${lessonId}*`);
+            await clearCache('cache:/api/lessons*');
             await clearCache('cache:/api/modules*');
             await clearCache('cache:/api/dashboard*');
 
@@ -106,7 +107,7 @@ class LessonController {
             await lessonService.deleteLesson(lessonId);
 
             // Limpiar caché después de la operación exitosa
-            await clearCache(`cache:/api/lessons/${lessonId}*`);
+            await clearCache('cache:/api/lessons*');
             await clearCache('cache:/api/modules*');
             await clearCache('cache:/api/dashboard*');
 

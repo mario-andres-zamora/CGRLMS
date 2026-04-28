@@ -50,7 +50,7 @@ class LessonService {
 
             if (prevModule) {
                 const [lessonProgress] = await db.query(
-                    'SELECT COUNT(*) as completed_count FROM user_progress WHERE user_id = ? AND module_id = ? AND status = "completed"',
+                    'SELECT COUNT(*) as completed_count FROM user_progress up JOIN lessons l ON up.lesson_id = l.id WHERE up.user_id = ? AND up.module_id = ? AND up.status = "completed" AND l.is_optional = FALSE',
                     [userId, prevModule.id]
                 );
                 const [totalRequired] = await db.query(
@@ -58,11 +58,11 @@ class LessonService {
                     [prevModule.id]
                 );
                 const [quizProgress] = await db.query(
-                    'SELECT COUNT(*) as passed_count FROM quiz_attempts WHERE user_id = ? AND quiz_id IN (SELECT id FROM quizzes WHERE module_id = ?) AND passed = TRUE',
+                    'SELECT COUNT(*) as passed_count FROM quiz_attempts WHERE user_id = ? AND quiz_id IN (SELECT id FROM quizzes WHERE module_id = ? AND lesson_id IS NULL) AND passed = TRUE',
                     [userId, prevModule.id]
                 );
                 const [totalQuizzes] = await db.query(
-                    'SELECT COUNT(*) as total FROM quizzes WHERE module_id = ? AND is_published = TRUE',
+                    'SELECT COUNT(*) as total FROM quizzes WHERE module_id = ? AND is_published = TRUE AND lesson_id IS NULL',
                     [prevModule.id]
                 );
 

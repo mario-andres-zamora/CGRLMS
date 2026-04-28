@@ -65,6 +65,7 @@ class ModuleController {
             // Limpiar caché después de la operación exitosa
             await clearCache('cache:/api/modules*');
             await clearCache('cache:/api/dashboard*');
+            await clearCache('cache:/api/lessons*');
             await clearCache('cache:/api/reports*');
 
             res.status(201).json({
@@ -90,6 +91,7 @@ class ModuleController {
             // Limpiar caché después de la operación exitosa
             await clearCache('cache:/api/modules*');
             await clearCache('cache:/api/dashboard*');
+            await clearCache('cache:/api/lessons*');
             await clearCache('cache:/api/reports*');
 
             res.json({ success: true, message: 'Módulo actualizado correctamente' });
@@ -111,6 +113,7 @@ class ModuleController {
             // Limpiar caché después de la operación exitosa
             await clearCache('cache:/api/modules*');
             await clearCache('cache:/api/dashboard*');
+            await clearCache('cache:/api/lessons*');
             await clearCache('cache:/api/reports*');
 
             res.json({ success: true, message: 'Módulo eliminado correctamente' });
