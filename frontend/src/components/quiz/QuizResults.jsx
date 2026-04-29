@@ -1,9 +1,9 @@
 import React from 'react';
-import { Star, AlertTriangle, RotateCcw } from 'lucide-react';
+import { Star, AlertTriangle, RotateCcw, Gamepad2 } from 'lucide-react';
 import CyberCat from '../CyberCat';
 import PointsCounter from './PointsCounter';
 
-export default function QuizResults({ results, quiz, onBack, onRetry }) {
+export default function QuizResults({ results, quiz, onBack, onRetry, onReplay }) {
     return (
         <div className={`card overflow-hidden border-t-8 ${results.passed ? 'border-green-500 bg-green-500/5' : 'border-red-500 bg-red-500/5'}`}>
             <div className="p-6 md:p-8 text-center space-y-4">
@@ -74,6 +74,14 @@ export default function QuizResults({ results, quiz, onBack, onRetry }) {
                     >
                         Volver
                     </button>
+                    {results.passed && onReplay && (
+                        <button
+                            onClick={onReplay}
+                            className="px-10 py-3.5 bg-secondary-600/20 text-secondary-400 rounded-2xl font-black uppercase tracking-widest text-[10px] border border-secondary-500/30 hover:bg-secondary-600 hover:text-white transition-all flex items-center justify-center gap-2"
+                        >
+                            <Gamepad2 className="w-4 h-4" /> Rejugar por diversión
+                        </button>
+                    )}
                     {!results.passed && results.attemptNumber < quiz.max_attempts && (
                         <button
                             onClick={onRetry}

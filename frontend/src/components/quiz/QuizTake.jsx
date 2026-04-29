@@ -5,7 +5,7 @@ import { HACK_PROFILES } from '../../utils/gamesData';
 
 import { useSoundStore } from '../../store/soundStore';
 
-function HackNeighborQuestion({ question, isAnswered, onWin }) {
+function HackNeighborQuestion({ question, isAnswered, onWin, sessionSeed }) {
     const [status, setStatus] = useState(isAnswered ? 'won' : 'browsing');
     const [attempts, setAttempts] = useState(0);
     const [passwordInput, setPasswordInput] = useState('');
@@ -20,12 +20,11 @@ function HackNeighborQuestion({ question, isAnswered, onWin }) {
         localStorage.setItem(`cgr_quiz_hints_${question.id}`, JSON.stringify(revealedHints));
     }, [revealedHints, question.id]);
 
-    // Seleccionar perfil basado en el ID de la pregunta para consistencia, 
-    // o azar si se prefiere. Usamos el ID de la pregunta para que no cambie al refrescar.
+    // Seleccionar perfil basado en el ID de la pregunta y el seed de la sesión para variedad
     const profile = useMemo(() => {
-        const index = (question.id % HACK_PROFILES.length);
+        const index = ((question.id + (sessionSeed || 0)) % HACK_PROFILES.length);
         return HACK_PROFILES[index];
-    }, [question.id]);
+    }, [question.id, sessionSeed]);
 
     const handleHackAttempt = () => {
         if (passwordInput === profile.password) {
@@ -604,6 +603,7 @@ export default function QuizTake({
     onSubmit,
     submitting,
     attemptsMade,
+    sessionSeed,
     onBack
 }) {
     const currentQuestion = questions[currentQuestionIndex];
@@ -680,9 +680,11 @@ export default function QuizTake({
                 ) : currentQuestion.question_type === 'hack_neighbor' ? (
                     <div className="relative z-10">
                         <HackNeighborQuestion
+                            key={`${currentQuestion.id}-${sessionSeed}`}
                             question={currentQuestion}
                             isAnswered={answers[currentQuestion.id]?.success === true || answers[currentQuestion.id] === 'true' || answers[currentQuestion.id] === true}
                             onWin={(data) => onOptionSelect(currentQuestion.id, data)}
+                            sessionSeed={sessionSeed}
                         />
                     </div>
                 ) : (

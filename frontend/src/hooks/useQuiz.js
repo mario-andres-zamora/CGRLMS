@@ -31,6 +31,8 @@ export function useQuiz() {
     const [results, setResults] = useState(null);
     const [submitting, setSubmitting] = useState(false);
     const [showIntro, setShowIntro] = useState(true);
+    const [isReplaySession, setIsReplaySession] = useState(false);
+    const [sessionSeed, setSessionSeed] = useState(() => Math.floor(Math.random() * 1000));
     const [startTime, setStartTime] = useState(() => {
         const saved = localStorage.getItem(`quiz_start_${id}`);
         return saved ? parseInt(saved) : null;
@@ -96,9 +98,21 @@ export function useQuiz() {
     const handleStart = () => {
         const now = Date.now();
         setStartTime(now);
+        setSessionSeed(Math.floor(Math.random() * 1000));
         setShowIntro(false);
         localStorage.setItem(`quiz_start_${id}`, now.toString());
         localStorage.setItem(`quiz_intro_${id}`, 'false');
+    };
+
+    const handleReplay = () => {
+        setResults(null);
+        setAnswers({});
+        setCurrentQuestionIndex(0);
+        setShowIntro(false);
+        setIsReplaySession(true);
+        setSessionSeed(Math.floor(Math.random() * 1000));
+        setStartTime(Date.now());
+        window.scrollTo(0, 0);
     };
 
     const handleOptionSelect = (questionId, optionId) => {
@@ -131,21 +145,24 @@ export function useQuiz() {
             const timeSpent = Math.round((Date.now() - (startTime || Date.now())) / 60000);
             const response = await axios.post(`${API_URL}/quizzes/${id}/submit`, {
                 answers,
-                timeSpent
+                timeSpent,
+                is_replay: isReplaySession
             }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
             if (response.data.success) {
-                if (response.data.earnedPoints === undefined && response.data.passed) {
+                if (response.data.earnedPoints === undefined && response.data.passed && !isReplaySession) {
                     await fetchLastAttempt();
                 } else {
                     setResults(response.data);
                 }
 
-                localStorage.removeItem(`quiz_answers_${id}`);
-                localStorage.removeItem(`quiz_index_${id}`);
-                localStorage.removeItem(`quiz_start_${id}`);
+                if (!isReplaySession) {
+                    localStorage.removeItem(`quiz_answers_${id}`);
+                    localStorage.removeItem(`quiz_index_${id}`);
+                    localStorage.removeItem(`quiz_start_${id}`);
+                }
 
                 if (response.data.newBalance !== undefined) {
                     updateUser({
@@ -172,10 +189,16 @@ export function useQuiz() {
 
                 if (response.data.passed) {
                     playSound('/sounds/winner.mp3');
-                    toast.success('¡Felicidades! Has aprobado.', { id: 'quiz-result' });
+                    if (isReplaySession) {
+                        toast.success('¡Muy bien! Has completado el repaso.', { id: 'quiz-result' });
+                    } else {
+                        toast.success('¡Felicidades! Has aprobado.', { id: 'quiz-result' });
+                    }
                 } else {
                     toast.error('No has alcanzado la nota mínima.', { id: 'quiz-result' });
-                    localStorage.removeItem(`quiz_intro_${id}`);
+                    if (!isReplaySession) {
+                        localStorage.removeItem(`quiz_intro_${id}`);
+                    }
                 }
 
                 window.scrollTo(0, 0);
@@ -195,7 +218,9 @@ export function useQuiz() {
         results,
         submitting,
         showIntro,
+        sessionSeed,
         handleStart,
+        handleReplay,
         handleOptionSelect,
         nextQuestion,
         prevQuestion,

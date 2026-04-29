@@ -160,7 +160,7 @@ class QuizService {
     }
 
     async submitQuiz(quizId, userId, data, isAdminView) {
-        const { answers, timeSpent } = data;
+        const { answers, timeSpent, is_replay } = data;
 
         const [quiz] = await db.query('SELECT * FROM quizzes WHERE id = ?', [quizId]);
         if (!quiz) throw new Error('Evaluación no encontrada');
@@ -175,11 +175,13 @@ class QuizService {
             [userId, quizId]
         );
 
-        if (lastAttempt?.passed) {
+        // If it's not a replay and already passed, we return that status
+        if (!is_replay && lastAttempt?.passed) {
             return { alreadyPassed: true, passed: true };
         }
 
-        if (attempts.count >= quiz.max_attempts) {
+        // Only check max attempts if not replaying
+        if (!is_replay && attempts.count >= quiz.max_attempts) {
             throw new Error('Máximo de intentos alcanzado');
         }
 
@@ -228,6 +230,25 @@ class QuizService {
 
         const score = (earnedPoints / totalPoints) * 100;
         const passed = score >= quiz.passing_score;
+
+        // If it's a replay, return results but don't save anything
+        if (is_replay) {
+            return {
+                score,
+                passed,
+                earnedPoints,
+                totalPoints,
+                pointsAwarded: 0,
+                penaltyApplied: 0,
+                feedback,
+                isReplay: true,
+                attemptNumber: attempts.count, // Just informative
+                newBalance: undefined,
+                newLevel: undefined,
+                moduleCompleted: false,
+                badgeAwarded: null
+            };
+        }
 
         await db.query(
             `INSERT INTO quiz_attempts (user_id, quiz_id, attempt_number, score, passed, time_spent_minutes, started_at, completed_at, answers) 

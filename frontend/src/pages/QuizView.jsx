@@ -15,7 +15,9 @@ export default function QuizView() {
         results,
         submitting,
         showIntro,
+        sessionSeed,
         handleStart,
+        handleReplay,
         handleOptionSelect,
         nextQuestion,
         prevQuestion,
@@ -45,6 +47,7 @@ export default function QuizView() {
                         navigate(-1);
                     }}
                     onRetry={() => window.location.reload()}
+                    onReplay={handleReplay}
                 />
                 
                 <QuizReview 
@@ -85,6 +88,7 @@ export default function QuizView() {
             onSubmit={handleSubmit}
             submitting={submitting}
             attemptsMade={quizData.attemptsMade}
+            sessionSeed={sessionSeed}
             onBack={() => {
                 localStorage.removeItem(`quiz_intro_${id}`);
                 navigate(-1);
