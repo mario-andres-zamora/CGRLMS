@@ -12,6 +12,7 @@ import PasswordTesterEditor from './editors/PasswordTesterEditor.jsx';
 import MultipleChoiceEditor from './editors/MultipleChoiceEditor.jsx';
 import MfaDefenderEditor from './editors/MfaDefenderEditor.jsx';
 import CategorizationEditor from './editors/CategorizationEditor.jsx';
+import DataTetrisEditor from './editors/DataTetrisEditor.jsx';
 
 export default function ContentEditorModal({
     isOpen,
@@ -122,6 +123,13 @@ export default function ContentEditorModal({
             case 'categorization':
                 return (
                     <CategorizationEditor
+                        formData={formData}
+                        setFormData={setFormData}
+                    />
+                );
+            case 'data_tetris':
+                return (
+                    <DataTetrisEditor
                         formData={formData}
                         setFormData={setFormData}
                     />

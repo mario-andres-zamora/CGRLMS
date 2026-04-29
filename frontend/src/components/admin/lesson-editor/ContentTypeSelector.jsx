@@ -14,7 +14,8 @@ import {
     Lock,
     CheckSquare,
     Smartphone,
-    LayoutGrid
+    LayoutGrid,
+    Activity
 } from 'lucide-react';
 
 export const CONTENT_TYPES = [
@@ -35,6 +36,7 @@ export const CONTENT_TYPES = [
     { type: 'multiple_choice', label: 'Opciones', icon: CheckSquare, color: 'text-orange-400' },
     { type: 'mfa_defender', label: 'MFA', icon: Smartphone, color: 'text-indigo-500' },
     { type: 'categorization', label: 'Categorizar', icon: LayoutGrid, color: 'text-emerald-400' },
+    { type: 'data_tetris', label: 'Data Tetris', icon: Activity, color: 'text-primary-400' },
 ];
 
 export default function ContentTypeSelector({ onSelect }) {

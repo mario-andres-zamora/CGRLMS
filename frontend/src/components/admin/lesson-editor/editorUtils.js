@@ -14,7 +14,8 @@ import {
     Lock,
     CheckSquare,
     Smartphone,
-    LayoutGrid
+    LayoutGrid,
+    Activity
 } from 'lucide-react';
 
 export const CONTENT_TYPES_CONFIG = [
@@ -35,6 +36,7 @@ export const CONTENT_TYPES_CONFIG = [
     { type: 'multiple_choice', label: 'Opción Múltiple', icon: CheckSquare, color: 'text-orange-400' },
     { type: 'mfa_defender', label: 'Defensor MFA', icon: Smartphone, color: 'text-indigo-500' },
     { type: 'categorization', label: 'Categorización', icon: LayoutGrid, color: 'text-emerald-400' },
+    { type: 'data_tetris', label: 'Data Tetris', icon: Activity, color: 'text-primary-400' },
 ];
 
 export const getIconForType = (type) => {
@@ -65,7 +67,8 @@ export const getTypeLabel = (type) => {
         password_tester: 'Medidor de Contraseña',
         multiple_choice: 'Opciones Múltiples',
         mfa_defender: 'Simulador de MFA',
-        categorization: 'Actividad de Categorización'
+        categorization: 'Actividad de Categorización',
+        data_tetris: 'Juego Data Tetris'
     };
     return labels[type] || type;
 };

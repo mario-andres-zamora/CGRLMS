@@ -19,6 +19,7 @@ import MultipleChoiceActivity from './activities/MultipleChoiceActivity';
 import MfaDefenderActivity from './activities/MfaDefenderActivity';
 import HackNeighborGame from './activities/HackNeighborGame';
 import CategorizationActivity from './activities/CategorizationActivity';
+import DataTetrisActivity from './activities/DataTetrisActivity';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -129,6 +130,9 @@ export default function LessonContentItem({
 
         case 'categorization':
             return <CategorizationActivity {...commonProps} />;
+            
+        case 'data_tetris':
+            return <DataTetrisActivity {...commonProps} />;
 
         default:
             return (

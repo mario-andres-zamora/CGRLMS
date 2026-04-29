@@ -11,13 +11,17 @@ export default function QuestionItem({
     onAddOption, 
     onRemoveOption 
 }) {
+    const INTERACTIVE_GAME_TYPES = ['mfa_defender', 'hack_neighbor', 'data_tetris'];
     const questionTypes = [
         { value: 'multiple_choice', label: 'Selección Múltiple' },
         { value: 'true_false', label: 'Falso / Verdadero' },
         { value: 'multiple_select', label: 'Selección Múltiple (Varias)' },
         { value: 'mfa_defender', label: 'Simulador MFA' },
-        { value: 'hack_neighbor', label: 'Hackea al Vecino (Juego)' }
+        { value: 'hack_neighbor', label: 'Hackea al Vecino (Juego)' },
+        { value: 'data_tetris', label: 'Data Tetris (Juego)' }
     ];
+
+    const isInteractiveGame = INTERACTIVE_GAME_TYPES.includes(question.question_type);
 
     return (
         <div className="card p-8 bg-slate-900/40 border-white/5 relative group hover:border-primary-500/20 transition-all text-left">
@@ -34,7 +38,7 @@ export default function QuestionItem({
                         </label>
                         <textarea
                             className={`input-field bg-slate-950/50 border-white/10 font-bold text-white transition-all ${
-                                ['mfa_defender', 'hack_neighbor'].includes(question.question_type) 
+                                isInteractiveGame 
                                 ? 'h-32 text-lg' 
                                 : 'h-20 text-sm'
                             }`}
@@ -44,7 +48,7 @@ export default function QuestionItem({
                         />
                     </div>
 
-                    {!['mfa_defender', 'hack_neighbor'].includes(question.question_type) && (
+                    {!isInteractiveGame && (
                         <div className="w-64 space-y-2">
                             <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex items-center gap-1.5 text-left">
                                 <ImageIcon className="w-3 h-3 text-secondary-500" /> Imagen (URL)
@@ -92,7 +96,7 @@ export default function QuestionItem({
                     </button>
                 </div>
 
-                {!['mfa_defender', 'hack_neighbor'].includes(question.question_type) ? (
+                {!isInteractiveGame ? (
                     <>
                         {/* Options Grid */}
                         <div className="space-y-4 pt-4 border-t border-white/5 text-left">
@@ -149,7 +153,11 @@ export default function QuestionItem({
                 ) : (
                     <div className="pt-4 border-t border-white/5 space-y-4 text-left">
                         <label className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">
-                            Configuración de {question.question_type === 'mfa_defender' ? 'Defensa MFA' : 'Hackea al Vecino'}
+                            Configuración de {
+                                question.question_type === 'mfa_defender' ? 'Defensa MFA' : 
+                                question.question_type === 'hack_neighbor' ? 'Hackea al Vecino' :
+                                'Data Tetris'
+                            }
                         </label>
                         <div className="grid grid-cols-2 gap-4">
                             {question.question_type === 'mfa_defender' ? (
@@ -196,7 +204,7 @@ export default function QuestionItem({
                                         </div>
                                     );
                                 })()
-                            ) : (
+                            ) : question.question_type === 'hack_neighbor' ? (
                                 <div className="space-y-1.5 col-span-2">
                                     <label className="text-[10px] font-bold text-gray-400">Penalización por Pista Revelada (Puntos)</label>
                                     <div className="flex gap-4 items-center">
@@ -207,6 +215,40 @@ export default function QuestionItem({
                                             onChange={e => onUpdateQuestion(question.id, 'data', { ...(question.data || {}), hint_penalty: parseInt(e.target.value) })}
                                         />
                                         <p className="text-[11px] text-gray-500 italic">Cada vez que el estudiante revele una de las 3 pistas, se le restarán estos puntos del total ganado.</p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-white/5 col-span-2">
+                                    <div className="space-y-2 text-left">
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Dificultad Inicial</label>
+                                        <div className="flex gap-2">
+                                            {['easy', 'medium', 'hard'].map(level => (
+                                                <button
+                                                    key={level}
+                                                    onClick={() => onUpdateQuestion(question.id, 'data', { ...(question.data || {}), difficulty: level })}
+                                                    className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${
+                                                        (question.data?.difficulty || 'easy') === level
+                                                        ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/20'
+                                                        : 'bg-slate-950/50 text-gray-500 border border-white/5 hover:border-white/20'
+                                                    }`}
+                                                >
+                                                    {level === 'easy' ? 'Básico' : level === 'medium' ? 'Medio' : 'Avanzado'}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2 text-left">
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Puntaje Mínimo para Aprobar</label>
+                                        <div className="flex gap-4 items-center">
+                                            <input
+                                                type="number"
+                                                className="input-field bg-slate-950/50 border-white/10 text-sm w-32"
+                                                placeholder="500"
+                                                value={question.data?.min_score || 0}
+                                                onChange={e => onUpdateQuestion(question.id, 'data', { ...(question.data || {}), min_score: parseInt(e.target.value) })}
+                                            />
+                                            <p className="text-[11px] text-gray-500 italic">El estudiante debe alcanzar este puntaje para que la pregunta se marque como correcta.</p>
+                                        </div>
                                     </div>
                                 </div>
                             )}

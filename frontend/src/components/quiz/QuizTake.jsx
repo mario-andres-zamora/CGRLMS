@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { ArrowLeft, Target, ChevronLeft, ChevronRight, ShieldAlert, Terminal, Smartphone, XCircle, CheckCircle2, Heart, MessageCircle, Share2, Search, Camera, Calendar, Briefcase, Users, AtSign, Lock, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Target, ChevronLeft, ChevronRight, ShieldAlert, Terminal, Smartphone, XCircle, CheckCircle2, Heart, MessageCircle, Share2, Search, Camera, Calendar, Briefcase, Users, AtSign, Lock, Eye, EyeOff, Activity, Trophy, Zap, Maximize, Minimize } from 'lucide-react';
+import PhaserGame from '../lessons/activities/DataTetris/PhaserGame';
+import '../lessons/activities/DataTetris/DataTetris.css';
 import { HACK_PROFILES } from '../../utils/gamesData';
+
+export const INTERACTIVE_QUESTION_TYPES = ['mfa_defender', 'hack_neighbor', 'data_tetris'];
 
 
 import { useSoundStore } from '../../store/soundStore';
@@ -616,6 +620,256 @@ function MfaDefenderQuestion({ question, isAnswered, storedAnswer, onWin }) {
     );
 }
 
+function DataTetrisQuestion({ question, isAnswered, onWin }) {
+    const [score, setScore] = useState(0);
+    const [combo, setCombo] = useState(0);
+    const [lines, setLines] = useState(0);
+    const [integrity, setIntegrity] = useState(100);
+    const [gameState, setGameState] = useState(isAnswered ? 'won' : 'start');
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    const containerRef = useRef(null);
+
+    const toggleFullscreen = () => {
+        if (!containerRef.current) return;
+
+        if (!document.fullscreenElement) {
+            containerRef.current.requestFullscreen().catch(err => {
+                console.error(`Error attempting to enable fullscreen: ${err.message}`);
+            });
+            setIsFullscreen(true);
+        } else {
+            document.exitFullscreen();
+            setIsFullscreen(false);
+        }
+    };
+
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            setIsFullscreen(!!document.fullscreenElement);
+        };
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    }, []);
+
+    const ensureDataObject = (data) => {
+        if (!data) return {};
+        if (typeof data === 'object') return data;
+        try {
+            return JSON.parse(data);
+        } catch (e) {
+            return {};
+        }
+    };
+
+    const qData = ensureDataObject(question.data);
+    const difficulty = qData.difficulty || 'easy';
+    const minScore = qData.min_score || 500;
+
+    const handleGameOver = (finalScore) => {
+        if (finalScore >= minScore) {
+            setGameState('won');
+            onWin({ success: true, score: finalScore });
+        } else {
+            setGameState('failed');
+        }
+    };
+
+    const startGame = () => {
+        setScore(0);
+        setCombo(0);
+        setLines(0);
+        setIntegrity(100);
+        setGameState('playing');
+    };
+
+    return (
+        <div
+            ref={containerRef}
+            className={`data-tetris-container animate-fade-in shadow-2xl border-2 border-white/5 mt-4 ${isFullscreen ? 'dt-fullscreen bg-slate-950' : ''}`}
+        >
+            <div className="data-tetris-wrapper relative">
+                {/* Fullscreen Toggle Button */}
+                <button
+                    onClick={toggleFullscreen}
+                    className="absolute top-4 right-4 z-[100] p-2 bg-black/40 hover:bg-black/60 text-white/70 hover:text-white rounded-lg border border-white/10 transition-all"
+                    title={isFullscreen ? "Salir de pantalla completa" : "Pantalla completa"}
+                >
+                    {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
+                </button>
+
+                <header className="dt-header">
+                    <div className="dt-logo-container">
+                        <div className="dt-logo-main">
+                            <span className="dt-logo-data">DATA</span>
+                            <span className="dt-logo-tetris">TETRIS</span>
+                        </div>
+                        <p className="dt-logo-slogan">Clasificación de Datos CGR</p>
+                    </div>
+
+                    <div className="dt-stats-section">
+                        <div className="dt-stat-box">
+                            <span className="dt-stat-label">Integridad</span>
+                            <div className="dt-hearts-grid">
+                                {Array.from({ length: 10 }, (_, i) => {
+                                    const filled = i < Math.ceil(integrity / 10);
+                                    return (
+                                        <span key={i} className={`dt-heart ${filled ? 'dt-heart-full' : 'dt-heart-empty'}`}>
+                                            {filled ? '❤️' : '🤍'}
+                                        </span>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                        <div className="dt-stat-box">
+                            <span className="dt-stat-label">Puntos</span>
+                            <span className="dt-stat-value text-white">{score}</span>
+                        </div>
+                        <div className="dt-stat-box">
+                            <span className="dt-stat-label">Meta</span>
+                            <span className="dt-stat-value dt-stat-value-highlight text-emerald-400">{minScore}</span>
+                        </div>
+                    </div>
+                </header>
+
+                <section className="dt-canvas-section">
+                    {gameState === 'playing' && (
+                        <aside className="dt-sidebar-left">
+                            <div className="dt-sidebar-title">Protocolos</div>
+                            <div className="dt-legend-item publico">
+                                <div className="dt-legend-dot"></div>
+                                <div className="dt-legend-text">
+                                    <strong>Público</strong>
+                                    <p>Acceso Irrestricto</p>
+                                </div>
+                            </div>
+                            <div className="dt-legend-item confidencial">
+                                <div className="dt-legend-dot"></div>
+                                <div className="dt-legend-text">
+                                    <strong>Restringido</strong>
+                                    <p>Datos Personales</p>
+                                </div>
+                            </div>
+                            <div className="dt-legend-item restringido">
+                                <div className="dt-legend-dot"></div>
+                                <div className="dt-legend-text">
+                                    <strong>Sensible</strong>
+                                    <p>Privacidad Total</p>
+                                </div>
+                            </div>
+
+                            <div className="dt-sidebar-hint">
+                                <p>Presiona <span>ESPACIO</span> para rotar la clasificación de la pieza.</p>
+                            </div>
+
+                            <div className="mt-4 pt-4 border-t border-white/10 flex flex-col items-center">
+                                <span className="dt-stat-label">Combo</span>
+                                <span className={`dt-combo-val ${combo > 1 ? 'active' : ''}`}>x{combo}</span>
+                            </div>
+                        </aside>
+                    )}
+
+                    <div className="dt-game-container">
+                        {gameState === 'start' && (
+                            <div className="dt-overlay">
+                                <div className="dt-overlay-content">
+                                    <div className="flex justify-center mb-2">
+                                        <div className="p-4 bg-primary-500/10 rounded-3xl border border-primary-500/20">
+                                            <Activity className="w-12 h-12 text-primary-400" />
+                                        </div>
+                                    </div>
+                                    <h2 className="text-white"><span className="text-primary-400">Protección de datos</span></h2>
+                                    <p className="text-gray-400 text-sm leading-relaxed">
+                                        Juego clásico de Tetris, pero con un giro de seguridad de la información.
+                                        <br />Clasifica las piezas de datos según su nivel de seguridad antes de que toquen el suelo.
+                                        <br />Usa la tecla <strong>ESPACIO</strong> para cambiar el tipo de dato.
+                                    </p>
+
+                                    <h3 className="text-white"><span className="text-primary-400">Controles</span></h3>
+
+                                    <div className="dt-instructions-grid bg-black/40 p-5 rounded-2xl border border-white/5">
+                                        <div className="dt-ins-item"><span>&larr; &rarr;</span> Mover</div>
+                                        <div className="dt-ins-item"><span>ESPACIO</span> Clasificar</div>
+                                        <div className="dt-ins-item"><span>&uarr;</span> Rotar</div>
+                                        <div className="dt-ins-item"><span>&darr;</span> Caída Rápida</div>
+                                    </div>
+
+                                    <button className="dt-primary-btn group flex items-center justify-center gap-3" onClick={startGame}>
+                                        <Zap className="w-5 h-5 group-hover:animate-pulse" /> Iniciar
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {gameState === 'playing' && (
+                            <PhaserGame
+                                difficulty={difficulty}
+                                onScoreChange={(s, c) => { setScore(s); setCombo(c); }}
+                                onLinesChange={setLines}
+                                onIntegrityChange={setIntegrity}
+                                onGameOver={handleGameOver}
+                            />
+                        )}
+
+                        {gameState === 'won' && (
+                            <div className="dt-overlay">
+                                <div className="dt-overlay-content">
+                                    <div className="flex justify-center mb-2">
+                                        <div className="p-4 bg-emerald-500/10 rounded-3xl border border-emerald-500/20">
+                                            <Trophy className="w-12 h-12 text-emerald-400" />
+                                        </div>
+                                    </div>
+                                    <h2 className="text-emerald-400">¡Evaluación Superada!</h2>
+                                    <p className="text-gray-400 text-sm">Has demostrado un excelente dominio en la clasificación de datos.</p>
+
+                                    <div className="dt-final-stats">
+                                        <div className="dt-final-stat">
+                                            <span>Puntaje Obtenido</span>
+                                            <strong className="text-white">{score}</strong>
+                                        </div>
+                                        <div className="dt-final-stat">
+                                            <span>Líneas Limpias</span>
+                                            <strong className="text-primary-400">{lines}</strong>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-2 justify-center text-emerald-400 font-bold text-xs uppercase tracking-widest bg-emerald-400/10 py-2 px-4 rounded-xl border border-emerald-400/20">
+                                        <CheckCircle2 className="w-4 h-4" /> Pregunta Completada
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {gameState === 'failed' && (
+                            <div className="dt-overlay">
+                                <div className="dt-overlay-content">
+                                    <div className="flex justify-center mb-2">
+                                        <div className="p-4 bg-red-500/10 rounded-3xl border border-red-500/20">
+                                            <ShieldAlert className="w-12 h-12 text-red-400" />
+                                        </div>
+                                    </div>
+                                    <h2 className="text-red-500">Objetivo no Alcanzado</h2>
+                                    <p className="text-gray-400 text-sm">Necesitas al menos {minScore} puntos para aprobar esta sección.</p>
+
+                                    <div className="dt-final-stats">
+                                        <div className="dt-final-stat">
+                                            <span>Tu Puntaje</span>
+                                            <strong className="text-white">{score}</strong>
+                                        </div>
+                                    </div>
+
+                                    <button className="dt-primary-btn" onClick={() => setGameState('start')}>
+                                        Reintentar Evaluación
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </section>
+            </div>
+        </div>
+    );
+}
+
 export default function QuizTake({
     quiz,
     questions,
@@ -709,6 +963,15 @@ export default function QuizTake({
                             isAnswered={answers[currentQuestion.id]?.success === true || answers[currentQuestion.id] === 'true' || answers[currentQuestion.id] === true}
                             onWin={(data) => onOptionSelect(currentQuestion.id, data)}
                             sessionSeed={sessionSeed}
+                        />
+                    </div>
+                ) : currentQuestion.question_type === 'data_tetris' ? (
+                    <div className="relative z-10">
+                        <DataTetrisQuestion
+                            key={`${currentQuestion.id}-${sessionSeed}`}
+                            question={currentQuestion}
+                            isAnswered={answers[currentQuestion.id]?.success === true || answers[currentQuestion.id] === 'true' || answers[currentQuestion.id] === true}
+                            onWin={(data) => onOptionSelect(currentQuestion.id, data)}
                         />
                     </div>
                 ) : (

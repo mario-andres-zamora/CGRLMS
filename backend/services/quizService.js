@@ -3,6 +3,8 @@ const logger = require('../config/logger');
 const { syncUserLevel, getSystemSettings, checkAndRecordModuleCompletion } = require('../utils/gamification');
 const { checkAllBadges } = require('../utils/badges');
 
+const GAME_QUESTION_TYPES = ['mfa_defender', 'hack_neighbor', 'data_tetris'];
+
 class QuizService {
     async getQuizById(quizId, userId) {
         const [quiz] = await db.query(
@@ -55,7 +57,7 @@ class QuizService {
         let earnedPoints = 0;
         let penaltyApplied = 0;
 
-        if (q.question_type === 'mfa_defender' || q.question_type === 'hack_neighbor') {
+        if (GAME_QUESTION_TYPES.includes(q.question_type)) {
             console.log(`[QuizScore] Scrutinizing ${q.question_type} Q#${q.id}:`, { userAnswer });
             if (typeof userAnswer === 'object' && userAnswer !== null) {
                 isCorrect = userAnswer.success === true || userAnswer.success === 'true';
@@ -124,7 +126,7 @@ class QuizService {
             let earnedPoints = 0;
             let penaltyApplied = 0;
 
-            if (q.question_type === 'mfa_defender' || q.question_type === 'hack_neighbor') {
+            if (GAME_QUESTION_TYPES.includes(q.question_type)) {
                 const scoring = this._calculateQuestionScore(q, userAnswer);
                 isCorrect = scoring.isCorrect;
                 earnedPoints = scoring.earnedPoints;
@@ -205,7 +207,7 @@ class QuizService {
             let earnedPointsForThisQ = 0;
             let penaltyApplied = 0;
 
-            if (q.question_type === 'mfa_defender' || q.question_type === 'hack_neighbor') {
+            if (GAME_QUESTION_TYPES.includes(q.question_type)) {
                 const scoring = this._calculateQuestionScore(q, userAnswer);
                 isCorrect = scoring.isCorrect;
                 earnedPointsForThisQ = scoring.earnedPoints;
