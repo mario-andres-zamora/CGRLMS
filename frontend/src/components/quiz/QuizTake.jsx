@@ -12,13 +12,13 @@ function HackNeighborQuestion({ question, isAnswered, onWin, sessionSeed }) {
     const [showPassword, setShowPassword] = useState(false);
     const [lastError, setLastError] = useState(false);
     const [revealedHints, setRevealedHints] = useState(() => {
-        const saved = localStorage.getItem(`cgr_quiz_hints_${question.id}`);
+        const saved = localStorage.getItem(`cgr_quiz_hints_${question.id}_${sessionSeed}`);
         return saved ? JSON.parse(saved) : {};
     }); // { hintIndex: true }
 
     useEffect(() => {
-        localStorage.setItem(`cgr_quiz_hints_${question.id}`, JSON.stringify(revealedHints));
-    }, [revealedHints, question.id]);
+        localStorage.setItem(`cgr_quiz_hints_${question.id}_${sessionSeed}`, JSON.stringify(revealedHints));
+    }, [revealedHints, question.id, sessionSeed]);
 
     // Seleccionar perfil basado en el ID de la pregunta y el seed de la sesión para variedad
     const profile = useMemo(() => {
