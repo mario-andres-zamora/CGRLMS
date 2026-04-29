@@ -16,9 +16,33 @@ function HackNeighborQuestion({ question, isAnswered, onWin, sessionSeed }) {
         return saved ? JSON.parse(saved) : {};
     }); // { hintIndex: true }
 
+    const { playSound } = useSoundStore();
+    const audioRef = useRef(null);
+
     useEffect(() => {
         localStorage.setItem(`cgr_quiz_hints_${question.id}_${sessionSeed}`, JSON.stringify(revealedHints));
     }, [revealedHints, question.id, sessionSeed]);
+
+    // Control de audio para la actividad de hacking
+    useEffect(() => {
+        if (status === 'browsing' && !isAnswered) {
+            // Detener cualquier audio previo si existe
+            if (audioRef.current) {
+                audioRef.current.pause();
+            }
+            audioRef.current = playSound('/sounds/hack_neighbor.mp3');
+            if (audioRef.current) {
+                audioRef.current.loop = true;
+            }
+        }
+
+        return () => {
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current.currentTime = 0;
+            }
+        };
+    }, [status, isAnswered, playSound]);
 
     // Seleccionar perfil basado en el ID de la pregunta y el seed de la sesión para variedad
     const profile = useMemo(() => {
