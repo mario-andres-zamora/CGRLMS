@@ -233,6 +233,14 @@ class QuizService {
 
         // If it's a replay, return results but don't save anything
         if (is_replay) {
+            let badgeAwarded = null;
+            if (passed) {
+                const badgeCheck = await checkAllBadges(userId, { isReplay: true, passed: true });
+                if (badgeCheck.awarded) {
+                    badgeAwarded = badgeCheck.badge;
+                }
+            }
+
             return {
                 score,
                 passed,
@@ -246,7 +254,7 @@ class QuizService {
                 newBalance: undefined,
                 newLevel: undefined,
                 moduleCompleted: false,
-                badgeAwarded: null
+                badgeAwarded
             };
         }
 

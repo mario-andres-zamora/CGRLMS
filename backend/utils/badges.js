@@ -269,6 +269,23 @@ async function checkModuleOneBadge(userId, moduleId) {
 }
 
 /**
+ * Lógica para la insignia "Arcade Replay"
+ * (Se gana al completar un repaso con éxito)
+ */
+async function checkReplayBadge(userId) {
+    try {
+        const [badge] = await db.query("SELECT id FROM badges WHERE name = 'Arcade Replay' LIMIT 1");
+        if (badge) {
+            return await awardBadge(userId, badge.id);
+        }
+        return null;
+    } catch (error) {
+        logger.error(`Error en checkReplayBadge para usuario ${userId}:`, error);
+        return null;
+    }
+}
+
+/**
  * Revisa todas las insignias automáticas para un usuario.
  * @returns Un objeto con 'awarded' (boolean) y 'badges' (array de insignias otorgadas)
  */
@@ -304,6 +321,12 @@ async function checkAllBadges(userId, extraData = {}) {
             if (start && start.awarded) awardedBadges.push(start.badge);
         }
 
+        // 5. Replay (solo si se pasa un repaso)
+        if (extraData.isReplay && extraData.passed) {
+            const replay = await checkReplayBadge(userId);
+            if (replay && replay.awarded) awardedBadges.push(replay.badge);
+        }
+
         return {
             awarded: awardedBadges.length > 0,
             badges: awardedBadges,
@@ -323,5 +346,6 @@ module.exports = {
     checkFirstModuleBadge,
     checkSabanaBadge,
     checkModuleOneBadge,
+    checkReplayBadge,
     checkAllBadges
 };

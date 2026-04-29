@@ -76,6 +76,7 @@ export default function QuizResults({ results, quiz, onBack, onRetry, onReplay }
                     </button>
                     {results.passed && onReplay && (
                         <button
+                            onClick={onReplay}
                             className="px-10 py-4 bg-secondary-600/20 text-secondary-400 rounded-2xl font-black uppercase tracking-widest text-[10px] border border-secondary-500/30 hover:bg-secondary-600 hover:text-white transition-all flex flex-col items-center justify-center gap-1"
                         >
                             {/* Fila superior: Icono + Texto principal */}
