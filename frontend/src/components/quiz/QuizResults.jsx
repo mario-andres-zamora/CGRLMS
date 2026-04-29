@@ -1,5 +1,4 @@
-import React from 'react';
-import { Star, AlertTriangle, RotateCcw, Gamepad2 } from 'lucide-react';
+import { Star, AlertTriangle, RotateCcw, Gamepad2, Award } from 'lucide-react';
 import CyberCat from '../CyberCat';
 import PointsCounter from './PointsCounter';
 
@@ -39,18 +38,38 @@ export default function QuizResults({ results, quiz, onBack, onRetry, onReplay }
                     </p>
                 </div>
 
-                {results.pointsAwarded > 0 && (
-                    <div className="space-y-2 flex flex-col items-center">
-                        <div className="inline-flex items-center gap-2 px-5 py-1.5 bg-secondary-500/20 border border-secondary-500/30 rounded-full text-secondary-500 font-black text-[11px] animate-bounce">
-                            <Star className="w-3.5 h-3.5 fill-secondary-500" /> +<PointsCounter target={results.pointsAwarded} /> PTS
+                <div className="flex flex-col items-center gap-3">
+                    {results.pointsAwarded > 0 && (
+                        <div className="space-y-2 flex flex-col items-center">
+                            <div className="inline-flex items-center gap-2 px-5 py-1.5 bg-secondary-500/20 border border-secondary-500/30 rounded-full text-secondary-500 font-black text-[11px] animate-bounce">
+                                <Star className="w-3.5 h-3.5 fill-secondary-500" /> +<PointsCounter target={results.pointsAwarded} /> PTS
+                            </div>
+                            {results.penaltyApplied > 0 && (
+                                <p className="text-[9px] font-black text-red-500 uppercase tracking-widest flex items-center gap-1.5 bg-red-500/5 px-2.5 py-1 rounded-lg border border-red-500/10">
+                                    <AlertTriangle className="w-2.5 h-2.5" /> Penalización de {(results.attemptNumber - 1) * 10}% por intentos
+                                </p>
+                            )}
                         </div>
-                        {results.penaltyApplied > 0 && (
-                            <p className="text-[9px] font-black text-red-500 uppercase tracking-widest flex items-center gap-1.5 bg-red-500/5 px-2.5 py-1 rounded-lg border border-red-500/10">
-                                <AlertTriangle className="w-2.5 h-2.5" /> Penalización de {(results.attemptNumber - 1) * 10}% por intentos
-                            </p>
-                        )}
-                    </div>
-                )}
+                    )}
+
+                    {results.badgeAwarded && (
+                        <div className="p-4 bg-primary-500/10 border border-primary-500/20 rounded-2xl animate-fade-in flex flex-col items-center gap-3 max-w-sm w-full mx-auto shadow-lg shadow-primary-500/5">
+                            <div className="flex items-center gap-4">
+                                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-500/30 to-primary-600/10 flex items-center justify-center border border-primary-500/30 shadow-inner">
+                                    <Award className="w-8 h-8 text-primary-400 animate-pulse" />
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-[10px] font-black text-primary-400 uppercase tracking-widest leading-none mb-1.5">¡Insignia Desbloqueada!</p>
+                                    <h3 className="text-xl font-black text-white uppercase leading-none tracking-tight">{results.badgeAwarded.name}</h3>
+                                </div>
+                            </div>
+                            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/5 rounded-xl border border-white/10 backdrop-blur-sm">
+                                <Star className="w-3.5 h-3.5 fill-primary-500 text-primary-500" />
+                                <span className="text-[11px] font-black text-white uppercase">+{results.badgeAwarded.points || 5} PTS EXTRAS</span>
+                            </div>
+                        </div>
+                    )}
+                </div>
 
                 <div className="grid grid-cols-3 gap-3 max-w-lg mx-auto pt-2">
                     <div className="bg-slate-900/50 p-3 md:p-4 rounded-2xl border border-white/5">
@@ -85,10 +104,6 @@ export default function QuizResults({ results, quiz, onBack, onRetry, onReplay }
                                 <span>Rejugar por diversión</span>
                             </div>
 
-                            {/* Fila inferior: Texto aclaratorio */}
-                            <span className="text-[9px] text-white font-bold uppercase">
-                                (No da puntos extra, es solo para practicar)
-                            </span>
                         </button>
                     )}
                     {!results.passed && results.attemptNumber < quiz.max_attempts && (
