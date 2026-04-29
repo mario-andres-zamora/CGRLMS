@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { AlertTriangle, CheckCircle2, Mail, ChevronLeft, ChevronRight, Send, Search } from 'lucide-react';
 
 export default function RiskAlerts({ 
@@ -13,17 +13,13 @@ export default function RiskAlerts({
     const [selectedDept, setSelectedDept] = useState('');
     const itemsPerPage = 6;
 
-    // Reset to first page when data changes significantly
-    React.useEffect(() => {
-        setCurrentPage(1);
-    }, [atRisk.length]);
-
     // Filtered items based on search
     const filteredAtRisk = useMemo(() => {
+        const search = searchTerm.toLowerCase();
         return atRisk.filter(user => 
-            `${user.first_name || ''} ${user.last_name || ''}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (user.department || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (user.email || '').toLowerCase().includes(searchTerm.toLowerCase())
+            `${user.first_name || ''} ${user.last_name || ''}`.toLowerCase().includes(search) ||
+            (user.department || '').toLowerCase().includes(search) ||
+            (user.email || '').toLowerCase().includes(search)
         );
     }, [atRisk, searchTerm]);
 
@@ -31,10 +27,20 @@ export default function RiskAlerts({
     const startIndex = (currentPage - 1) * itemsPerPage;
     const paginatedItems = filteredAtRisk.slice(startIndex, startIndex + itemsPerPage);
 
-    // Reset to first page when searching
+    // Reset to first page when search changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm]);
+
+    // Ensure current page is valid when data changes
+    useEffect(() => {
+        if (currentPage > totalPages && totalPages > 0) {
+            setCurrentPage(totalPages);
+        }
+    }, [totalPages, currentPage]);
+
     const handleSearch = (e) => {
         setSearchTerm(e.target.value);
-        setCurrentPage(1);
     };
 
     return (
@@ -67,23 +73,48 @@ export default function RiskAlerts({
 
                     {/* Pagination */}
                     {totalPages > 1 && (
-                        <div className="flex items-center gap-3 bg-slate-950/50 p-1.5 rounded-xl border border-white/5">
+                        <div className="flex items-center gap-3 bg-slate-950/50 p-2 rounded-xl border border-white/5 shadow-inner">
                             <button
-                                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                type="button"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setCurrentPage(prev => Math.max(prev - 1, 1));
+                                }}
                                 disabled={currentPage === 1}
-                                className={`p-1.5 rounded-lg transition-all ${currentPage === 1 ? 'opacity-20 cursor-not-allowed' : 'hover:bg-red-500/20 text-red-400'}`}
+                                className={`p-2 rounded-lg transition-all duration-200 ${
+                                    currentPage === 1 
+                                        ? 'opacity-10 cursor-not-allowed text-gray-600' 
+                                        : 'hover:bg-red-500/20 text-red-400 active:scale-90 cursor-pointer'
+                                }`}
+                                aria-label="Página anterior"
                             >
-                                <ChevronLeft className="w-3.5 h-3.5" />
+                                <ChevronLeft className="w-4 h-4" />
                             </button>
-                            <span className="text-[9px] font-black text-white uppercase tracking-tighter min-w-[60px] text-center">
-                                Pág {currentPage} / {totalPages}
-                            </span>
+                            <div className="flex flex-col items-center min-w-[70px]">
+                                <span className="text-[10px] font-black text-white uppercase tracking-tighter">
+                                    Pág {currentPage}
+                                </span>
+                                <span className="text-[8px] font-bold text-gray-500 uppercase tracking-widest mt-[-2px]">
+                                    de {totalPages}
+                                </span>
+                            </div>
                             <button
-                                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                type="button"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setCurrentPage(prev => Math.min(prev + 1, totalPages));
+                                }}
                                 disabled={currentPage === totalPages}
-                                className={`p-1.5 rounded-lg transition-all ${currentPage === totalPages ? 'opacity-20 cursor-not-allowed' : 'hover:bg-red-500/20 text-red-400'}`}
+                                className={`p-2 rounded-lg transition-all duration-200 ${
+                                    currentPage === totalPages 
+                                        ? 'opacity-10 cursor-not-allowed text-gray-600' 
+                                        : 'hover:bg-red-500/20 text-red-400 active:scale-90 cursor-pointer'
+                                }`}
+                                aria-label="Siguiente página"
                             >
-                                <ChevronRight className="w-3.5 h-3.5" />
+                                <ChevronRight className="w-4 h-4" />
                             </button>
                         </div>
                     )}
