@@ -61,7 +61,7 @@ router.get('/leaderboard', authMiddleware, cacheMiddleware(60, true), async (req
 
         // Global Rank Position (Fallback o complemento con datos de DB)
         const userGlobalRankRaw = institutionalLeaderboard.find(r => r.email === userEmailLower);
-        const myGlobalRankPos = myRealTimeRank || (userGlobalRankRaw ? userGlobalRankRaw.rank_position : (institutionalLeaderboard.length + 1));
+        const myGlobalRankPos = userGlobalRankRaw ? userGlobalRankRaw.rank_position : (myRealTimeRank || (institutionalLeaderboard.length + 1));
 
         // Department Leaderboard
         let departmentLeaderboard = [];
