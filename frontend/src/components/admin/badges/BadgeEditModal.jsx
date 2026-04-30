@@ -47,9 +47,16 @@ export default function BadgeEditModal({ isOpen, onClose, editingBadge, formData
                                 onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
                                 className="w-full px-5 py-4 bg-slate-900 border border-white/10 rounded-2xl text-white font-black uppercase text-[10px] tracking-widest focus:outline-none focus:border-primary-500 appearance-none cursor-pointer"
                             >
-                                {badgeImages.map(img => (
-                                    <option key={img} value={img}>{img.split('.')[0].replace(/-/g, ' ')}</option>
-                                ))}
+                                {badgeImages.map(img => {
+                                    const parts = img.split('.');
+                                    const ext = parts.pop().toUpperCase();
+                                    const name = parts.join('.').replace(/-/g, ' ');
+                                    return (
+                                        <option key={img} value={img}>
+                                            {name} [{ext}]
+                                        </option>
+                                    );
+                                })}
                             </select>
                         </div>
                         <div className="space-y-3">

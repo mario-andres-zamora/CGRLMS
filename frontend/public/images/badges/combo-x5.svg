@@ -1,0 +1,26 @@
+<svg width="500" height="500" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="marco_epico" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8e44ad;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2c3e50;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="fuego_azul" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#00d2ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3a7bd5;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <path d="M250 20 L460 130 L460 370 L250 480 L40 370 L40 130 Z" fill="url(#marco_epico)" stroke="#ecf0f1" stroke-width="8"/>
+  
+  <path d="M40 150 Q 0 180 10 250 T 40 300" fill="#9b59b6" opacity="0.8"/>
+  <path d="M460 150 Q 500 180 490 250 T 460 300" fill="#9b59b6" opacity="0.8"/>
+
+  <path d="M250 100 C 200 180 150 250 180 350 C 200 400 300 400 320 350 C 350 250 300 180 250 100 Z" fill="url(#fuego_azul)" />
+  <path d="M250 180 C 220 230 190 280 210 340 C 220 370 280 370 290 340 C 310 280 280 230 250 180 Z" fill="#ffffff" opacity="0.4" />
+
+  <text x="250" y="440" font-family="Arial, sans-serif" font-size="60" fill="white" text-anchor="middle" font-weight="black" filter="drop-shadow(2px 2px 2px #000)">X5</text>
+  
+  <circle cx="120" cy="150" r="5" fill="white" />
+  <circle cx="380" cy="120" r="8" fill="white" />
+  <circle cx="100" cy="350" r="4" fill="white" />
+</svg>
