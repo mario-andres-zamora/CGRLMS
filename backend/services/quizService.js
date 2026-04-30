@@ -59,39 +59,58 @@ class QuizService {
 
         if (GAME_QUESTION_TYPES.includes(q.question_type)) {
             console.log(`[QuizScore] Scrutinizing ${q.question_type} Q#${q.id}:`, { userAnswer });
+            
             if (typeof userAnswer === 'object' && userAnswer !== null) {
                 isCorrect = userAnswer.success === true || userAnswer.success === 'true';
-                earnedPoints = q.points;
+                
+                let qData = {};
+                try {
+                    qData = typeof q.data === 'string' ? JSON.parse(q.data) : (q.data || {});
+                } catch (e) {
+                    console.error(`[QuizScore] Error parsing question data for Q#${q.id}:`, e);
+                }
 
-                if (isCorrect) {
-                    let qData = {};
-                    try {
-                        qData = typeof q.data === 'string' ? JSON.parse(q.data) : (q.data || {});
-                    } catch (e) {}
-
-                    if (q.question_type === 'hack_neighbor') {
-                        const hintsUsed = parseInt(userAnswer.hintsUsed) || 0;
-                        const penaltyPerHint = parseInt(qData.hint_penalty) || 0;
-                        penaltyApplied = hintsUsed * penaltyPerHint;
-                    } else if (q.question_type === 'mfa_defender') {
-                        const mfaFails = parseInt(userAnswer.mfaFails) || 0;
-                        const failPenalty = parseInt(qData.fail_penalty) || 0;
-                        penaltyApplied = mfaFails * failPenalty;
-                        console.log(`[QuizScore] MFA Penalization: ${mfaFails} fails * ${failPenalty} pts = -${penaltyApplied}`);
-                    }
+                if (q.question_type === 'hack_neighbor') {
+                    const hintsUsed = parseInt(userAnswer.hintsUsed) || 0;
+                    const penaltyPerHint = parseInt(qData.hint_penalty) || 0;
+                    penaltyApplied = hintsUsed * penaltyPerHint;
                     earnedPoints = Math.max(0, q.points - penaltyApplied);
-                    console.log(`[QuizScore] Final Score for Q#${q.id}: ${earnedPoints}/${q.points}`);
+                } else if (q.question_type === 'mfa_defender') {
+                    const hackTime = parseInt(userAnswer.hack_time) || 0;
+                    const maxTime = parseInt(qData.hack_time) || 10;
+                    
+                    if (isCorrect) {
+                        earnedPoints = q.points;
+                        if (hackTime > maxTime) {
+                            penaltyApplied = Math.floor((hackTime - maxTime) / 2);
+                            earnedPoints = Math.max(0, earnedPoints - penaltyApplied);
+                        }
+                    }
+                } else if (q.question_type === 'data_tetris') {
+                    if (isCorrect) {
+                        const finalScore = parseInt(userAnswer.score) || 0;
+                        const minScore = parseInt(qData.min_score) || 500;
+                        const difficulty = userAnswer.difficulty || qData.difficulty || 'easy';
+                        
+                        let bonusMultiplier = 0;
+                        if (finalScore >= minScore * 3) bonusMultiplier = 1.0; // Leyenda
+                        else if (finalScore >= minScore * 2) bonusMultiplier = 0.5; // Maestro
+                        else if (finalScore >= minScore * 1.5) bonusMultiplier = 0.25; // Experto
+                        
+                        let diffMultiplier = 1.0;
+                        if (difficulty === 'medium') diffMultiplier = 1.2;
+                        else if (difficulty === 'hard') diffMultiplier = 1.5;
+                        
+                        earnedPoints = Math.round((q.points * (1 + bonusMultiplier)) * diffMultiplier);
+                    }
+                } else {
+                    if (isCorrect) earnedPoints = q.points;
                 }
             } else {
                 console.log(`[QuizScore] Answer for Q#${q.id} is NOT an object:`, userAnswer);
                 isCorrect = userAnswer === true || userAnswer === 'true';
                 if (isCorrect) earnedPoints = q.points;
             }
-        }
- else {
-            // Logic handled outside for options as it needs correct_option_id
-            // This helper is mainly for the special types.
-            // But let's make it general if possible.
         }
 
         return { isCorrect, earnedPoints, penaltyApplied };
