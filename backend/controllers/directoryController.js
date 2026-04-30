@@ -47,8 +47,8 @@ class DirectoryController {
 
     async updateRecord(req, res) {
         try {
-            const { email } = req.params;
-            await directoryService.updateRecord(email, req.body);
+            const { id } = req.params;
+            await directoryService.updateRecord(id, req.body);
             res.json({ success: true, message: 'Registro actualizado correctamente' });
         } catch (error) {
             logger.error('Error actualizando registro del directorio:', error);
@@ -58,8 +58,8 @@ class DirectoryController {
 
     async deleteRecord(req, res) {
         try {
-            const { email } = req.params;
-            await directoryService.deleteRecord(email);
+            const { id } = req.params;
+            await directoryService.deleteRecord(id);
             res.json({ success: true, message: 'Registro eliminado del directorio' });
         } catch (error) {
             logger.error('Error al eliminar registro del directorio:', error);

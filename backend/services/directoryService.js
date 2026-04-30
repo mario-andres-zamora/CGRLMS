@@ -25,16 +25,16 @@ class DirectoryService {
         );
     }
 
-    async updateRecord(email, data) {
-        const { full_name, department, position } = data;
+    async updateRecord(id, data) {
+        const { email, full_name, department, position } = data;
         return await db.query(
-            'UPDATE staff_directory SET full_name = ?, department = ?, position = ? WHERE email = ?',
-            [full_name, department, position, email]
+            'UPDATE staff_directory SET email = ?, full_name = ?, department = ?, position = ? WHERE id = ?',
+            [email, full_name, department, position, id]
         );
     }
 
-    async deleteRecord(email) {
-        return await db.query('DELETE FROM staff_directory WHERE email = ?', [email]);
+    async deleteRecord(id) {
+        return await db.query('DELETE FROM staff_directory WHERE id = ?', [id]);
     }
 
     async processCSV(fileBuffer) {

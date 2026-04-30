@@ -90,7 +90,7 @@ export function useDirectory() {
     const handleConfirmDelete = async () => {
         if (!recordToDelete) return;
         try {
-            await axios.delete(`${API_URL}/directory/${recordToDelete}`);
+            await axios.delete(`${API_URL}/directory/${recordToDelete.id}`);
             toast.success('Registro eliminado');
             fetchDirectory();
             setDeleteModalOpen(false);
@@ -104,7 +104,7 @@ export function useDirectory() {
 
     const handleUpdateRecord = async () => {
         try {
-            const response = await axios.put(`${API_URL}/directory/${editingRecord.email}`, editingRecord);
+            const response = await axios.put(`${API_URL}/directory/${editingRecord.id}`, editingRecord);
             if (response.data.success) {
                 toast.success('Registro actualizado');
                 setIsEditModalOpen(false);

@@ -31,14 +31,14 @@ router.post('/upload', authMiddleware, adminMiddleware, upload.single('csv'), di
  * @desc    Actualizar un registro del directorio maestro
  * @access  Private/Admin
  */
-router.put('/:email', authMiddleware, adminMiddleware, directoryController.updateRecord);
+router.put('/:id', authMiddleware, adminMiddleware, directoryController.updateRecord);
 
 /**
  * @route   DELETE /api/directory/:email
  * @desc    Eliminar un registro del directorio maestro
  * @access  Private/Admin
  */
-router.delete('/:email', authMiddleware, adminMiddleware, directoryController.deleteRecord);
+router.delete('/:id', authMiddleware, adminMiddleware, directoryController.deleteRecord);
 
 /**
  * @route   GET /api/directory/template

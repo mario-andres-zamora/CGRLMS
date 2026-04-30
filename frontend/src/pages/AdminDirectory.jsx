@@ -94,7 +94,7 @@ export default function AdminDirectory() {
                 sortConfig={sortConfig}
                 onSort={actions.sort}
                 onEdit={(person) => { setEditingRecord({ ...person }); modals.edit.setOpen(true); }}
-                onDelete={(email) => { modals.delete.setRecord(email); modals.delete.setOpen(true); }}
+                onDelete={(person) => { modals.delete.setRecord(person); modals.delete.setOpen(true); }}
                 onSendInvite={actions.sendInvite}
             />
 
@@ -159,6 +159,10 @@ export default function AdminDirectory() {
                         </div>
                         <div className="p-10 space-y-8">
                             <div className="space-y-3">
+                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-1 block">Email Institucional</label>
+                                <input type="email" value={editingRecord.email} onChange={(e) => setEditingRecord({ ...editingRecord, email: e.target.value })} className="w-full bg-slate-950 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-primary-500 transition-all font-bold" />
+                            </div>
+                            <div className="space-y-3">
                                 <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-1 block">Nombre Completo</label>
                                 <input type="text" value={editingRecord.full_name} onChange={(e) => setEditingRecord({ ...editingRecord, full_name: e.target.value })} className="w-full bg-slate-950 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-primary-500 transition-all font-bold" />
                             </div>
@@ -190,7 +194,7 @@ export default function AdminDirectory() {
                 onClose={() => modals.delete.setOpen(false)}
                 onConfirm={actions.delete}
                 title="Eliminar Registro"
-                message={`¿Seguro que deseas eliminar a ${modals.delete.record || 'este usuario'} del directorio maestro?`}
+                message={`¿Seguro que deseas eliminar a ${modals.delete.record?.full_name || 'este usuario'} del directorio maestro?`}
                 confirmText="Eliminar permanentemente"
                 isDestructive={true}
             />
