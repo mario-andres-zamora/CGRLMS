@@ -76,16 +76,15 @@ class QuizService {
                     penaltyApplied = hintsUsed * penaltyPerHint;
                     earnedPoints = Math.max(0, q.points - penaltyApplied);
                 } else if (q.question_type === 'mfa_defender') {
-                    const hackTime = parseInt(userAnswer.hack_time) || 0;
-                    const maxTime = parseInt(qData.hack_time) || 10;
+                    const mfaFails = parseInt(userAnswer.mfaFails) || 0;
+                    const failPenalty = parseInt(qData.fail_penalty) || 10;
                     
-                    if (isCorrect) {
-                        earnedPoints = q.points;
-                        if (hackTime > maxTime) {
-                            penaltyApplied = Math.floor((hackTime - maxTime) / 2);
-                            earnedPoints = Math.max(0, earnedPoints - penaltyApplied);
-                        }
-                    }
+                    // Calculamos puntos basados en fallos acumulados
+                    earnedPoints = Math.max(0, q.points - (mfaFails * failPenalty));
+                    
+                    // Si el usuario "perdió" (timeout), aún le damos los puntos que logró salvar 
+                    // ya que ahora no permitimos reintentar en quices.
+                    // Pero isCorrect sigue reflejando si la defensa fue exitosa.
                 } else if (q.question_type === 'data_tetris') {
                     if (isCorrect) {
                         const finalScore = parseInt(userAnswer.score) || 0;
@@ -155,7 +154,7 @@ class QuizService {
                 if (isCorrect) earnedPoints = q.points;
             }
 
-            if (isCorrect) earnedPointsTotal += earnedPoints;
+            earnedPointsTotal += earnedPoints;
             
             feedback.push({
                 questionId: q.id,
@@ -236,7 +235,7 @@ class QuizService {
                 if (isCorrect) earnedPointsForThisQ = q.points;
             }
 
-            if (isCorrect) earnedPoints += earnedPointsForThisQ;
+            earnedPoints += earnedPointsForThisQ;
 
             feedback.push({
                 questionId: q.id,

@@ -345,7 +345,11 @@ function HackNeighborQuestion({ question, isAnswered, onWin, sessionSeed }) {
 }
 
 function MfaDefenderQuestion({ question, isAnswered, storedAnswer, onWin }) {
-    const [mfaStatus, setMfaStatus] = useState(isAnswered ? 'won' : 'idle');
+    const [mfaStatus, setMfaStatus] = useState(() => {
+        if (isAnswered) return 'won';
+        if (storedAnswer && (storedAnswer.success === false || storedAnswer === 'false')) return 'failed';
+        return 'idle';
+    });
     const [mfaCode, setMfaCode] = useState('------');
     const [userMfaInput, setUserMfaInput] = useState('');
     const [mfaFails, setMfaFails] = useState(() => {
@@ -354,6 +358,11 @@ function MfaDefenderQuestion({ question, isAnswered, storedAnswer, onWin }) {
         }
         return 0;
     });
+    const mfaFailsRef = useRef(mfaFails);
+
+    useEffect(() => {
+        mfaFailsRef.current = mfaFails;
+    }, [mfaFails]);
 
     const ensureDataObject = (data) => {
         if (!data) return {};
@@ -372,6 +381,11 @@ function MfaDefenderQuestion({ question, isAnswered, storedAnswer, onWin }) {
     const currentPotentialPoints = Math.max(0, question.points - (mfaFails * failPenalty));
     const [timeLeft, setTimeLeft] = useState(hackTimeLimit);
     const [rotateProgress, setRotateProgress] = useState(100);
+    const rotateProgressRef = useRef(100);
+
+    useEffect(() => {
+        rotateProgressRef.current = rotateProgress;
+    }, [rotateProgress]);
 
     const { playSound } = useSoundStore();
     const audioRef = useRef(null);
@@ -418,31 +432,28 @@ function MfaDefenderQuestion({ question, isAnswered, storedAnswer, onWin }) {
         let interval;
         if (mfaStatus === 'playing') {
             interval = setInterval(() => {
+                const step = (100 / (mfaRotateTime * 10));
+                const nextProgress = rotateProgressRef.current - step;
+                
+                if (nextProgress <= 0) {
+                    rotateProgressRef.current = 100; // Bloqueo inmediato
+                    setRotateProgress(100);
+                    setMfaCode(generateMfaCode());
+                    setMfaFails(f => f + 1);
+                } else {
+                    rotateProgressRef.current = nextProgress; // Sincronización manual
+                    setRotateProgress(nextProgress);
+                }
+
                 setTimeLeft(prev => {
                     if (prev <= 0.1) {
                         setMfaStatus('failed');
-                        setMfaFails(f => {
-                            const newFails = f + 1;
-                            console.info(`[MFA-Quiz] FAILURE (Timeout)! Current fails: ${newFails}`);
-                            return newFails;
-                        });
+                        // Use ref + potential rotation if it was about to happen
+                        const finalFails = mfaFailsRef.current + (nextProgress <= 0 ? 1 : 0) + 1;
+                        onWin({ success: false, mfaFails: finalFails });
                         return 0;
                     }
                     return prev - 0.1;
-                });
-
-                setRotateProgress(prev => {
-                    const step = (100 / (mfaRotateTime * 10));
-                    if (prev <= step) {
-                        setMfaCode(generateMfaCode());
-                        setMfaFails(f => {
-                            const newFails = f + 1;
-                            console.info(`[MFA-Quiz] FAILURE (Code Expired)! Current fails: ${newFails}`);
-                            return newFails;
-                        });
-                        return 100;
-                    }
-                    return prev - step;
                 });
             }, 100);
         }
@@ -544,12 +555,7 @@ function MfaDefenderQuestion({ question, isAnswered, storedAnswer, onWin }) {
                             <div className="text-center space-y-4 animate-fade-in">
                                 <XCircle className="w-16 h-16 text-red-500 mx-auto animate-shake" />
                                 <div className="text-red-400 font-black uppercase tracking-widest">¡Sistema Comprometido!</div>
-                                <button
-                                    onClick={startMfaGame}
-                                    className="bg-slate-700 hover:bg-slate-600 text-white font-bold text-[10px] uppercase px-4 py-2 rounded-lg transition-colors mt-2"
-                                >
-                                    Reintentar
-                                </button>
+                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Actividad Finalizada</p>
                             </div>
                         ) : mfaStatus === 'won' ? (
                             <div className="text-center space-y-4 animate-fade-in p-2">
