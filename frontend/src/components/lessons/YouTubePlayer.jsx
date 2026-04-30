@@ -3,6 +3,11 @@ import { useEffect, useRef } from 'react';
 export default function YouTubePlayer({ id, videoId, onEnded, ytApiLoaded, isWatched, isRequired }) {
     const playerRef = useRef(null);
     const lastTimeRef = useRef(0);
+    const onEndedRef = useRef(onEnded);
+
+    useEffect(() => {
+        onEndedRef.current = onEnded;
+    }, [onEnded]);
 
     useEffect(() => {
         if (!ytApiLoaded || !videoId) return;
@@ -27,7 +32,7 @@ export default function YouTubePlayer({ id, videoId, onEnded, ytApiLoaded, isWat
                             // Only mark as watched if they actually reached the end legitimately
                             // If isRequired is false, we always allow it
                             if (!isRequired || isWatched || lastTimeRef.current >= duration - 3) {
-                                onEnded();
+                                onEndedRef.current();
                             } else {
                                 // User skipped to the end illegally
                                 player.seekTo(lastTimeRef.current);
@@ -64,7 +69,7 @@ export default function YouTubePlayer({ id, videoId, onEnded, ytApiLoaded, isWat
             if (interval) clearInterval(interval);
             if (player && player.destroy) player.destroy();
         };
-    }, [videoId, ytApiLoaded, id, onEnded, isWatched]);
+    }, [videoId, ytApiLoaded, id, isWatched]);
 
     return (
         <div className="w-full h-full bg-slate-900 flex items-center justify-center">

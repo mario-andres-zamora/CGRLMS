@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Trophy, Zap, ChevronRight, X, Star } from 'lucide-react';
+import { useSoundStore } from '../store/soundStore';
 
 const LevelUpModal = ({ isOpen, onClose, levelData }) => {
     const [isVisible, setIsVisible] = useState(false);
+    const playSound = useSoundStore(state => state.playSound);
 
     useEffect(() => {
         if (isOpen) {
             setIsVisible(true);
-            // Reproducir sonido de level up
-            const audio = new Audio('/sounds/level-up.mp3');
-            audio.play().catch(e => console.log('Audio play blocked:', e));
+            // Reproducir sonido de level up respetando silencio global
+            playSound('/sounds/level-up.mp3');
         } else {
             setIsVisible(false);
         }

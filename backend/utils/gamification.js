@@ -184,6 +184,9 @@ const syncUserLevel = async (userId) => {
 
         const currentPoints = userData.points;
         const oldLevel = userData.level;
+        
+        // CRITICAL: Force refresh levels to avoid stale cache inconsistencies
+        const levels = await getLevels(true);
         const levelInfo = await calculateLevel(currentPoints);
         const newLevel = levelInfo.name;
 

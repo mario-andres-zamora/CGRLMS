@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useCallback, useEffect } from 'react';
 import DOMPurify from 'dompurify';
 import { useSoundStore } from '../../store/soundStore';
 
@@ -33,13 +33,19 @@ export default function LessonContentItem({
     uploadingAssignment,
     watchedVideos,
     visitedLinks,
-    navigate
+    navigate,
+    onEnded
 }) {
-    const { playSound } = useSoundStore();
+    const playSound = useSoundStore(state => state.playSound);
     const lastTimeRef = useRef(0);
+    const onEndedRef = useRef(onEnded);
 
-    const playSuccess = () => playSound('/sounds/success.mp3');
-    const playError = () => playSound('/sounds/error.mp3');
+    useEffect(() => {
+        onEndedRef.current = onEnded;
+    }, [onEnded]);
+
+    const playSuccess = useCallback(() => playSound('/sounds/success.mp3'), [playSound]);
+    const playError = useCallback(() => playSound('/sounds/error.mp3'), [playSound]);
 
     let data = item.data || {};
 
@@ -74,6 +80,7 @@ export default function LessonContentItem({
                     markVideoAsWatched={markVideoAsWatched} 
                     ytApiLoaded={ytApiLoaded} 
                     lastTimeRef={lastTimeRef} 
+                    onEndedRef={onEndedRef}
                     API_URL={API_URL} 
                 />
             );

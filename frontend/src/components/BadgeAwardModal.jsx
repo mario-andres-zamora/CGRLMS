@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Award, Star, X, Trophy } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSoundStore } from '../store/soundStore';
 
 /** 
  * Componente Presentacional: BadgeVisual (Pattern Section 1)
@@ -28,14 +29,13 @@ const BadgeVisual = ({ imageUrl, name }) => (
         </div>
     </div>
 );
-
 const BadgeAwardModal = ({ isOpen, onClose, badge }) => {
+    const playSound = useSoundStore(state => state.playSound);
 
     useEffect(() => {
         if (isOpen && badge) {
-            // Suena efecto de insignia
-            const audio = new Audio('/sounds/badge.mp3');
-            audio.play().catch(() => {/* Blocked by browser */ });
+            // Suena efecto de insignia respetando el silencio global
+            playSound('/sounds/badge.mp3');
 
             // Lanzar confeti premium (Pattern Section 6)
             const end = Date.now() + 2000;

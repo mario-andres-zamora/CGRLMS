@@ -5,6 +5,8 @@ import CyberCat from '../../CyberCat';
 import { Trophy, ShieldAlert, Activity, Hash, Info, ChevronRight, Zap, Maximize, Minimize, Star, Award, TrendingUp, CheckCircle2 } from 'lucide-react';
 import { calculateTetrisPoints, TETRIS_RANKS } from './DataTetris/tetrisUtils';
 
+import { useSoundStore } from '../../../store/soundStore';
+
 export default function DataTetrisActivity({ item, data, visitedLinks, markLinkAsVisited, playSuccess, playError }) {
     const isCompleted = visitedLinks.has(item.id);
     const [score, setScore] = useState(0);
@@ -15,6 +17,7 @@ export default function DataTetrisActivity({ item, data, visitedLinks, markLinkA
     const [difficulty, setDifficulty] = useState(data.difficulty || 'easy');
     const [isFullscreen, setIsFullscreen] = useState(false);
     const containerRef = useRef(null);
+    const isMuted = useSoundStore(state => state.isMuted);
 
     const toggleFullscreen = () => {
         if (!containerRef.current) return;
@@ -256,6 +259,7 @@ export default function DataTetrisActivity({ item, data, visitedLinks, markLinkA
                         {gameState === 'playing' && (
                             <PhaserGame
                                 difficulty={difficulty}
+                                isMuted={isMuted}
                                 onScoreChange={(s, c) => { setScore(s); setCombo(c); }}
                                 onLinesChange={setLines}
                                 onIntegrityChange={setIntegrity}

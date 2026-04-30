@@ -2,9 +2,15 @@ import React, { useEffect, useRef } from 'react';
 import * as Phaser from 'phaser';
 import MainScene from './MainScene';
 
-const PhaserGame = ({ onScoreChange, onLinesChange, onSpeedChange, onIntegrityChange, onGameOver, difficulty }) => {
+const PhaserGame = ({ onScoreChange, onLinesChange, onSpeedChange, onIntegrityChange, onGameOver, difficulty, isMuted }) => {
   const gameRef = useRef(null);
   const phaserInstanceRef = useRef(null);
+
+  useEffect(() => {
+    if (phaserInstanceRef.current) {
+        phaserInstanceRef.current.sound.mute = isMuted;
+    }
+  }, [isMuted]);
 
   useEffect(() => {
     if (!gameRef.current) return;
@@ -50,6 +56,9 @@ const PhaserGame = ({ onScoreChange, onLinesChange, onSpeedChange, onIntegrityCh
         game.registry.set('difficulty', difficulty);
         game.scene.add('MainScene', MainScene, true, { difficulty });
         
+        // Sync initial mute state
+        game.sound.mute = isMuted;
+
         // Short delay to ensure scene is active
         setTimeout(() => {
             const scene = game.scene.getScene('MainScene');
