@@ -4,7 +4,7 @@ const logger = require('../config/logger');
 /**
  * Automáticamente revisa y asigna insignias según criterios específicos.
  */
-async function awardBadge(userId, badgeId, shouldNotify = true) {
+async function awardBadge(userId, badgeId, shouldNotify = false) {
     try {
         const [badge] = await db.query('SELECT * FROM badges WHERE id = ?', [badgeId]);
         if (!badge) return null;
@@ -410,7 +410,7 @@ async function checkEliteTeamBadge(userId, moduleId) {
                 
                 const awardedBadges = [];
                 for (const u of usersToAward) {
-                    const res = await awardBadge(u.id, badge.id);
+                    const res = await awardBadge(u.id, badge.id, true);
                     if (res && res.awarded) {
                         awardedBadges.push(res.badge);
                     }
