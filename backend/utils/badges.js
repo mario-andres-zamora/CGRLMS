@@ -63,15 +63,12 @@ async function awardBadge(userId, badgeId, shouldNotify = false) {
                 }
             }
 
-            // Sincronizar con Redis para ranking (obtener puntos totales primero)
+            // Sincronizar Nivel y Ranking (CRITICAL: Asegura que el nombre del nivel en DB esté actualizado)
             try {
-                const [newPoints] = await db.query('SELECT points FROM user_points WHERE user_id = ?', [userId]);
-                if (newPoints) {
-                    const { updateUserScore } = require('./gamification');
-                    await updateUserScore(userId, newPoints.points);
-                }
+                const { syncUserLevel } = require('./gamification');
+                await syncUserLevel(userId);
             } catch (syncError) {
-                logger.error('Error sincronizando puntos tras insignia:', syncError);
+                logger.error('Error sincronizando nivel tras insignia:', syncError);
             }
 
             // --- INVALIDAR CACHÉ ---
