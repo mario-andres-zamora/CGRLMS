@@ -1,6 +1,7 @@
 const db = require('../config/database');
 const xss = require('xss');
 const path = require('path');
+const logger = require('../config/logger');
 const { TRACEABLE_CONTENT_TYPES } = require('../constants/contentTypes');
 
 class LessonContentService {
@@ -205,24 +206,36 @@ class LessonContentService {
             [status ?? null, grade ?? null, feedback ?? null, submissionId]
         );
 
-        // 3. Si se aprueba y antes no estaba aprobada, registrar en el historial de actividad
-        if (status === 'approved' && submission.old_status !== 'approved') {
+        // 3. Registrar en el historial de actividad si se aprueba
+        if (status === 'approved') {
             try {
-                // Obtener puntos de la tarea para el historial (aunque se sumen al finalizar la lección, los mostramos aquí)
-                const [content] = await db.query('SELECT points FROM lesson_contents WHERE id = ?', [submission.content_id]);
-                const points = content ? content.points : 0;
-
-                await db.query(
-                    `INSERT INTO gamification_activities (user_id, activity_type, points_earned, reference_id) 
-                     VALUES (?, 'assignment_approved', ?, ?)`,
-                    [submission.user_id, points, submission.content_id]
+                // Verificar si ya existe la actividad para evitar duplicados
+                const [existingActivity] = await db.query(
+                    "SELECT id FROM gamification_activities WHERE user_id = ? AND activity_type = 'task_approved' AND reference_id = ?",
+                    [submission.user_id, submission.content_id]
                 );
 
-                // Invalidar caché del perfil del usuario para que vea la actividad
-                const { clearCache } = require('../middleware/cache');
-                await clearCache(`cache:/api/users/profile*u${submission.user_id}*`);
+                if (!existingActivity) {
+                    // Obtener puntos de la tarea para el historial
+                    const [content] = await db.query('SELECT points FROM lesson_contents WHERE id = ?', [submission.content_id]);
+                    const points = content ? content.points : 0;
+
+                    await db.query(
+                        `INSERT INTO gamification_activities (user_id, activity_type, points_earned, reference_id) 
+                         VALUES (?, 'task_approved', ?, ?)`,
+                        [submission.user_id, points, submission.content_id]
+                    );
+
+                    // Invalidar caché del perfil del usuario
+                    const { clearCache } = require('../middleware/cache');
+                    await clearCache(`cache:/api/users/profile*u${submission.user_id}*`);
+                }
             } catch (activityErr) {
-                logger.error('Error registrando actividad de tarea aprobada:', activityErr);
+                if (typeof logger !== 'undefined') {
+                    logger.error('Error registrando actividad de tarea aprobada:', activityErr);
+                } else {
+                    console.error('Error registrando actividad de tarea aprobada:', activityErr);
+                }
             }
         }
 

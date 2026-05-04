@@ -103,6 +103,11 @@ const initializeDatabase = async () => {
         await db.query(`
             ALTER TABLE users ADD COLUMN IF NOT EXISTS last_streak_date DATE DEFAULT NULL;
         `);
+        
+        // Aumentar tamaño de columna activity_type para evitar truncado
+        await db.query(`
+            ALTER TABLE gamification_activities MODIFY COLUMN activity_type VARCHAR(50);
+        `);
 
         logger.info('✅ Estructura de base de datos verificada y actualizada.');
     } catch (error) {
