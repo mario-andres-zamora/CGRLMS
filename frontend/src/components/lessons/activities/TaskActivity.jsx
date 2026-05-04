@@ -28,6 +28,12 @@ export default function TaskActivity({ item, data, navigate, handleAssignmentUpl
                             {item.submission.status === 'approved' ? 'Aprobada' : item.submission.status === 'rejected' ? 'Rechazada' : 'Enviada / Pendiente'}
                         </span>
                         <a href={`${API_URL.replace('/api', '')}${item.submission.file_url}`} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline ml-2">Ver archivo enviado</a>
+                        
+                        {(item.submission.grade !== null && item.submission.grade !== undefined) && (
+                            <span className="ml-3 px-2 py-0.5 rounded-lg bg-primary-500/10 text-primary-400 border border-primary-500/20 font-black">
+                                NOTA: {item.submission.grade}
+                            </span>
+                        )}
                     </div>
                 )}
 

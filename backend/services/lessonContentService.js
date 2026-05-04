@@ -186,7 +186,17 @@ class LessonContentService {
 
     async gradeSubmission(submissionId, data) {
         const { status, grade, feedback } = data;
-        return await db.query(
+        
+        // 1. Obtener datos de la entrega antes de actualizar para saber a quién notificar
+        const [submission] = await db.query(
+            'SELECT user_id, content_id, status as old_status FROM assignment_submissions WHERE id = ?', 
+            [submissionId]
+        );
+        
+        if (!submission) throw new Error('Entrega no encontrada');
+
+        // 2. Actualizar la entrega
+        await db.query(
             `UPDATE assignment_submissions SET 
                 status = COALESCE(?, status), 
                 grade = COALESCE(?, grade), 
@@ -194,6 +204,29 @@ class LessonContentService {
              WHERE id = ?`,
             [status ?? null, grade ?? null, feedback ?? null, submissionId]
         );
+
+        // 3. Si se aprueba y antes no estaba aprobada, registrar en el historial de actividad
+        if (status === 'approved' && submission.old_status !== 'approved') {
+            try {
+                // Obtener puntos de la tarea para el historial (aunque se sumen al finalizar la lección, los mostramos aquí)
+                const [content] = await db.query('SELECT points FROM lesson_contents WHERE id = ?', [submission.content_id]);
+                const points = content ? content.points : 0;
+
+                await db.query(
+                    `INSERT INTO gamification_activities (user_id, activity_type, points_earned, reference_id) 
+                     VALUES (?, 'assignment_approved', ?, ?)`,
+                    [submission.user_id, points, submission.content_id]
+                );
+
+                // Invalidar caché del perfil del usuario para que vea la actividad
+                const { clearCache } = require('../middleware/cache');
+                await clearCache(`cache:/api/users/profile*u${submission.user_id}*`);
+            } catch (activityErr) {
+                logger.error('Error registrando actividad de tarea aprobada:', activityErr);
+            }
+        }
+
+        return true;
     }
 
     async getAllInteractions() {
