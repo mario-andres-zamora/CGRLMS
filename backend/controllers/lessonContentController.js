@@ -32,7 +32,7 @@ class LessonContentController {
         try {
             if (!req.file) return res.status(400).json({ error: 'Se requiere un archivo' });
             const fileUrl = await lessonContentService.submitAssignment(req.params.contentId, req.user.id, req.file);
-            res.json({ success: true, message: 'Tarea enviada correctamente', file_url: fileUrl });
+            res.json({ success: true, message: 'Tarea enviada correctamente. Espere a ser calificado.', file_url: fileUrl });
         } catch (error) {
             logger.error('Error enviando tarea:', error);
             res.status(500).json({ error: 'Error al enviar tarea' });
