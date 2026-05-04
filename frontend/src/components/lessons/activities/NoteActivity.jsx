@@ -10,7 +10,7 @@ export default function NoteActivity({ item, data }) {
             </div>
             <div>
                 <h4 className="text-primary-400 font-black text-[10px] uppercase tracking-[0.2em] mb-1.5">{item.title || 'Nota de Aprendizaje'}</h4>
-                <p className="text-gray-400 text-sm leading-relaxed font-medium">
+                <p className="text-gray-400 text-sm leading-relaxed font-medium whitespace-pre-wrap">
                     {linkify(data.text || 'Recuerda tomar apuntes de los conceptos clave de esta sección.')}
                 </p>
             </div>

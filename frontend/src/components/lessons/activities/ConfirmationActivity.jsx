@@ -43,7 +43,7 @@ export default function ConfirmationActivity({ item, data, visitedLinks, markLin
                                 return isHtml ? (
                                     <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(desc) }} />
                                 ) : (
-                                    <h3>{linkify(desc)}</h3>
+                                    <h3 className="whitespace-pre-wrap">{linkify(desc)}</h3>
                                 );
                             })()}
                         </div>

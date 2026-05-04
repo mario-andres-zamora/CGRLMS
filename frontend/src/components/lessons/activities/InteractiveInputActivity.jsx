@@ -57,7 +57,7 @@ export default function InteractiveInputActivity({ item, data, visitedLinks, mar
                                 return isHtml ? (
                                     <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(desc) }} />
                                 ) : (
-                                    <p>{linkify(desc)}</p>
+                                    <p className="whitespace-pre-wrap">{linkify(desc)}</p>
                                 );
                             })()}
                         </div>

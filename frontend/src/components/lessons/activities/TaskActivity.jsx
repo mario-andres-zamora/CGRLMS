@@ -20,7 +20,7 @@ export default function TaskActivity({ item, data, navigate, handleAssignmentUpl
             </div>
             <div className="flex-1 space-y-2">
                 <h3 className="text-xl font-bold text-white">{item.title}</h3>
-                <p className="text-gray-400">{data.description || 'Completa esta actividad para continuar.'}</p>
+                <p className="text-gray-400 whitespace-pre-wrap">{data.description || 'Completa esta actividad para continuar.'}</p>
 
                 {item.content_type === 'assignment' && item.submission && (
                     <div className="mt-3 inline-flex items-center gap-2 p-2 rounded-xl bg-slate-900 border border-white/5 text-xs font-medium">
