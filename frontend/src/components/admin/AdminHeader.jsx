@@ -20,7 +20,7 @@ export default function AdminHeader({ title, subtitle, showBack = true }) {
                     {title || 'Panel de Administración'}
                 </h1>
                 <p className="text-gray-400 font-medium text-sm">
-                    {subtitle || 'Bienvenido al centro de control del LMS CGR Segur@.'}
+                    {subtitle}
                 </p>
             </div>
         </div>

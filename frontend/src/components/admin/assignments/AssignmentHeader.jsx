@@ -14,10 +14,6 @@ export default function AssignmentHeader({ onBack, pendingCount, totalCount }) {
                 <div className="flex items-center gap-6">
                     <div className="space-y-1 text-left">
                         <h1 className="text-2xl font-black text-white uppercase tracking-tight italic">Centro de <span className="text-secondary-500">Evaluación</span></h1>
-                        <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none">Supervisión en Tiempo Real</p>
-                        </div>
                     </div>
                 </div>
             </div>

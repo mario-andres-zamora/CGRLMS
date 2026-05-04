@@ -11,7 +11,7 @@ export default function ReportsHeader({ view, onToggleView, onExport, onBack, on
                     <ArrowLeft className="w-4 h-4" /> Volver al Panel Admin
                 </button>
                 <h1 className="text-3xl font-black text-white uppercase tracking-tight">Analytics de Cumplimiento</h1>
-                <p className="text-white/60 text-sm font-medium">Panel gerencial de seguimiento y control de capacitación.</p>
+                <p className="text-white/60 text-sm font-medium">Panel gerencial del estado de las capacitaciones</p>
             </div>
 
             <div className="flex gap-4 w-full md:w-auto flex-wrap">
@@ -20,7 +20,7 @@ export default function ReportsHeader({ view, onToggleView, onExport, onBack, on
                     disabled={syncing}
                     className={`flex-1 md:flex-none px-6 py-4 bg-emerald-500/10 text-emerald-400 text-xs font-black uppercase tracking-widest rounded-2xl border border-emerald-500/20 hover:bg-emerald-500/20 transition-all flex items-center justify-center gap-3 ${syncing ? 'opacity-50' : ''}`}
                 >
-                    <RefreshCw className={`w-5 h-5 ${syncing ? 'animate-spin' : ''}`} /> 
+                    <RefreshCw className={`w-5 h-5 ${syncing ? 'animate-spin' : ''}`} />
                     {syncing ? 'Sincronizando...' : 'Sincronizar Datos'}
                 </button>
                 <button

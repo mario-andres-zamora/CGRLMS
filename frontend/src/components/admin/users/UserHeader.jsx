@@ -83,7 +83,7 @@ export default function UserHeader({
                         GESTIÓN DE USUARIOS
                     </h1>
                     <p className="text-sm font-medium text-gray-400">
-                        Control de acceso y roles de funcionarios de la CGR.
+                        Control de acceso y roles de usuarios
                     </p>
                 </div>
             </div>
@@ -105,13 +105,13 @@ export default function UserHeader({
                     </div>
                 </div>
                 <div className="w-full md:w-[70%] min-h-[46px]">
-                     <CustomSelect
-                         value={departmentFilter}
-                         options={departmentOptions}
-                         onChange={onDepartmentChange}
-                         icon={Building2}
-                         placeholder="Filtrar por unidad"
-                     />
+                    <CustomSelect
+                        value={departmentFilter}
+                        options={departmentOptions}
+                        onChange={onDepartmentChange}
+                        icon={Building2}
+                        placeholder="Filtrar por unidad"
+                    />
                 </div>
             </div>
         </div>

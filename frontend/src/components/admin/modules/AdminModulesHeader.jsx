@@ -17,7 +17,7 @@ export default function AdminModulesHeader({ totalModules, publishedModules, dra
                         <ArrowLeft className="w-4 h-4" /> Volver al Panel Admin
                     </button>
                     <h1 className="text-4xl font-bold text-white tracking-tight">Gestión de Módulos</h1>
-                    <p className="text-gray-400 text-sm font-medium">Administra el contenido educativo de CGR Segur@</p>
+                    <p className="text-gray-400 text-sm font-medium">Administra los Módulos del curso</p>
                 </div>
                 <button
                     onClick={onNewModule}

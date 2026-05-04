@@ -12,7 +12,7 @@ export default function DeptHeader({ onBack, onSync, onDeleteAll, onAdd, isSynci
                     <ArrowLeft className="w-3.5 h-3.5" /> Volver al Panel Admin
                 </button>
                 <h1 className="text-2xl font-black text-white uppercase tracking-tight">Gestión de Áreas / Unidades</h1>
-                <p className="text-gray-400 text-xs font-medium">Define las unidades administrativas para clasificar a los funcionarios.</p>
+                <p className="text-gray-400 text-xs font-medium">Define las unidades administrativas</p>
             </div>
 
             <div className="flex gap-3">
