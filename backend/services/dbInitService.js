@@ -92,7 +92,7 @@ const initializeDatabase = async () => {
             ALTER TABLE lesson_contents MODIFY COLUMN content_type ENUM(
                 'text','video','image','file','link','quiz','survey','assignment','note',
                 'heading','bullets','confirmation','interactive_input','password_tester',
-                'multiple_choice','mfa_defender','hack_neighbor','dork_search','categorization'
+                'multiple_choice','mfa_defender','hack_neighbor','dork_search','categorization','data_tetris'
             ) NOT NULL;
         `);
 

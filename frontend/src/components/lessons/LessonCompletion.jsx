@@ -1,5 +1,6 @@
 import { Award, CheckCircle, Clock } from 'lucide-react';
 import PointsCounter from './PointsCounter';
+import { TRACEABLE_CONTENT_TYPES } from '../../constants/contentTypes';
 
 export default function LessonCompletion({ 
     progress, 
@@ -12,10 +13,16 @@ export default function LessonCompletion({
     completionError
 }) {
     const isCompleted = progress?.status === 'completed';
-    const pendingRequired = contents.filter(c =>
-        (c.content_type === 'video' && c.is_required && !watchedVideos.has(c.id)) ||
-        (c.content_type === 'link' && c.is_required && !visitedLinks.has(c.id))
-    ).length > 0;
+    const pendingRequired = contents.filter(c => {
+        if (!c.is_required) return false;
+        if (c.isCompleted) return false;
+
+        // Check local state for traceable items not yet synced by a re-fetch
+        if (c.content_type === 'video' && watchedVideos.has(c.id)) return false;
+        if (TRACEABLE_CONTENT_TYPES.includes(c.content_type) && visitedLinks.has(c.id)) return false;
+
+        return true;
+    }).length > 0;
 
     return (
         <div className="flex flex-col items-center gap-6 py-8 border-y border-white/5 my-6 bg-slate-900/20 rounded-3xl p-8">
@@ -56,7 +63,7 @@ export default function LessonCompletion({
                                 <Award className="w-5 h-5 text-green-500" />
                                 <span className="text-green-400 text-xs font-black uppercase tracking-widest">
                                     TOTAL GANADO EN LECCIÓN: +
-                                    <PointsCounter target={lesson.total_points || 0} />
+                                    <PointsCounter target={progress?.points_earned ?? (lesson.total_points || 0)} />
                                     {" "}PTS
                                 </span>
                             </div>

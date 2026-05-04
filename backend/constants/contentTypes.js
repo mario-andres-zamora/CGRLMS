@@ -6,7 +6,10 @@ const TRACEABLE_CONTENT_TYPES = [
     'multiple_choice', 
     'password_tester',
     'mfa_defender',
-    'categorization'
+    'categorization',
+    'hack_neighbor',
+    'dork_search',
+    'data_tetris'
 ];
 
 module.exports = {
