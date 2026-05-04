@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle, HelpCircle, ClipboardList, Upload, Award, Clock, RotateCcw, Eye, Zap } from 'lucide-react';
+import { CheckCircle, HelpCircle, ClipboardList, Upload, Award, Clock, RotateCcw, Eye, Zap, FileText } from 'lucide-react';
 
 export default function TaskActivity({ item, data, navigate, handleAssignmentUpload, uploadingAssignment, API_URL }) {
     const iconMap = {
@@ -49,6 +49,12 @@ export default function TaskActivity({ item, data, navigate, handleAssignmentUpl
                         <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold border ${item.attemptsMade >= item.maxAttempts ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-slate-900 border-white/10 text-gray-300'}`}>
                             <Clock className="w-3 h-3" />
                             <span>Intentos: <span className={item.attemptsMade >= item.maxAttempts ? 'text-red-400' : 'text-white'}>{item.attemptsMade} / {item.maxAttempts}</span></span>
+                        </div>
+                    )}
+                    {item.content_type === 'assignment' && (
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-900 rounded-lg text-xs font-bold text-gray-300 border border-white/10">
+                            <FileText className="w-3 h-3 text-blue-400" />
+                            <span>Formatos: <span className="text-white">PDF, Word, Imagen, Video, Zip</span></span>
                         </div>
                     )}
                 </div>
