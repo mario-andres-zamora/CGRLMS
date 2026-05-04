@@ -226,6 +226,17 @@ class LessonContentService {
                         [submission.user_id, points, submission.content_id]
                     );
 
+                    // SUMAR PUNTOS AL TOTAL DEL USUARIO
+                    if (points > 0) {
+                        await db.query(
+                            `INSERT INTO user_points (user_id, points) VALUES (?, ?) ON DUPLICATE KEY UPDATE points = points + ?`,
+                            [submission.user_id, points, points]
+                        );
+                        // Sincronizar nivel después de sumar puntos
+                        const { syncUserLevel } = require('../utils/gamification');
+                        await syncUserLevel(submission.user_id);
+                    }
+
                     // Invalidar caché del perfil del usuario
                     const { clearCache } = require('../middleware/cache');
                     await clearCache(`cache:/api/users/profile*u${submission.user_id}*`);

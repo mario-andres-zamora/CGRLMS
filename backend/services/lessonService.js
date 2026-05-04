@@ -239,6 +239,10 @@ class LessonService {
 
             if (!isCompleted) continue;
 
+            // EXCLUSIÓN: Quices, Encuestas y Tareas ya otorgan sus puntos por separado 
+            // al momento de ser aprobados/completados. No los sumamos aquí para evitar duplicidad.
+            if (['quiz', 'survey', 'assignment'].includes(content.content_type)) continue;
+
             let itemPoints = parseInt(content.points) || 0;
             const contentData = typeof content.data === 'string' ? JSON.parse(content.data) : (content.data || {});
             const interactionData = typeof content.interaction_data === 'string' ? JSON.parse(content.interaction_data) : (content.interaction_data || {});

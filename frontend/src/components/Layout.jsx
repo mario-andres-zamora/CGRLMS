@@ -31,7 +31,7 @@ const NAV_ITEMS = [
 ];
 
 export default function Layout() {
-    const { user, logout, viewAsStudent, setViewAsStudent } = useAuthStore();
+    const { user, logout, viewAsStudent, setViewAsStudent, verifyToken } = useAuthStore();
     const {
         pendingLevelUp, clearLevelUp,
         pendingModuleCompletion, clearModuleCompletion,
@@ -44,10 +44,11 @@ export default function Layout() {
 
     const isAdmin = user?.role === 'admin' && !viewAsStudent;
 
-    // Cerrar menú móvil al cambiar de ruta
+    // Sincronización Global: Verificar puntos y sesión en cada cambio de ruta
     useEffect(() => {
         setIsMobileMenuOpen(false);
-    }, [location.pathname]);
+        verifyToken(); 
+    }, [location.pathname, verifyToken]);
 
     // Buscar anuncios activos al cargar la plataforma
     useEffect(() => {

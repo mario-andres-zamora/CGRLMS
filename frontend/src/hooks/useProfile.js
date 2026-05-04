@@ -28,6 +28,15 @@ export function useProfile() {
             const response = await axios.get(endpoint);
             if (response.data.success) {
                 setProfileData(response.data);
+                
+                // Si estamos viendo nuestro propio perfil, actualizamos el store global 
+                // para que el Navbar y otros componentes reflejen los puntos reales
+                if (!userId || parseInt(userId) === authUser?.id) {
+                    useAuthStore.getState().updateUser({
+                        points: response.data.user?.points || response.data.points,
+                        level: response.data.user?.level || response.data.level
+                    });
+                }
             }
         } catch (error) {
             const errorMsg = error.response?.data?.error || 'Error al cargar el perfil';
