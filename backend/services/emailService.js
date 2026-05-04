@@ -175,7 +175,20 @@ class EmailService {
                 <div class="content">
                     <h1>¡Hola, ${userName}!</h1>
                     <p>Te invitamos a formar parte del <strong>Programa de Concientización en Ciberseguridad</strong> de la Contraloría General de la República.</p>
-                    <p>Tu participación es fundamental para fortalecer la seguridad digital de nuestra institución. Ingresa hoy mismo y comienza tu camino de aprendizaje.</p>
+                    <p>Te informamos que este programa es de carácter <strong>obligatorio</strong> y fundamental para fortalecer la seguridad digital de nuestra institución.</p>
+                    
+                    <div style="background: rgba(56, 74, 153, 0.1); border: 1px solid rgba(56, 74, 153, 0.2); padding: 20px; border-radius: 16px; margin-bottom: 30px; text-align: left;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                            <tr>
+                                <td style="vertical-align: top; width: 30px; font-size: 20px;">📅</td>
+                                <td style="font-size: 14px; color: #94a3b8; line-height: 1.4;">
+                                    <strong style="color: #ffffff;">Cronograma de Aprendizaje:</strong><br>
+                                    El curso se imparte de forma progresiva. <strong>Cada mes se habilitará un nuevo módulo</strong> con contenidos clave para tu protección y la de la CGR.
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
                     <a href="https://cgrsegura.cgr.go.cr" class="button">Ingresar a la Plataforma</a>
                 </div>
                 <div class="footer">
@@ -199,7 +212,7 @@ class EmailService {
             await this.transporter.sendMail({
                 from: process.env.EMAIL_FROM,
                 to: userEmail,
-                subject: '🛡️ Invitación: Programa de Concientización en Ciberseguridad CGR Segur@',
+                subject: '🛡️ [OBLIGATORIO] Invitación: Programa de Concientización en Ciberseguridad CGR Segur@',
                 html: htmlContent,
                 attachments: attachments
             });
@@ -253,7 +266,8 @@ class EmailService {
                         <div class="progress-value">${progress}%</div>
                     </div>
 
-                    <p>La ciberseguridad es responsabilidad de todos. Te invitamos a retomar el curso y completar los módulos pendientes para fortalecer nuestras defensas institucionales.</p>
+                    <p>La ciberseguridad es responsabilidad de todos y el cumplimiento de este programa es de carácter <strong>obligatorio</strong>.</p>
+                    <p>Recuerda que <strong>cada mes se libera un nuevo módulo</strong> de capacitación. Te invitamos a retomar el curso y completar los contenidos pendientes para fortalecer nuestras defensas institucionales.</p>
                     <a href="https://cgrsegura.cgr.go.cr/dashboard" class="button">Continuar mi Capacitación</a>
                 </div>
                 <div class="footer">
