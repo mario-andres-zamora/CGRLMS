@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { LessonSkeleton } from '../components/skeletons/LessonSkeleton';
 import { useLessonView } from '../hooks/useLessonView';
 import LessonSidebar from '../components/lessons/LessonSidebar';
@@ -5,6 +6,7 @@ import LessonHeader from '../components/lessons/LessonHeader';
 import LessonContentItem from '../components/lessons/LessonContentItem';
 import LessonCompletion from '../components/lessons/LessonCompletion';
 import LessonNavigation from '../components/lessons/LessonNavigation';
+import { useSoundStore } from '../store/soundStore';
 import { Zap, FileText } from 'lucide-react';
 
 export default function LessonView() {
@@ -32,6 +34,14 @@ export default function LessonView() {
         handleAssignmentUpload
     } = useLessonView();
 
+    const { playSound } = useSoundStore();
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+    const toggleSidebar = () => {
+        playSound('/sounds/collapse_menu.mp3');
+        setIsSidebarCollapsed(!isSidebarCollapsed);
+    };
+
     if (loading) {
         return <LessonSkeleton />;
     }
@@ -40,16 +50,39 @@ export default function LessonView() {
 
     return (
         <div className="max-w-[1400px] mx-auto px-4 md:px-8 pt-0 md:pt-2 pb-20 min-h-screen animate-fade-in">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 xl:gap-12">
-                <LessonSidebar
-                    lesson={lesson}
-                    moduleLessons={moduleLessons}
-                    currentLessonId={id}
-                    user={user}
-                    viewAsStudent={viewAsStudent}
-                />
+            {/* Toggle Button for Focus Mode */}
+            <div className="hidden lg:flex justify-end mb-2">
+                <button
+                    onClick={toggleSidebar}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900/40 border border-white/5 hover:bg-slate-800/60 hover:border-white/10 transition-all text-gray-400 hover:text-white group"
+                    title={isSidebarCollapsed ? "Mostrar Menu Lateral" : "Ocultar Menu Lateral"}
+                >
+                    {isSidebarCollapsed ? (
+                        <>
+                            <FileText className="w-4 h-4" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Mostrar Menu Lateral</span>
+                        </>
+                    ) : (
+                        <>
+                            <Zap className="w-4 h-4" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Ocultar Menu Lateral</span>
+                        </>
+                    )}
+                </button>
+            </div>
 
-                <main className="lg:col-span-9 xl:col-span-9 space-y-4 animate-fade-in-up">
+            <div className={`grid grid-cols-1 gap-8 xl:gap-12 transition-all duration-500 ${isSidebarCollapsed ? 'lg:grid-cols-1' : 'lg:grid-cols-12'}`}>
+                {!isSidebarCollapsed && (
+                    <LessonSidebar
+                        lesson={lesson}
+                        moduleLessons={moduleLessons}
+                        currentLessonId={id}
+                        user={user}
+                        viewAsStudent={viewAsStudent}
+                    />
+                )}
+
+                <main className={`space-y-4 animate-fade-in-up transition-all duration-500 ${isSidebarCollapsed ? 'lg:col-span-1 xl:col-span-1 max-w-5xl mx-auto w-full' : 'lg:col-span-9 xl:col-span-9'}`}>
                     <LessonHeader lesson={lesson} contentsCount={contents.length} />
 
                     {!!lesson.is_optional && (
