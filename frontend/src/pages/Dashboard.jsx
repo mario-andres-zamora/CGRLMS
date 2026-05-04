@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '../store/authStore';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 // Sub-components
@@ -16,11 +16,12 @@ const API_URL = import.meta.env.VITE_API_URL;
 export default function Dashboard() {
     const { user, updateUser } = useAuthStore();
     const navigate = useNavigate();
+    const location = useLocation();
     const [stats, setStats] = useState(null);
     const [modules, setModules] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isBadgesModalOpen, setIsBadgesModalOpen] = useState(false);
-    const [isCertificatesModalOpen, setIsCertificatesModalOpen] = useState(false);
+    const [isCertificatesModalOpen, setIsCertificatesModalOpen] = useState(location.state?.openCertificates || false);
 
     useEffect(() => {
         fetchDashboardData();

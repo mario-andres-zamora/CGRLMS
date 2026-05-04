@@ -68,7 +68,7 @@ export default function CertificateView() {
             {/* Action Bar - Pure UI Layer */}
             <div className="w-full max-w-6xl flex flex-col md:flex-row justify-between items-center mb-12 print:hidden gap-6 bg-slate-900/40 p-6 rounded-[2.5rem] border border-white/5 backdrop-blur-xl shadow-2xl">
                 <button
-                    onClick={() => navigate(-1)}
+                    onClick={() => navigate('/dashboard', { state: { openCertificates: true } })}
                     className="flex items-center gap-3 text-gray-500 hover:text-white transition-all group px-4 py-2 hover:bg-white/5 rounded-2xl border border-transparent hover:border-white/5"
                 >
                     <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1.5 transition-transform" />
