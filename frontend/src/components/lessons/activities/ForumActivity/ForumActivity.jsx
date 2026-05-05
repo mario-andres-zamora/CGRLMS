@@ -6,13 +6,13 @@ import { MessageSquare, AlertCircle, Loader2, ChevronLeft, ChevronRight } from '
 import { useSoundStore } from '../../../../store/soundStore';
 
 export default function ForumActivity({ item, user, onComplete }) {
-    const { 
-        posts, 
-        loading, 
-        error, 
+    const {
+        posts,
+        loading,
+        error,
         pagination,
-        submitPost, 
-        submitReply, 
+        submitPost,
+        submitReply,
         deletePost,
         toggleUpvote,
         goToPage
@@ -36,7 +36,7 @@ export default function ForumActivity({ item, user, onComplete }) {
             {/* Header / Topic */}
             <div className="p-6 md:p-8 bg-slate-900/80 border-b border-white/5 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
-                
+
                 <div className="relative z-10">
                     <div className="flex items-center gap-3 mb-4">
                         <div className="w-10 h-10 rounded-xl bg-teal-500/20 flex items-center justify-center border border-teal-500/30">
@@ -44,7 +44,7 @@ export default function ForumActivity({ item, user, onComplete }) {
                         </div>
                         <h3 className="text-xl md:text-2xl font-black text-white">{title}</h3>
                     </div>
-                    
+
                     {description && (
                         <div className="text-gray-300 text-sm md:text-base leading-relaxed bg-slate-800/50 p-4 rounded-xl border border-white/5">
                             {description}
@@ -55,18 +55,18 @@ export default function ForumActivity({ item, user, onComplete }) {
 
             {/* Main Content Area */}
             <div className="p-6 md:p-8 space-y-8 bg-[#0a0d18]">
-                
+
                 {/* New Post Input */}
                 <div className="bg-slate-900/30 p-5 rounded-2xl border border-white/5 shadow-inner">
                     <h4 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-4">Iniciar nueva conversación</h4>
-                    <ForumInput 
+                    <ForumInput
                         onSubmit={async (message) => {
                             const result = await submitPost(message);
                             if (result.success) {
                                 playSound('/sounds/create-post.mp3');
                             }
                             return result;
-                        }} 
+                        }}
                         placeholder="Escribe tu mensaje o pregunta aquí para iniciar un hilo..."
                         buttonText="Publicar Mensaje"
                     />
@@ -89,15 +89,12 @@ export default function ForumActivity({ item, user, onComplete }) {
                         <div className="flex items-center justify-between border-b border-white/5 pb-2">
                             <h4 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
                                 Hilos de Discusión
-                                <span className="bg-slate-800 text-gray-400 text-[10px] px-2 py-0.5 rounded-md border border-white/5">
-                                    {posts.length}
-                                </span>
                             </h4>
                             <div className="flex items-center gap-2 bg-slate-900/50 p-1 rounded-lg border border-white/5">
                                 <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest pl-2 pr-1">
                                     Ordenar por:
                                 </span>
-                                <button 
+                                <button
                                     onClick={() => {
                                         setSortBy('recent');
                                         goToPage(1);
@@ -106,7 +103,7 @@ export default function ForumActivity({ item, user, onComplete }) {
                                 >
                                     Más Recientes
                                 </button>
-                                <button 
+                                <button
                                     onClick={() => {
                                         setSortBy('upvotes');
                                         goToPage(1);
@@ -115,7 +112,7 @@ export default function ForumActivity({ item, user, onComplete }) {
                                 >
                                     Más Votados
                                 </button>
-                                <button 
+                                <button
                                     onClick={() => {
                                         setSortBy('comments');
                                         goToPage(1);
@@ -146,11 +143,11 @@ export default function ForumActivity({ item, user, onComplete }) {
                                         }
                                         return new Date(b.created_at) - new Date(a.created_at); // Recent first
                                     }).map(post => (
-                                        <ForumPost 
-                                            key={post.id} 
-                                            post={post} 
-                                            currentUser={user} 
-                                            onReply={submitReply} 
+                                        <ForumPost
+                                            key={post.id}
+                                            post={post}
+                                            currentUser={user}
+                                            onReply={submitReply}
                                             onDelete={deletePost}
                                             onUpvote={toggleUpvote}
                                         />
@@ -167,7 +164,7 @@ export default function ForumActivity({ item, user, onComplete }) {
                                         >
                                             <ChevronLeft className="w-5 h-5" />
                                         </button>
-                                        
+
                                         <div className="flex items-center gap-1">
                                             {[...Array(pagination.totalPages)].map((_, i) => {
                                                 const pageNum = i + 1;
@@ -175,11 +172,10 @@ export default function ForumActivity({ item, user, onComplete }) {
                                                     <button
                                                         key={pageNum}
                                                         onClick={() => goToPage(pageNum)}
-                                                        className={`w-10 h-10 rounded-xl font-bold text-xs transition-all border ${
-                                                            pagination.page === pageNum 
-                                                            ? 'bg-primary-500 border-primary-400 text-white shadow-lg shadow-primary-500/20' 
-                                                            : 'bg-slate-900/30 border-white/5 text-gray-500 hover:border-white/10 hover:text-gray-300'
-                                                        }`}
+                                                        className={`w-10 h-10 rounded-xl font-bold text-xs transition-all border ${pagination.page === pageNum
+                                                                ? 'bg-primary-500 border-primary-400 text-white shadow-lg shadow-primary-500/20'
+                                                                : 'bg-slate-900/30 border-white/5 text-gray-500 hover:border-white/10 hover:text-gray-300'
+                                                            }`}
                                                     >
                                                         {pageNum}
                                                     </button>
