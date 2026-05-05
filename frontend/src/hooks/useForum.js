@@ -7,14 +7,24 @@ export const useForum = (contentId) => {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [page, setPage] = useState(1);
+    const [pagination, setPagination] = useState({ total: 0, page: 1, limit: 10, totalPages: 0 });
 
-    const fetchPosts = useCallback(async () => {
+    const fetchPosts = useCallback(async (targetPage = page) => {
         if (!contentId) return;
         setLoading(true);
         try {
-            const response = await axios.get(`${API_URL}/forums/${contentId}/posts`, { withCredentials: true });
+            const response = await axios.get(
+                `${API_URL}/forums/${contentId}/posts`, 
+                { 
+                    params: { page: targetPage, limit: 10 },
+                    withCredentials: true 
+                }
+            );
             if (response.data.success) {
                 setPosts(response.data.posts);
+                setPagination(response.data.pagination);
+                setPage(response.data.pagination.page);
                 setError(null);
             }
         } catch (err) {
@@ -23,11 +33,15 @@ export const useForum = (contentId) => {
         } finally {
             setLoading(false);
         }
-    }, [contentId]);
+    }, [contentId, page]);
 
     useEffect(() => {
         fetchPosts();
-    }, [fetchPosts]);
+    }, [contentId, page]);
+
+    const goToPage = (num) => {
+        setPage(num);
+    };
 
     const submitPost = async (message) => {
         try {
@@ -122,10 +136,12 @@ export const useForum = (contentId) => {
         posts,
         loading,
         error,
+        pagination,
         submitPost,
         submitReply,
         deletePost,
         toggleUpvote,
+        goToPage,
         refreshPosts: fetchPosts
     };
 };

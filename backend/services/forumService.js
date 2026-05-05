@@ -3,9 +3,38 @@ const logger = require('../config/logger');
 const { clearCache } = require('../middleware/cache');
 
 class ForumService {
-    async getPosts(contentId, userId) {
+    async getPosts(contentId, userId, page = 1, limit = 10) {
         try {
-            // Get all posts for a content_id, join with users to get details
+            const offset = (page - 1) * limit;
+
+            // 1. Obtener el total de hilos principales (root posts)
+            const countQuery = `SELECT COUNT(*) as total FROM forum_posts WHERE content_id = ? AND parent_id IS NULL`;
+            const [countRes] = await db.query(countQuery, [contentId]);
+            const totalPosts = countRes.total || 0;
+
+            // 2. Obtener los IDs de los hilos principales para la página actual
+            const rootIdsQuery = `
+                SELECT id FROM forum_posts 
+                WHERE content_id = ? AND parent_id IS NULL 
+                ORDER BY created_at DESC 
+                LIMIT ? OFFSET ?
+            `;
+            const rootIdRows = await db.query(rootIdsQuery, [contentId, parseInt(limit), offset]);
+            
+            if (rootIdRows.length === 0) {
+                return { 
+                    success: true, 
+                    posts: [], 
+                    pagination: { total: totalPosts, page: parseInt(page), limit: parseInt(limit), totalPages: Math.ceil(totalPosts / limit) } 
+                };
+            }
+
+            const rootIds = rootIdRows.map(r => r.id);
+
+            // 3. Obtener los hilos principales y TODAS sus respuestas
+            // Usamos una aproximación simple: traer todos los posts que sean parte de estos hilos
+            // O traer todos los posts del foro y filtrar en memoria (más seguro para árboles profundos)
+            // Dado que el árbol es pequeño por ahora, traeremos todo lo relacionado a los rootIds
             const query = `
                 SELECT 
                     fp.id, 
@@ -35,7 +64,7 @@ class ForumService {
             const postsMap = new Map();
             const rootPosts = [];
 
-            // Initialize all posts in map and add a replies array
+            // Initialize all posts in map
             rows.forEach(row => {
                 postsMap.set(row.id, { 
                     ...row, 
@@ -44,23 +73,32 @@ class ForumService {
                 });
             });
 
-            // Populate replies or add to root
+            // Populate replies and identify which paginated root posts to return
             rows.forEach(row => {
                 const post = postsMap.get(row.id);
                 if (row.parent_id) {
                     const parent = postsMap.get(row.parent_id);
                     if (parent) {
                         parent.replies.push(post);
-                    } else {
-                        // Parent was deleted, but this shouldn't happen with CASCADE, but just in case:
-                        rootPosts.push(post);
                     }
-                } else {
+                } else if (rootIds.includes(row.id)) {
                     rootPosts.push(post);
                 }
             });
 
-            return { success: true, posts: rootPosts };
+            // Sort rootPosts to match the original paginated order (DESC)
+            rootPosts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+            return { 
+                success: true, 
+                posts: rootPosts,
+                pagination: {
+                    total: totalPosts,
+                    page: parseInt(page),
+                    limit: parseInt(limit),
+                    totalPages: Math.ceil(totalPosts / limit)
+                }
+            };
         } catch (error) {
             console.error('Error fetching forum posts:', error);
             return { success: false, error: 'Error al obtener los mensajes del foro' };

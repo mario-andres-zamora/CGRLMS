@@ -4,14 +4,20 @@ class ForumController {
     async getPosts(req, res) {
         try {
             const { contentId } = req.params;
+            const { page = 1, limit = 10 } = req.query;
             const userId = req.user.id;
-            const result = await forumService.getPosts(contentId, userId);
+            
+            const result = await forumService.getPosts(contentId, userId, page, limit);
             
             if (!result.success) {
                 return res.status(500).json({ success: false, error: result.error });
             }
             
-            res.json({ success: true, posts: result.posts });
+            res.json({ 
+                success: true, 
+                posts: result.posts,
+                pagination: result.pagination
+            });
         } catch (error) {
             console.error('Error in ForumController.getPosts:', error);
             res.status(500).json({ success: false, error: 'Error del servidor' });
