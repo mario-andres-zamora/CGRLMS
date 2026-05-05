@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, RotateCcw, AlertTriangle, Layers, User } from 'lucide-react';
+import PremiumSelect from '../../PremiumSelect';
 
 export default function UserResetModal({ isOpen, onClose, user, modules, onConfirm }) {
     const [resetType, setResetType] = useState('all'); // 'all' or 'module'
@@ -7,6 +8,11 @@ export default function UserResetModal({ isOpen, onClose, user, modules, onConfi
     const [isConfirming, setIsConfirming] = useState(false);
 
     if (!isOpen) return null;
+
+    const moduleOptions = modules.map(mod => ({
+        value: mod.id,
+        label: mod.title
+    }));
 
     const handleConfirm = () => {
         setIsConfirming(true);
@@ -25,7 +31,7 @@ export default function UserResetModal({ isOpen, onClose, user, modules, onConfi
             {/* Modal Content */}
             <div className="relative w-full max-w-lg bg-slate-900 border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden animate-scale-in">
                 {/* Header */}
-                <div className="p-8 border-b border-white/5 bg-gradient-to-br from-orange-500/10 to-transparent">
+                <div className="p-8 border-b border-white/5 bg-gradient-to-br from-orange-500/10 to-transparent text-left">
                     <div className="flex justify-between items-start">
                         <div className="flex items-center gap-4">
                             <div className="w-12 h-12 bg-orange-500/20 rounded-2xl flex items-center justify-center border border-orange-500/20">
@@ -46,7 +52,7 @@ export default function UserResetModal({ isOpen, onClose, user, modules, onConfi
                 </div>
 
                 {/* Body */}
-                <div className="p-8 space-y-6">
+                <div className="p-8 space-y-6 text-left">
                     {/* Warning Box */}
                     <div className="flex gap-4 p-4 bg-orange-500/5 border border-orange-500/10 rounded-2xl">
                         <AlertTriangle className="w-5 h-5 text-orange-400 shrink-0" />
@@ -83,18 +89,14 @@ export default function UserResetModal({ isOpen, onClose, user, modules, onConfi
 
                     {/* Module Selector (Conditional) */}
                     {resetType === 'module' && (
-                        <div className="space-y-2 animate-fade-in">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 pl-2">Seleccionar Módulo</label>
-                            <select
+                        <div className="animate-fade-in">
+                            <PremiumSelect
+                                label="Seleccionar Módulo"
+                                options={moduleOptions}
                                 value={selectedModuleId}
-                                onChange={(e) => setSelectedModuleId(e.target.value)}
-                                className="w-full bg-slate-800 border border-white/5 rounded-2xl p-4 text-white font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/40 transition-all appearance-none cursor-pointer"
-                            >
-                                <option value="" disabled>Elegir un módulo...</option>
-                                {modules.map((mod) => (
-                                    <option key={mod.id} value={mod.id}>{mod.title}</option>
-                                ))}
-                            </select>
+                                onChange={setSelectedModuleId}
+                                placeholder="Elegir un módulo..."
+                            />
                         </div>
                     )}
                 </div>

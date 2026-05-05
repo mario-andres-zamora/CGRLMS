@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import PremiumSelect from '../components/PremiumSelect';
 import ConfirmModal from '../components/ConfirmModal';
 import { TableSkeleton } from '../components/skeletons/TableSkeleton';
 import Skeleton from '../components/Skeleton';
@@ -129,11 +130,13 @@ export default function AdminDirectory() {
                             </div>
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-1 block">Unidad Administrativa</label>
-                                    <select value={newRecord.department} onChange={(e) => setNewRecord({ ...newRecord, department: e.target.value })} className="w-full bg-slate-950 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-secondary-500 transition-all font-bold appearance-none">
-                                        <option value="">Seleccionar...</option>
-                                        {departments.map(d => <option key={d.id} value={d.name}>{d.name}</option>)}
-                                    </select>
+                                    <PremiumSelect
+                                        label="Unidad Administrativa"
+                                        options={departments.map(d => ({ value: d.name, label: d.name }))}
+                                        value={newRecord.department}
+                                        onChange={(val) => setNewRecord({ ...newRecord, department: val })}
+                                        placeholder="Seleccionar..."
+                                    />
                                 </div>
                                 <div className="space-y-3">
                                     <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-1 block">Cargo</label>
@@ -168,11 +171,13 @@ export default function AdminDirectory() {
                             </div>
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-1 block">Unidad Administrativa</label>
-                                    <select value={editingRecord.department} onChange={(e) => setEditingRecord({ ...editingRecord, department: e.target.value })} className="w-full bg-slate-950 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-primary-500 transition-all font-bold appearance-none">
-                                        <option value="">Seleccionar...</option>
-                                        {departments.map(d => <option key={d.id} value={d.name}>{d.name}</option>)}
-                                    </select>
+                                    <PremiumSelect
+                                        label="Unidad Administrativa"
+                                        options={departments.map(d => ({ value: d.name, label: d.name }))}
+                                        value={editingRecord.department}
+                                        onChange={(val) => setEditingRecord({ ...editingRecord, department: val })}
+                                        placeholder="Seleccionar..."
+                                    />
                                 </div>
                                 <div className="space-y-3">
                                     <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-1 block">Cargo</label>
