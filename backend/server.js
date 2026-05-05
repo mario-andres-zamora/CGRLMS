@@ -43,6 +43,8 @@ const surveyRoutes = require('./routes/surveys');
 const certificateRoutes = require('./routes/certificates');
 const announcementRoutes = require('./routes/announcements');
 const forumRoutes = require('./routes/forumRoutes');
+const gameRoutes = require('./routes/gameRoutes');
+
 
 const { authMiddleware, adminMiddleware } = require('./middleware/auth');
 const maintenanceMiddleware = require('./middleware/maintenance');
@@ -190,6 +192,8 @@ app.use('/api/surveys', surveyRoutes);
 app.use('/api/certificates', authMiddleware, maintenanceMiddleware, certificateRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/forums', authMiddleware, maintenanceMiddleware, forumRoutes);
+app.use('/api/games', gameRoutes);
+
 
 
 // Ruta para obtener configuraciones globales del sistema (Admin)

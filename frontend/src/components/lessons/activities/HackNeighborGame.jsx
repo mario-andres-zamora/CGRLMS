@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Lock, Camera, CheckCircle2, Shield, Calendar, Briefcase, Users, Heart, MessageCircle, Share2, Terminal, Award, EyeOff, Eye, Zap, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
+import axios from '../../../utils/axios';
 import { HACK_PROFILES } from '../../../utils/gamesData';
+
 
 export default function HackNeighborGame({ item, data, playSuccess, playError, markLinkAsVisited, visitedLinks }) {
     const isCompleted = visitedLinks.has(item.id);
@@ -24,23 +26,37 @@ export default function HackNeighborGame({ item, data, playSuccess, playError, m
         return HACK_PROFILES[index];
     }, [item.id]);
 
-    const handleHackAttempt = () => {
-        if (passwordInput === profile.password) {
-            setStatus('won');
-            playSuccess();
-            toast.success('¡Acceso concedido! Has vulnerado la cuenta.');
-            const hintsUsedCount = Object.keys(revealedHints).length;
-            markLinkAsVisited(item.id, { success: true, hintsUsed: hintsUsedCount });
-        } else {
-            setAttempts(prev => prev + 1);
-            setLastError(true);
-            playError();
-            setTimeout(() => {
-                setLastError(false);
-            }, 800);
-            setPasswordInput('');
+    const handleHackAttempt = async () => {
+        try {
+            const index = (item.id % HACK_PROFILES.length);
+            const response = await axios.post('/api/games/hack-neighbor/verify', {
+                index,
+                password: passwordInput
+            });
+
+            if (response.data.isCorrect) {
+                setStatus('won');
+                playSuccess();
+                toast.success('¡Acceso concedido! Has vulnerado la cuenta.');
+                const hintsUsedCount = Object.keys(revealedHints).length;
+                markLinkAsVisited(item.id, { success: true, hintsUsed: hintsUsedCount });
+                // Actualizamos el perfil local con la contraseña para que se muestre en el UI
+                profile.password = response.data.password;
+            } else {
+                setAttempts(prev => prev + 1);
+                setLastError(true);
+                playError();
+                setTimeout(() => {
+                    setLastError(false);
+                }, 800);
+                setPasswordInput('');
+            }
+        } catch (error) {
+            console.error('Error verificando contraseña:', error);
+            toast.error('Error al verificar la contraseña. Intente de nuevo.');
         }
     };
+
 
     const isHackWon = status === 'won';
 

@@ -5,6 +5,8 @@ import { calculateTetrisPoints, TETRIS_RANKS } from '../lessons/activities/DataT
 import PhaserGame from '../lessons/activities/DataTetris/PhaserGame';
 import '../lessons/activities/DataTetris/DataTetris.css';
 import { HACK_PROFILES } from '../../utils/gamesData';
+import axios from '../../utils/axios';
+
 import CyberCat from '../CyberCat';
 
 export const INTERACTIVE_QUESTION_TYPES = ['mfa_defender', 'hack_neighbor', 'data_tetris'];
@@ -57,18 +59,32 @@ function HackNeighborQuestion({ question, isAnswered, onWin, sessionSeed }) {
         return HACK_PROFILES[index];
     }, [question.id, sessionSeed]);
 
-    const handleHackAttempt = () => {
-        if (passwordInput === profile.password) {
-            setStatus('won');
-            const hintsUsedCount = Object.keys(revealedHints).length;
-            onWin({ success: true, hintsUsed: hintsUsedCount });
-        } else {
-            setAttempts(prev => prev + 1);
-            setLastError(true);
-            setTimeout(() => setLastError(false), 800);
-            setPasswordInput('');
+    const handleHackAttempt = async () => {
+        try {
+            const index = ((question.id + (sessionSeed || 0)) % HACK_PROFILES.length);
+            const response = await axios.post('/api/games/hack-neighbor/verify', {
+                index,
+                password: passwordInput
+            });
+
+            if (response.data.isCorrect) {
+                setStatus('won');
+                const hintsUsedCount = Object.keys(revealedHints).length;
+                onWin({ success: true, hintsUsed: hintsUsedCount });
+                // Actualizamos el perfil local con la contraseña para que se muestre en el UI
+                profile.password = response.data.password;
+            } else {
+                setAttempts(prev => prev + 1);
+                setLastError(true);
+                setTimeout(() => setLastError(false), 800);
+                setPasswordInput('');
+            }
+        } catch (error) {
+            console.error('Error verificando contraseña:', error);
+            toast.error('Error al verificar la contraseña');
         }
     };
+
 
     return (
         <div className="mt-4 space-y-6 animate-fade-in">
