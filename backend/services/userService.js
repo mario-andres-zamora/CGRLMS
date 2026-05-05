@@ -298,12 +298,16 @@ class UserService {
             if (moduleId) {
                 // REINICIO SELECTIVO POR MÓDULO
                 // 1. Obtener IDs de lecciones del módulo
-                const lessons = await connection.query('SELECT id FROM lessons WHERE module_id = ?', [moduleId]);
+                const [lessons] = await connection.query('SELECT id FROM lessons WHERE module_id = ?', [moduleId]);
                 const lessonIds = lessons.map(l => l.id);
 
                 if (lessonIds.length > 0) {
                     // 2. Eliminar progreso de contenido
-                    await connection.query('DELETE FROM user_content_progress WHERE user_id = ? AND lesson_id IN (?)', [userId, lessonIds]);
+                    await connection.query(`
+                        DELETE FROM user_content_progress 
+                        WHERE user_id = ? AND content_id IN (
+                            SELECT id FROM lesson_contents WHERE lesson_id IN (?)
+                        )`, [userId, lessonIds]);
                     
                     // 3. Eliminar intentos de quices
                     await connection.query(`
@@ -371,11 +375,11 @@ class UserService {
             }
 
             // RECALCULAR PUNTOS TOTALES basándose en lo que quedó en gamification_activities
-            const [totalPointsRow] = await connection.query(
+            const [totalPointsRows] = await connection.query(
                 'SELECT SUM(points_earned) as total FROM gamification_activities WHERE user_id = ?',
                 [userId]
             );
-            const newTotalPoints = totalPointsRow.total || 0;
+            const newTotalPoints = totalPointsRows[0]?.total || 0;
 
             // Actualizar el balance oficial en la tabla de puntos
             await connection.query(
