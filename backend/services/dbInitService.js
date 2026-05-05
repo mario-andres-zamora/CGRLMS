@@ -87,12 +87,12 @@ const initializeDatabase = async () => {
             ALTER TABLE badges ADD COLUMN IF NOT EXISTS points INT DEFAULT 10;
         `);
 
-        // Asegurar que 'categorization' existe en el ENUM de content_type
+        // Asegurar que 'categorization' y 'forum' existan en el ENUM de content_type
         await db.query(`
             ALTER TABLE lesson_contents MODIFY COLUMN content_type ENUM(
                 'text','video','image','file','link','quiz','survey','assignment','note',
                 'heading','bullets','confirmation','interactive_input','password_tester',
-                'multiple_choice','mfa_defender','hack_neighbor','dork_search','categorization','data_tetris'
+                'multiple_choice','mfa_defender','hack_neighbor','dork_search','categorization','data_tetris','forum'
             ) NOT NULL;
         `);
 
@@ -107,6 +107,19 @@ const initializeDatabase = async () => {
         // Aumentar tamaño de columna activity_type para evitar truncado
         await db.query(`
             ALTER TABLE gamification_activities MODIFY COLUMN activity_type VARCHAR(50);
+        `);
+
+        // Tabla de upvotes para foros
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS forum_post_upvotes (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                post_id INT NOT NULL,
+                user_id INT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (post_id) REFERENCES forum_posts(id) ON DELETE CASCADE,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                UNIQUE KEY unique_user_post_upvote (user_id, post_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         `);
 
         logger.info('✅ Estructura de base de datos verificada y actualizada.');
