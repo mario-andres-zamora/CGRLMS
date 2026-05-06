@@ -32,11 +32,11 @@ class LessonService {
         );
 
         if (prevMandatoryIncomplete && !isAdmin) {
-            return { 
-                locked: true, 
-                error: 'Lección bloqueada', 
+            return {
+                locked: true,
+                error: 'Lección bloqueada',
                 message: `Debes completar la lección "${prevMandatoryIncomplete.title}" para continuar.`,
-                moduleId: lesson.module_id 
+                moduleId: lesson.module_id
             };
         }
 
@@ -67,11 +67,11 @@ class LessonService {
                 );
 
                 if ((lessonProgress.completed_count < totalRequired.total) || (quizProgress.passed_count < totalQuizzes.total)) {
-                    return { 
-                        locked: true, 
-                        error: 'Módulo bloqueado', 
+                    return {
+                        locked: true,
+                        error: 'Módulo bloqueado',
                         message: 'Debes completar el módulo anterior antes de acceder a este contenido.',
-                        moduleId: lesson.module_id 
+                        moduleId: lesson.module_id
                     };
                 }
             }
@@ -212,7 +212,7 @@ class LessonService {
                 if (item.content_type === 'confirmation' || item.content_type === 'multiple_choice') action = 'responder la pregunta';
                 if (item.content_type === 'interactive_input') action = 'completar la entrada';
                 if (item.content_type === 'password_tester') action = 'probar la contraseña';
-                
+
                 throw new Error(`No puedes finalizar: Te falta ${action} "${item.title}".`);
             }
         }
@@ -255,7 +255,7 @@ class LessonService {
             let itemPoints = parseInt(content.points) || 0;
             const contentData = typeof content.data === 'string' ? JSON.parse(content.data) : (content.data || {});
             const interactionData = typeof content.interaction_data === 'string' ? JSON.parse(content.interaction_data) : (content.interaction_data || {});
-            
+
             // Penalizaciones
             if (content.content_type === 'hack_neighbor' && itemPoints > 0) {
                 const hintsUsed = parseInt(interactionData.hintsUsed) || 0;
@@ -269,12 +269,19 @@ class LessonService {
                 itemPoints = Math.max(0, itemPoints - (mfaFails * failPenalty));
             }
 
+            if (content.content_type === 'terms_trap' && itemPoints > 0) {
+                if (interactionData.status === 'completed_after_failure') {
+                    itemPoints = Math.round(itemPoints * 0.4);
+                }
+            }
+
+
             // Sumar siempre para el mensaje de la UI
             totalPointsInLesson += itemPoints;
 
             // EXCLUSIÓN: No sumar al balance real si ya se otorgó (Quices, Encuestas, Tareas)
             if (['quiz', 'survey', 'assignment'].includes(content.content_type)) continue;
-            
+
             pointsAwarded += itemPoints;
         }
 
@@ -337,14 +344,14 @@ class LessonService {
                 is_optional = COALESCE(?, is_optional)
              WHERE id = ?`,
             [
-                title ?? null, 
-                content ?? null, 
-                lesson_type ?? null, 
-                video_url ?? null, 
-                duration_minutes ?? null, 
-                order_index ?? null, 
-                is_published ?? null, 
-                is_optional ?? null, 
+                title ?? null,
+                content ?? null,
+                lesson_type ?? null,
+                video_url ?? null,
+                duration_minutes ?? null,
+                order_index ?? null,
+                is_published ?? null,
+                is_optional ?? null,
                 lessonId
             ]
         );

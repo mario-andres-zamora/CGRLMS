@@ -4,27 +4,38 @@ import { ShieldAlert, Info, X, Check, Gavel, Eye, AlertTriangle, PartyPopper, Za
 import CyberCat from '../../CyberCat';
 import { linkify } from '../../../utils/textUtils';
 import { useSoundStore } from '../../../store/soundStore';
+import { useTermsTrap } from '../../../hooks/useTermsTrap';
 
 export default function TermsTrapActivity({ item, data, playSuccess, playError, markLinkAsVisited, visitedLinks }) {
-    const isCompleted = item.isCompleted || visitedLinks?.has(item.id) || visitedLinks?.has(String(item.id)) || visitedLinks?.has(Number(item.id));
-    const [state, setState] = useState(isCompleted ? 'winner' : 'initial'); // 'initial', 'alert', 'winner'
-    const [showTerms, setShowTerms] = useState(false);
-    const [showPrivacy, setShowPrivacy] = useState(false);
-    const [isShaking, setIsShaking] = useState(false);
-    const [accepted, setAccepted] = useState(false);
-    const [hasFailed, setHasFailed] = useState(false);
+    const {
+        state,
+        showTerms,
+        setShowTerms,
+        showPrivacy,
+        setShowPrivacy,
+        isShaking,
+        accepted,
+        setAccepted,
+        hasFailed,
+        earnedPoints,
+        handleAccept: hookHandleAccept,
+        handleReject: hookHandleReject,
+        resetActivity
+    } = useTermsTrap(item, markLinkAsVisited);
+
     const particlesRef = useRef([]);
     const playSound = useSoundStore(state => state.playSound);
 
-    const [forceShow, setForceShow] = useState(false);
+    const handleAccept = () => {
+        if (!accepted) return;
+        playSound('/sounds/alarm.mp3');
+        hookHandleAccept();
+    };
 
-    // Sync state with completion on reload or update
-    useEffect(() => {
-        // Only auto-switch to winner if completed and NOT in manual review mode
-        if (isCompleted && state !== 'winner' && !forceShow) {
-            setState('winner');
-        }
-    }, [isCompleted, state, forceShow]);
+    const handleReject = () => {
+        playSound('/sounds/wow.mp3');
+        hookHandleReject();
+    };
 
     const abusiveTerms = `
         <div className="space-y-6">
@@ -149,40 +160,6 @@ export default function TermsTrapActivity({ item, data, playSuccess, playError, 
         </div>
     `;
 
-    const handleAccept = () => {
-        if (!accepted) return;
-        playSound('/sounds/alarm.mp3');
-        setState('alert');
-        setIsShaking(true);
-        setHasFailed(true); // Flag that they failed once
-
-        // Stop shaking after 3 seconds
-        setTimeout(() => {
-            setIsShaking(false);
-        }, 3000);
-    };
-
-    const handleReject = () => {
-        playSound('/sounds/wow.mp3');
-        setState('winner');
-
-        // Only give full points if they haven't failed before in this session
-        if (!hasFailed) {
-            markLinkAsVisited(item.id, {
-                status: 'success',
-                points: item.points,
-                timestamp: new Date().toISOString()
-            });
-        } else {
-            // Mark as visited to allow progress, but award only 20% of the points
-            const partialPoints = Math.round((item.points || 0) * 0.2);
-            markLinkAsVisited(item.id, {
-                status: 'completed_after_failure',
-                points: partialPoints,
-                timestamp: new Date().toISOString()
-            });
-        }
-    };
 
     // Particle System for Alert state
     useEffect(() => {
@@ -254,12 +231,12 @@ export default function TermsTrapActivity({ item, data, playSuccess, playError, 
                                 ¡ALERTA DE SEGURIDAD!
                             </h2>
                             <p className="text-base md:text-lg font-bold text-red-100 max-w-2xl mx-auto">
-                                Acabas de aceptar términos abusivos sin siquiera mirarlos.
+                                Acaba de aceptar términos abusivos sin revisarlos primero!
                             </p>
                         </div>
 
                         <p className="text-xs md:text-sm text-red-200/70 max-w-xl mx-auto leading-relaxed">
-                            En el mundo real, esto podría significar que diste permiso para vender tus datos privados, instalar malware legalmente, o renunciar a tus derechos fundamentales.
+                            En el mundo real, esto podría significar que dio permiso para vender sus datos personales, instalar software malicioso o renunciar a sus derechos fundamentales.
                         </p>
 
                         <div className="bg-black/40 p-4 md:p-6 rounded-[1.5rem] border border-red-500/30 text-left space-y-2 backdrop-blur-md">
@@ -267,25 +244,25 @@ export default function TermsTrapActivity({ item, data, playSuccess, playError, 
                             <ul className="text-xs md:text-sm space-y-1 md:space-y-2 text-red-50 font-medium">
                                 <li className="flex gap-3 items-start">
                                     <AlertTriangle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                                    <span>Robo de identidad facilitado por términos vagos.</span>
+                                    <span>Robo de identidad facilitado por términos legales mal intencionados</span>
                                 </li>
                                 <li className="flex gap-3 items-start">
                                     <AlertTriangle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                                    <span>Suscripciones fantasma que drenan tu cuenta bancaria.</span>
+                                    <span>Suscripciones no deseadas que drenan su cuenta bancaria</span>
                                 </li>
                                 <li className="flex gap-3 items-start">
                                     <AlertTriangle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                                    <span>Rastreo constante de tu ubicación y hábitos.</span>
+                                    <span>Rastreo constante de su ubicación y hábitos personales</span>
+                                </li>
+                                <li className="flex gap-3 items-start">
+                                    <AlertTriangle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                                    <span>Cesión de sus fotografías y voz sin permiso</span>
                                 </li>
                             </ul>
                         </div>
 
                         <button
-                            onClick={() => {
-                                setState('initial');
-                                setAccepted(false);
-                                setIsShaking(false);
-                            }}
+                            onClick={resetActivity}
                             className="mt-2 px-8 py-3 md:px-10 md:py-4 bg-white text-red-600 rounded-full font-black uppercase tracking-[0.1em] text-[10px] md:text-xs hover:bg-red-50 transition-all shadow-xl hover:scale-105 active:scale-95"
                         >
                             Intentar de nuevo con cuidado
@@ -332,41 +309,45 @@ export default function TermsTrapActivity({ item, data, playSuccess, playError, 
 
     if (state === 'winner') {
         return (
-            <div className="w-full max-w-5xl mx-auto rounded-[2.5rem] bg-emerald-950/80 backdrop-blur-xl border-4 border-emerald-500 p-6 md:p-10 text-white flex flex-col items-center text-center space-y-8 shadow-[0_0_50px_rgba(16,185,129,0.3)] animate-fade-in overflow-hidden">
+            <div className={`w-full max-w-5xl mx-auto rounded-[2.5rem] backdrop-blur-xl border-4 p-6 md:p-10 text-white flex flex-col items-center text-center space-y-8 animate-fade-in overflow-hidden transition-all duration-700 ${hasFailed ? 'bg-amber-950/80 border-amber-500 shadow-[0_0_50px_rgba(245,158,11,0.3)]' : 'bg-emerald-950/80 border-emerald-500 shadow-[0_0_50px_rgba(16,185,129,0.3)]'}`}>
                 <div className="space-y-8 w-full">
                     <div className="flex justify-center">
-                        <CyberCat variant="normal" color="#10b981" showMedal={false} className="w-24 h-24 md:w-32 md:h-32" />
+                        <CyberCat variant="normal" color={hasFailed ? "#f59e0b" : "#10b981"} showMedal={false} className="w-24 h-24 md:w-32 md:h-32" />
                     </div>
 
                     <div className="space-y-4">
-                        <h2 className="text-3xl md:text-5xl font-black tracking-tighter uppercase italic text-emerald-400 leading-tight">
-                            ¡EXCELENTE DECISIÓN!
+                        <h2 className={`text-3xl md:text-5xl font-black tracking-tighter uppercase italic leading-tight transition-all duration-700 ${hasFailed ? 'text-amber-400 drop-shadow-[0_0_30px_rgba(245,158,11,0.5)]' : 'text-emerald-400 drop-shadow-[0_0_30px_rgba(52,211,153,0.5)]'}`}>
+                            {hasFailed ? '¡LECCIÓN APRENDIDA!' : '¡EXCELENTE DECISIÓN!'}
                         </h2>
-                        
+
                         <div className="flex justify-center">
-                            <div className="inline-flex items-center gap-3 px-6 py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl shadow-[0_0_20px_rgba(16,185,129,0.1)]">
-                                <Award className="w-5 h-5 text-emerald-400" />
-                                <span className="text-sm md:text-base font-black uppercase tracking-widest text-emerald-50">
-                                    TOTAL GANADO: <span className="text-emerald-400">+{item.points || 50} PTS</span>
+                            <div className={`inline-flex items-center gap-3 px-8 py-4 border rounded-2xl shadow-2xl transition-all duration-500 transform hover:scale-105 ${hasFailed ? 'bg-amber-500/20 border-amber-500/50 shadow-amber-500/20' : 'bg-emerald-500/10 border-emerald-500/20 shadow-emerald-500/10'}`}>
+                                <Award className={`w-6 h-6 ${hasFailed ? 'text-amber-400 animate-pulse' : 'text-emerald-400'}`} />
+                                <span className="text-sm md:text-base font-black uppercase tracking-widest text-white">
+                                    TOTAL GANADO: <span className={hasFailed ? 'text-amber-400' : 'text-emerald-400'}>
+                                        +{earnedPoints} PTS
+                                    </span>
                                 </span>
                             </div>
                         </div>
 
-                        <p className="text-lg md:text-xl font-bold text-emerald-100 max-w-3xl mx-auto">
-                            Demostraste tener una "Higiene Digital" superior.
+                        <p className={`text-lg md:text-xl font-bold max-w-3xl mx-auto ${hasFailed ? 'text-amber-100' : 'text-emerald-100'}`}>
+                            {hasFailed ? 'Casi caes en la trampa, pero lograste rectificar a tiempo.' : 'Demostraste tener una "Higiene Digital" superior.'}
                         </p>
                     </div>
 
-                    <p className="text-sm md:text-base text-emerald-200/70 max-w-4xl mx-auto leading-relaxed">
-                        No dejaste que la presión de un botón brillante te hiciera aceptar condiciones sospechosas. Esta es la primera línea de defensa contra el abuso corporativo y el robo de datos.
+                    <p className={`text-sm md:text-base max-w-4xl mx-auto leading-relaxed ${hasFailed ? 'text-amber-200/70' : 'text-emerald-200/70'}`}>
+                        {hasFailed
+                            ? 'Aceptar términos sin leer es un riesgo crítico. Aunque esta vez fue una simulación, en el mundo real podrías haber comprometido tus datos permanentemente.'
+                            : 'No dejaste que la presión de un botón brillante te hiciera aceptar condiciones sospechosas. Esta es la primera línea de defensa contra el abuso corporativo y el robo de datos.'}
                     </p>
 
-                    <div className="bg-black/40 p-5 md:p-8 rounded-[2rem] border border-emerald-500/30 text-left space-y-4 backdrop-blur-md w-full">
-                        <p className="text-[10px] uppercase font-black tracking-[0.3em] text-emerald-400">¿Por qué ganaste?</p>
+                    <div className={`bg-black/40 p-5 md:p-8 rounded-[2rem] border text-left space-y-4 backdrop-blur-md w-full transition-all duration-700 ${hasFailed ? 'border-amber-500/30 shadow-[0_0_30px_rgba(245,158,11,0.1)]' : 'border-emerald-500/30'}`}>
+                        <p className={`text-[10px] uppercase font-black tracking-[0.3em] ${hasFailed ? 'text-amber-400' : 'text-emerald-400'}`}>{hasFailed ? 'Análisis de la Situación' : '¿Por qué ganaste?'}</p>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div className="flex gap-4 items-start group/point">
-                                <div className="p-2 bg-emerald-500/20 rounded-lg group-hover/point:bg-emerald-500/40 transition-colors">
-                                    <Check className="w-5 h-5 text-emerald-400 shrink-0" />
+                                <div className={`p-2 rounded-lg transition-colors ${hasFailed ? 'bg-amber-500/20 text-amber-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
+                                    <Check className="w-5 h-5 shrink-0" />
                                 </div>
                                 <div className="space-y-1">
                                     <p className="text-sm font-black text-emerald-50 leading-tight">Detección de Abusos</p>
@@ -376,8 +357,8 @@ export default function TermsTrapActivity({ item, data, playSuccess, playError, 
                                 </div>
                             </div>
                             <div className="flex gap-4 items-start group/point">
-                                <div className="p-2 bg-emerald-500/20 rounded-lg group-hover/point:bg-emerald-500/40 transition-colors">
-                                    <Check className="w-5 h-5 text-emerald-400 shrink-0" />
+                                <div className={`p-2 rounded-lg transition-colors ${hasFailed ? 'bg-amber-500/20 text-amber-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
+                                    <Check className="w-5 h-5 shrink-0" />
                                 </div>
                                 <div className="space-y-1">
                                     <p className="text-sm font-black text-emerald-50 leading-tight">Privacidad Blindada</p>
@@ -387,8 +368,8 @@ export default function TermsTrapActivity({ item, data, playSuccess, playError, 
                                 </div>
                             </div>
                             <div className="flex gap-4 items-start group/point">
-                                <div className="p-2 bg-emerald-500/20 rounded-lg group-hover/point:bg-emerald-500/40 transition-colors">
-                                    <Check className="w-5 h-5 text-emerald-400 shrink-0" />
+                                <div className={`p-2 rounded-lg transition-colors ${hasFailed ? 'bg-amber-500/20 text-amber-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
+                                    <Check className="w-5 h-5 shrink-0" />
                                 </div>
                                 <div className="space-y-1">
                                     <p className="text-sm font-black text-emerald-50 leading-tight">Mente Crítica</p>
@@ -402,11 +383,7 @@ export default function TermsTrapActivity({ item, data, playSuccess, playError, 
 
                     <div className="pt-2 flex justify-center">
                         <button
-                            onClick={() => {
-                                setForceShow(true);
-                                setState('initial');
-                                setAccepted(false);
-                            }}
+                            onClick={resetActivity}
                             className="px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-white rounded-full font-black uppercase tracking-[0.2em] text-[10px] md:text-xs transition-all shadow-xl hover:scale-105 active:scale-95"
                         >
                             Ver la trampa de nuevo
@@ -454,7 +431,7 @@ export default function TermsTrapActivity({ item, data, playSuccess, playError, 
                                     {accepted && <Check className="w-3 h-3 text-white stroke-[4]" />}
                                 </div>
                                 <p className="text-xs md:text-sm text-gray-400 leading-relaxed font-medium">
-                                    He leído íntegramente y otorgo mi consentimiento expreso a la <button onClick={(e) => { e.stopPropagation(); setShowPrivacy(true); }} className="text-primary-400 hover:text-primary-300 hover:underline font-black transition-colors">Política de privacidad</button> y a las <button onClick={(e) => { e.stopPropagation(); setShowTerms(true); }} className="text-primary-400 hover:text-primary-300 hover:underline font-black transition-colors">Condiciones del servicio</button> global de la infraestructura.
+                                    He leído y acepto la <button onClick={(e) => { e.stopPropagation(); setShowPrivacy(true); }} className="text-primary-400 hover:text-primary-300 hover:underline font-black transition-colors">Política de privacidad</button> y a las <button onClick={(e) => { e.stopPropagation(); setShowTerms(true); }} className="text-primary-400 hover:text-primary-300 hover:underline font-black transition-colors">Condiciones del servicio</button> de CGR Segur@
                                 </p>
                             </div>
 
