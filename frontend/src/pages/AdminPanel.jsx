@@ -13,14 +13,16 @@ import {
     Bell
 } from 'lucide-react';
 
+import { useAuthStore } from '../store/authStore';
 import { useAdminPanel } from '../hooks/useAdminPanel';
 import AdminHeader from '../components/admin/AdminHeader';
 import AdminCard from '../components/admin/AdminCard';
 
 export default function AdminPanel() {
     const { stats } = useAdminPanel();
+    const { user } = useAuthStore();
 
-    const adminCards = [
+    const allCards = [
         {
             title: 'Módulos y Lecciones',
             description: 'Crear, editar y organizar el contenido de los cursos.',
@@ -51,7 +53,7 @@ export default function AdminPanel() {
             icon: BarChart3,
             path: '/admin/reports',
             iconBg: 'bg-teal-600',
-            stats: '94% COMPLETITUD' // Hardcoded as per image or dynamic if available
+            stats: 'Gestion de Reportes'
         },
         {
             title: 'Simulacros Phishing',
@@ -120,11 +122,20 @@ export default function AdminPanel() {
         }
     ];
 
+    // Si es analista, solo mostrar las tarjetas de Reportes, Encuestas e Interacciones
+    const analystAllowedPaths = ['/admin/reports', '/admin/surveys', '/admin/interactions'];
+    const adminCards = user?.role === 'analyst'
+        ? allCards.filter(card => analystAllowedPaths.includes(card.path))
+        : allCards;
+
+
+
     return (
         <div className="animate-fade-in pb-20">
             <AdminHeader showBack={false} />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className={`grid grid-cols-1 md:grid-cols-2 ${user?.role === 'analyst' ? 'lg:grid-cols-2 max-w-4xl mx-auto' : 'lg:grid-cols-3'} gap-6`}>
+
                 {adminCards.map((card, index) => (
                     <AdminCard
                         key={index}
@@ -135,3 +146,4 @@ export default function AdminPanel() {
         </div>
     );
 }
+

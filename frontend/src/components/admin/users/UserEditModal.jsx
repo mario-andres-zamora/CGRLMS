@@ -60,8 +60,10 @@ export default function UserEditModal({ user, departments, isOpen, onClose, onUp
 
     const roleOptions = [
         { value: 'student', label: 'Usuario (Funcionario)' },
-        { value: 'admin', label: 'Administrador (TI/Seguridad)' }
+        { value: 'admin', label: 'Administrador (TI/Seguridad)' },
+        { value: 'analyst', label: 'Analista (Reportes y Analítica)' }
     ];
+
 
     const statusOptions = [
         { value: 'true', label: 'Activo' },
