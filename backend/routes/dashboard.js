@@ -116,74 +116,16 @@ router.get('/', authMiddleware, cacheMiddleware(300, true), async (req, res) => 
         // 3. Obtener insignias del usuario
         const userBadges = await badgeService.getUserBadges(userId);
 
-        // 3. Rankings using Redis (Faster & Safer)
+        // 3. Rankings using Standardized Logic
         const [userData] = await db.query(`SELECT email, department FROM users WHERE id = ?`, [userId]);
-        const email = userData?.email;
-        const dept = userData?.department;
-        const userEmailLower = (email || '').toLowerCase();
-
-        const redisClient = require('../config/redis');
-        let institutionalRank = null;
-        let departmentalRank = null;
-        let totalUsersCount = 0;
-        let totalInDepartment = 0;
-
-        if (redisClient && redisClient.isOpen) {
-            try {
-                // 1. User Global Rank (Real-time ZSET)
-                const zRank = await redisClient.zRevRank('leaderboard:points', userId.toString());
-
-                // 2. Institutional cache for total count and dept ranking
-                const cachedInst = await redisClient.get('leaderboard:institutional');
-                if (cachedInst) {
-                    const institutionalLeaderboard = JSON.parse(cachedInst);
-                    totalUsersCount = institutionalLeaderboard.length;
-
-                    if (zRank !== null) {
-                        institutionalRank = zRank + 1;
-                    } else {
-                        const userEntry = institutionalLeaderboard.find(r => (r.email || '').toLowerCase() === userEmailLower);
-                        institutionalRank = userEntry ? userEntry.rank_position : (totalUsersCount + 1);
-                    }
-
-                    if (dept) {
-                        const deptUsers = institutionalLeaderboard.filter(r => r.department === dept);
-                        totalInDepartment = deptUsers.length;
-                        const myDeptIndex = deptUsers.findIndex(r => (r.email || '').toLowerCase() === userEmailLower);
-                        departmentalRank = myDeptIndex !== -1 ? myDeptIndex + 1 : null;
-                    }
-                }
-            } catch (redisError) {
-                logger.error('Redis error in dashboard ranking:', redisError);
-            }
-        }
-
-        // Fallback to Database
-        if (institutionalRank === null) {
-            const globalRanking = await db.query(
-                `SELECT LOWER(sd.email) as email, RANK() OVER (ORDER BY COALESCE(up.points, -1) DESC, sd.full_name ASC) as pos
-                 FROM staff_directory sd
-                 LEFT JOIN users u ON sd.email = u.email
-                 LEFT JOIN user_points up ON u.id = up.user_id`
-            );
-            const userGlobalRankRaw = globalRanking.find(r => (r.email || '').toLowerCase() === userEmailLower);
-            institutionalRank = userGlobalRankRaw ? userGlobalRankRaw.pos : (globalRanking.length + 1);
-            totalUsersCount = globalRanking.length;
-
-            if (dept) {
-                const deptRanking = await db.query(
-                    `SELECT LOWER(sd.email) as email, RANK() OVER (ORDER BY COALESCE(up.points, -1) DESC, sd.full_name ASC) as pos
-                     FROM staff_directory sd
-                     LEFT JOIN users u ON sd.email = u.email
-                     LEFT JOIN user_points up ON u.id = up.user_id
-                     WHERE sd.department = ?`,
-                    [dept]
-                );
-                const userDeptRankRaw = deptRanking.find(r => (r.email || '').toLowerCase() === userEmailLower);
-                departmentalRank = userDeptRankRaw ? userDeptRankRaw.pos : null;
-                totalInDepartment = deptRanking.length;
-            }
-        }
+        const { calculateLevel, getUserRank } = require('../utils/gamification');
+        
+        const rankData = await getUserRank(userId, userData?.email, userData?.department);
+        
+        const institutionalRank = rankData.institutionalRank;
+        const departmentalRank = rankData.departmentalRank;
+        const totalUsersCount = rankData.totalUsersCount;
+        const totalInDepartment = rankData.totalInDepartment;
 
         // 4. Obtener certificados
         const certificates = await db.query(

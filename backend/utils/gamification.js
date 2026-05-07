@@ -87,6 +87,89 @@ const calculateLevel = async (points) => {
 };
 
 /**
+ * Obtiene el rango institucional y departamental de un usuario de forma consistente.
+ * Prioriza el caché del leaderboard para asegurar que el número mostrado coincida con la lista del ranking.
+ */
+const getUserRank = async (userId, email, department) => {
+    const userEmailLower = (email || '').toLowerCase();
+    let institutionalRank = null;
+    let departmentalRank = null;
+    let totalUsersCount = 0;
+    let totalInDepartment = 0;
+
+    try {
+        if (redisClient && redisClient.isOpen) {
+            // 1. Intentar obtener del caché de la lista completa (para consistencia con el ranking)
+            const cachedInst = await redisClient.get('leaderboard:institutional');
+            if (cachedInst) {
+                const institutionalLeaderboard = JSON.parse(cachedInst);
+                totalUsersCount = institutionalLeaderboard.length;
+
+                const userEntry = institutionalLeaderboard.find(r => (r.email || '').toLowerCase() === userEmailLower);
+                if (userEntry) {
+                    institutionalRank = userEntry.rank_position;
+                }
+
+                if (department) {
+                    const deptUsers = institutionalLeaderboard.filter(r => r.department === department);
+                    totalInDepartment = deptUsers.length;
+                    const myDeptIndex = deptUsers.findIndex(r => (r.email || '').toLowerCase() === userEmailLower);
+                    departmentalRank = myDeptIndex !== -1 ? myDeptIndex + 1 : null;
+                }
+            }
+
+            // 2. Si no se encontró en el caché (usuario muy nuevo), usar el ZSET de tiempo real
+            if (institutionalRank === null) {
+                const zRank = await redisClient.zRevRank('leaderboard:points', userId.toString());
+                if (zRank !== null) {
+                    institutionalRank = zRank + 1;
+                }
+            }
+        }
+    } catch (error) {
+        logger.error('Error fetching rank from Redis:', error);
+    }
+
+    // 3. Fallback final a la Base de Datos
+    if (institutionalRank === null) {
+        try {
+            const globalRanking = await db.query(
+                `SELECT LOWER(sd.email) as email, RANK() OVER (ORDER BY COALESCE(up.points, -1) DESC, sd.full_name ASC) as pos
+                 FROM staff_directory sd
+                 LEFT JOIN users u ON sd.email = u.email
+                 LEFT JOIN user_points up ON u.id = up.user_id`
+            );
+            const userGlobalRankRaw = globalRanking.find(r => (r.email || '').toLowerCase() === userEmailLower);
+            institutionalRank = userGlobalRankRaw ? userGlobalRankRaw.pos : (globalRanking.length + 1);
+            totalUsersCount = globalRanking.length;
+
+            if (department) {
+                const deptRanking = await db.query(
+                    `SELECT LOWER(sd.email) as email, RANK() OVER (ORDER BY COALESCE(up.points, -1) DESC, sd.full_name ASC) as pos
+                     FROM staff_directory sd
+                     LEFT JOIN users u ON sd.email = u.email
+                     LEFT JOIN user_points up ON u.id = up.user_id
+                     WHERE sd.department = ?`,
+                    [department]
+                );
+                const userDeptRankRaw = deptRanking.find(r => (r.email || '').toLowerCase() === userEmailLower);
+                departmentalRank = userDeptRankRaw ? userDeptRankRaw.pos : null;
+                totalInDepartment = deptRanking.length;
+            }
+        } catch (dbError) {
+            logger.error('Error fetching rank from DB:', dbError);
+        }
+    }
+
+    return {
+        institutionalRank,
+        departmentalRank,
+        totalUsersCount,
+        totalInDepartment
+    };
+};
+
+/**
  * Calcula un bonus dinámico al completar un módulo basado en:
  * 1. Rango en el departamento (10-1 pts)
  * 2. Desempeño en cuestionarios (10-0 pts)
@@ -309,10 +392,13 @@ const checkAndRecordModuleCompletion = async (userId, moduleId, isAdmin = false)
             // Sincronizar Nivel (CRITICAL FIX: Awarding points must trigger level check)
             levelingUp = await syncUserLevel(userId);
 
-            // Limpiar el caché de la ruta de ranking para este usuario y patrones globales
+            // Limpiar el caché de la ruta de ranking y forzar refresco del leaderboard central
             try {
                 const { clearCache } = require('../middleware/cache');
                 await clearCache('cache:/api/gamification/leaderboard*');
+                
+                // Refrescar el caché central (Ranking List) en segundo plano
+                module.exports.refreshLeaderboardCache().catch(err => console.error('Error in background refresh after module:', err));
             } catch (cacheErr) {
                 console.error('Error invalidando caché tras módulo:', cacheErr);
             }
@@ -479,6 +565,7 @@ const syncAllUsersLevels = async () => {
 module.exports = {
     getLevels,
     calculateLevel,
+    getUserRank,
     syncUserLevel,
     syncAllUsersLevels,
     getSystemSettings,
