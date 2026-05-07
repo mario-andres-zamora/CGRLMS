@@ -137,7 +137,6 @@ router.get('/', authMiddleware, cacheMiddleware(300, true), async (req, res) => 
         );
 
         // 5. Formatear nivel para consistencia UI
-        const { calculateLevel } = require('../utils/gamification');
         const levelInfo = await calculateLevel(userPoints?.points || 0);
 
         const stats = {
