@@ -1,5 +1,6 @@
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
+import { hasAdminPanelAccess } from '../utils/authUtils';
 import {
     LayoutDashboard,
     BookOpen,
@@ -42,7 +43,7 @@ export default function Layout() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [activeAnnouncement, setActiveAnnouncement] = useState(null);
 
-    const isAdmin = user?.role === 'admin' && !viewAsStudent;
+    const hasAdminAccess = hasAdminPanelAccess(user) && !viewAsStudent;
 
     // Sincronización Global: Verificar puntos y sesión en cada cambio de ruta
     useEffect(() => {
@@ -53,7 +54,7 @@ export default function Layout() {
     // Buscar anuncios activos al cargar la plataforma
     useEffect(() => {
         const checkAnnouncements = async () => {
-            if (user && !isAdmin) { // Solo para estudiantes (o admin en modo estudiante)
+            if (user && !hasAdminAccess) { // Solo para estudiantes (o admin en modo estudiante)
                 try {
                     const response = await axios.get(`${API_URL}/announcements/active`);
                     if (response.data.success && response.data.announcement) {
@@ -66,7 +67,7 @@ export default function Layout() {
         };
 
         checkAnnouncements();
-    }, [user, isAdmin]);
+    }, [user, hasAdminAccess]);
 
     const handleLogout = async () => {
         await logout();
@@ -122,7 +123,7 @@ export default function Layout() {
                                     <span className="text-[10px] xl:text-[11px] font-black uppercase tracking-widest">{item.label}</span>
                                 </NavLink>
                             ))}
-                            {isAdmin && (
+                            {hasAdminAccess && (
                                 <NavLink
                                     to="/admin"
                                     className={({ isActive }) =>
@@ -151,7 +152,7 @@ export default function Layout() {
                                             referrerPolicy="no-referrer"
                                         />
                                     </div>
-                                    {user?.role === 'admin' && (
+                                    {hasAdminPanelAccess(user) && (
                                         <div className="absolute -top-1 -right-1 w-2.5 h-2.5 xl:w-3 xl:h-3 bg-secondary-500 rounded-full border-2 border-[#0d1127] shadow-sm"></div>
                                     )}
                                 </div>
@@ -216,7 +217,7 @@ export default function Layout() {
                                     <span className="font-medium">{item.label}</span>
                                 </NavLink>
                             ))}
-                            {isAdmin && (
+                            {hasAdminAccess && (
                                 <NavLink
                                     to="/admin"
                                     className={({ isActive }) =>
@@ -263,7 +264,7 @@ export default function Layout() {
                                 <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
                                     Version {import.meta.env.VITE_APP_VERSION}
                                 </p>
-                                {user?.role === 'admin' && (
+                                {hasAdminPanelAccess(user) && (
                                     <div className="flex items-center gap-2 px-3 py-1 bg-slate-900/50 rounded-full border border-white/5 shadow-lg mt-1">
                                         <span className={`text-[8px] font-black uppercase tracking-[0.2em] ${!viewAsStudent ? 'text-secondary-500' : 'text-gray-500'}`}>
                                             {!viewAsStudent ? 'Panel Administrador' : 'Vista Estudiante'}

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 
 import { useAuthStore } from '../store/authStore';
+import { isAnalyst } from '../utils/authUtils';
 import { useAdminPanel } from '../hooks/useAdminPanel';
 import AdminHeader from '../components/admin/AdminHeader';
 import AdminCard from '../components/admin/AdminCard';
@@ -124,7 +125,7 @@ export default function AdminPanel() {
 
     // Si es analista, solo mostrar las tarjetas de Reportes, Encuestas e Interacciones
     const analystAllowedPaths = ['/admin/reports', '/admin/surveys', '/admin/interactions'];
-    const adminCards = user?.role === 'analyst'
+    const adminCards = isAnalyst(user)
         ? allCards.filter(card => analystAllowedPaths.includes(card.path))
         : allCards;
 

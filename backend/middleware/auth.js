@@ -1,6 +1,7 @@
 const db = require('../config/database');
 const logger = require('../config/logger');
 const redisClient = require('../config/redis');
+const { isAdmin, isAnalystOrAdmin } = require('../utils/authUtils');
 
 /**
  * Middleware de autenticación basado en Sesiones
@@ -53,7 +54,7 @@ const authMiddleware = async (req, res, next) => {
  * Middleware para verificar rol de administrador
  */
 const adminMiddleware = (req, res, next) => {
-    if (!req.user || req.user.role !== 'admin') {
+    if (!isAdmin(req.user)) {
         return res.status(403).json({ 
             error: 'Acceso denegado',
             message: 'Se requieren permisos de administrador para realizar esta acción.'
@@ -66,6 +67,7 @@ const adminMiddleware = (req, res, next) => {
  * Middleware para verificar rol de instructor o admin
  */
 const instructorMiddleware = (req, res, next) => {
+    // Nota: Podríamos agregar isInstructorOrAdmin en authUtils si se vuelve común
     if (!req.user || (req.user.role !== 'instructor' && req.user.role !== 'admin')) {
         return res.status(403).json({ 
             error: 'Acceso denegado',
@@ -79,7 +81,7 @@ const instructorMiddleware = (req, res, next) => {
  * Middleware para verificar rol de analista o admin (reportes)
  */
 const analystMiddleware = (req, res, next) => {
-    if (!req.user || (req.user.role !== 'analyst' && req.user.role !== 'admin')) {
+    if (!isAnalystOrAdmin(req.user)) {
         return res.status(403).json({ 
             error: 'Acceso denegado',
             message: 'Se requieren permisos de analista o administrador.'
