@@ -143,6 +143,30 @@ const refreshReportsCache = async () => {
             ORDER BY m.order_index DESC
         `);
 
+        // 2b. Cumplimiento por Puesto (Basado en Directorio Maestro)
+        const positionCompliance = await db.query(`
+            SELECT 
+                dir.position as position,
+                COUNT(dir.email) as total_pax,
+                COUNT(u.id) as registered_count,
+                SUM(CASE WHEN up_agg.completion_rate = 100 THEN 1 ELSE 0 END) as completed_count,
+                SUM(COALESCE(up_agg.completion_rate, 0)) / GREATEST(COUNT(dir.email), 1) as real_compliance
+            FROM staff_directory dir
+            LEFT JOIN users u ON u.email = dir.email AND u.is_active = TRUE AND u.role IN ('student', 'admin', 'instructor')
+            LEFT JOIN (
+                SELECT 
+                    user_id, 
+                    (COUNT(DISTINCT reference_id) / ${totalModules}) * 100 as completion_rate
+                FROM gamification_activities
+                WHERE activity_type = 'module_completed'
+                GROUP BY user_id
+            ) up_agg ON u.id = up_agg.user_id
+            WHERE dir.position IS NOT NULL AND dir.position != ''
+            GROUP BY dir.position
+            HAVING total_pax > 0
+            ORDER BY real_compliance DESC
+        `);
+
         const [certsCount] = await db.query('SELECT COUNT(*) as count FROM certificates');
 
         // 6. Estadísticas de Insignias
@@ -192,6 +216,13 @@ const refreshReportsCache = async () => {
                 registered_count: d.registered_count,
                 completed_count: Math.round(d.completed_count || 0),
                 avg_completion: Math.round(d.real_compliance || 0)
+            })),
+            positions: positionCompliance.map(p => ({
+                position: p.position,
+                total_pax: p.total_pax,
+                registered_count: p.registered_count,
+                completed_count: Math.round(p.completed_count || 0),
+                avg_completion: Math.round(p.real_compliance || 0)
             })),
             moduleCompliance: moduleCompliance.map(m => ({
                 ...m,
@@ -541,6 +572,96 @@ router.post('/remind-individual-at-risk', authMiddleware, analystMiddleware, asy
     } catch (error) {
         logger.error('Error en alerta individual de riesgo:', error);
         res.status(500).json({ error: 'Error al enviar la alerta individual' });
+    }
+});
+
+/**
+ * @route   GET /api/reports/area-compliance-detail
+ * @desc    Obtener detalle de cumplimiento de funcionarios por área (unidad o puesto)
+ * @access  Private/Admin
+ */
+router.get('/area-compliance-detail', authMiddleware, analystMiddleware, async (req, res) => {
+    try {
+        const { type, name, module_id = 'ALL' } = req.query;
+
+        if (!type || !name) {
+            return res.status(400).json({ error: 'Tipo y nombre de área son requeridos' });
+        }
+
+        let areaFilter = '';
+        let params = [];
+
+        if (type === 'departments') {
+            areaFilter = 'WHERE s.department = ?';
+            params.push(name);
+        } else if (type === 'positions') {
+            areaFilter = 'WHERE s.position = ?';
+            params.push(name);
+        } else {
+            // Caso 'all' o 'modules': Mostrar todo el personal
+            areaFilter = '';
+        }
+        
+        let query = '';
+
+        if (module_id === 'ALL') {
+            // Cumplimiento Global (basado en el total de módulos activos)
+            const [moduleData] = await db.query('SELECT COUNT(*) as total FROM modules WHERE is_published = TRUE AND (release_date IS NULL OR release_date <= CURRENT_DATE)');
+            const totalModules = moduleData?.total || 1;
+
+            query = `
+                SELECT 
+                    s.full_name,
+                    s.email,
+                    s.department,
+                    s.position,
+                    COALESCE(up_agg.completed_count, 0) as completed_modules,
+                    ${totalModules} as total_modules,
+                    ROUND((COALESCE(up_agg.completed_count, 0) / ${totalModules}) * 100) as progress,
+                    CASE WHEN COALESCE(up_agg.completed_count, 0) >= ${totalModules} THEN TRUE ELSE FALSE END as is_completed
+                FROM staff_directory s
+                LEFT JOIN users u ON s.email = u.email
+                LEFT JOIN (
+                    SELECT 
+                        user_id, 
+                        COUNT(DISTINCT reference_id) as completed_count
+                    FROM gamification_activities
+                    WHERE activity_type = 'module_completed'
+                    GROUP BY user_id
+                ) up_agg ON u.id = up_agg.user_id
+                ${areaFilter}
+                ORDER BY s.full_name ASC
+            `;
+        } else {
+            // Cumplimiento de un módulo específico
+            // El module_id debe ir de primero en los params si hay filtro de area,
+            // pero si no hay filtro de area, solo va el module_id.
+            const queryParams = [module_id, ...params];
+
+            query = `
+                SELECT 
+                    s.full_name,
+                    s.email,
+                    s.department,
+                    s.position,
+                    CASE WHEN ga.id IS NOT NULL THEN TRUE ELSE FALSE END as is_completed,
+                    CASE WHEN ga.id IS NOT NULL THEN 100 ELSE 0 END as progress
+                FROM staff_directory s
+                LEFT JOIN users u ON s.email = u.email
+                LEFT JOIN gamification_activities ga ON u.id = ga.user_id 
+                    AND ga.activity_type = 'module_completed' 
+                    AND ga.reference_id = ?
+                ${areaFilter}
+                ORDER BY s.full_name ASC
+            `;
+            params = queryParams;
+        }
+
+        const staff = await db.query(query, params);
+        res.json({ success: true, staff });
+    } catch (error) {
+        logger.error('Error obteniendo detalle de área:', error);
+        res.status(500).json({ error: 'Error al cargar el detalle de funcionarios' });
     }
 });
 
