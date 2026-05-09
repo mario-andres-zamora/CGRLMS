@@ -5,35 +5,98 @@
 @layer base {
   :root {
     /* Fondo basado en el Primario institucional pero oscurecido para modo oscuro */
-    --background: 229 46% 14%;
+    --background: 229 46% 7%;
+    --bg-color: #0d1127;
     --foreground: 0 0% 100%;
+    --text-color: #ffffff;
+    --text-muted: #94a3b8;
 
     /* Color Primario: PANTONE REFLEX BLUE U #384A99 */
     --primary: 229 46% 41%;
     --primary-foreground: 0 0% 100%;
+    --primary-glow: rgba(56, 74, 153, 0.15);
 
     /* Color Secundario: PANTONE 152 U #E57B3C */
     --secondary: 22 75% 57%;
     --secondary-foreground: 0 0% 100%;
+    --secondary-glow: rgba(229, 123, 60, 0.05);
 
-    /* Colores Complementarios */
-    --comp-blue: 198 75% 52%;
-    /* #28a9e0 */
-    --comp-yellow: 36 93% 61%;
-    /* #f8ae40 */
-    --comp-gray: 0 0% 86%;
-    /* #dbdbdb */
+    /* Surfaces */
+    --card-bg: #111627;
+    --card-border: rgba(255, 255, 255, 0.05);
+    --input-bg: rgba(0, 0, 0, 0.2);
+    --input-border: rgba(255, 255, 255, 0.1);
+    
+    /* Scrollbar */
+    --scrollbar-track: #1b2341;
+    --scrollbar-thumb: #384A99;
+    --scrollbar-thumb-hover: #4d5eb0;
+
+    --logo-filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
+    --nav-bg: #0d1127;
+    --nav-text: #ffffff;
+
+    /* Semantic States */
+    --success: #10b981;
+    --success-bg: rgba(16, 185, 129, 0.03);
+    --success-border: rgba(16, 185, 129, 0.15);
+    --success-card-bg: rgba(16, 185, 129, 0.08);
+    --success-card-border: rgba(16, 185, 129, 0.3);
+    --warning: #f59e0b;
+    --warning-bg: rgba(245, 158, 11, 0.1);
 
     --border: 0 0% 15%;
   }
 
+  .light-theme {
+    /* Canvas — warm off-white, not paper-white */
+    --background: 216 33% 97%;
+    --bg-color: #F0F4F8;
+    --foreground: 222 47% 11%;
+    --text-color: #1A202C;
+    --text-muted: #4A5568;
+
+    /* Institutional Blue — slightly desaturated for legibility on white */
+    --primary: 229 42% 40%;
+    --primary-glow: rgba(56, 74, 153, 0.08);
+    --secondary-glow: rgba(229, 123, 60, 0.05);
+
+    /* Surfaces — pure white cards float above the canvas */
+    --card-bg: #FFFFFF;
+    --card-border: rgba(56, 74, 153, 0.08);
+    --input-bg: #FFFFFF;
+    --input-border: rgba(56, 74, 153, 0.18);
+
+    /* Scrollbar */
+    --scrollbar-track: #E2E8F0;
+    --scrollbar-thumb: #A0AEC0;
+    --scrollbar-thumb-hover: #718096;
+
+    /* Logo on dark navbar stays white */
+    --logo-filter: drop-shadow(0 0 8px rgba(56, 74, 153, 0.4)) brightness(0.2);
+    --nav-bg: #0d1127;
+    --nav-text: #ffffff;
+
+    /* Semantic States */
+    --success: #047857;
+    --success-bg: #ECFDF5;
+    --success-border: rgba(4, 120, 87, 0.18);
+    --success-card-bg: #ECFDF5;
+    --success-card-border: rgba(4, 120, 87, 0.22);
+    --warning: #B45309;
+    --warning-bg: #FFFBEB;
+
+    --border: 0 0% 89%;
+  }
+
   body {
-    @apply bg-[#161b33] text-white min-h-screen text-base antialiased selection:bg-primary-500/30;
+    @apply bg-[var(--bg-color)] text-[var(--text-color)] min-h-screen text-base antialiased selection:bg-primary-500/30;
     background-image:
-      radial-gradient(circle at 0% 0%, rgba(56, 74, 153, 0.15) 0%, transparent 40%),
-      radial-gradient(circle at 100% 100%, rgba(229, 123, 60, 0.05) 0%, transparent 40%);
+      radial-gradient(circle at 0% 0%, var(--primary-glow) 0%, transparent 40%),
+      radial-gradient(circle at 100% 100%, var(--secondary-glow) 0%, transparent 40%);
     background-attachment: fixed;
     font-family: "Century Gothic", CenturyGothic, AppleGothic, sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 }
 
@@ -141,6 +204,17 @@
   animation: skeleton-shimmer 2s infinite linear;
 }
 
+.light-theme .skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.03) 25%,
+    rgba(0, 0, 0, 0.06) 37%,
+    rgba(0, 0, 0, 0.03) 63%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 2s infinite linear;
+}
+
 @keyframes shine {
   0% {
     left: -100%;
@@ -219,16 +293,27 @@
 
   /* Tarjetas con estilo "Glassmorphism" azulado */
   .card {
-    @apply bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-6 shadow-xl relative overflow-hidden;
+    @apply bg-[var(--card-bg)] backdrop-blur-md border border-[var(--card-border)] rounded-xl p-6 relative overflow-hidden;
+    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.3);
+  }
+
+  .light-theme .card {
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px -4px rgba(56, 74, 153, 0.08);
+    border: 1px solid rgba(56, 74, 153, 0.08);
   }
 
   .card-hover {
     @apply hover:bg-white/10 hover:border-primary-400/30 hover:transform hover:-translate-y-1 transition-all duration-300;
   }
 
+  .light-theme .card-hover:hover {
+    @apply hover:bg-white;
+    box-shadow: 0 8px 30px -6px rgba(56, 74, 153, 0.14);
+  }
+
   /* Campos de entrada mejorados */
   .input-field {
-    @apply w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all duration-200 text-white placeholder-gray-400;
+    @apply w-full px-4 py-3 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all duration-200 text-[var(--text-color)] placeholder-gray-400;
   }
 
   /* Badges alineados a la paleta complementaria */
@@ -280,17 +365,17 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #1b2341;
+  background: var(--scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #384A99;
+  background: var(--scrollbar-thumb);
   border-radius: 5px;
-  border: 2px solid #1b2341;
+  border: 2px solid var(--scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #4d5eb0;
+  background: var(--scrollbar-thumb-hover);
 }
 
 /* Comic Bubble Toast Styles */
@@ -303,9 +388,8 @@
   align-items: center !important;
   gap: 35px !important;
   overflow: visible !important;
-  width: 100%;
   max-width: 90vw;
-  justify-content: center;
+  pointer-events: none !important;
 }
 
 /* La burbuja real */
@@ -324,6 +408,7 @@
   min-width: 200px;
   max-width: 600px;
   line-height: 1.2;
+  pointer-events: auto !important;
 }
 
 /* El puntero de la burbuja (Tail) */

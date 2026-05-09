@@ -30,8 +30,10 @@ export default function DistributionPie({ avgCompletion, summary }) {
                     </PieChart>
                 </ResponsiveContainer>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-3xl font-black text-white">{avgCompletion}%</span>
-                    <span className="text-[8px] font-black text-gray-500 uppercase">Logrado</span>
+                    <span className="text-3xl font-black text-white">
+                        {summary.totalStaff > 0 ? Math.round((summary.completed / summary.totalStaff) * 100) : 0}%
+                    </span>
+                    <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Terminado</span>
                 </div>
             </div>
             <div className="space-y-3">

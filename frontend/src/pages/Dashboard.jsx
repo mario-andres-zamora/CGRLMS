@@ -52,7 +52,7 @@ export default function Dashboard() {
     if (loading) return <DashboardLoading />;
 
     return (
-        <div className="space-y-4 lg:space-y-5 animate-fade-in pb-12">
+        <div className="space-y-3 lg:space-y-4 animate-fade-in pb-12">
             {/* Top Identity Layer (Banners & Quick Stats) */}
             <DashboardBanner
                 user={user}

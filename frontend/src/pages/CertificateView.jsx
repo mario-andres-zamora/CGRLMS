@@ -1,6 +1,6 @@
 /* eslint-disable react/no-unescaped-entities */
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 import { ArrowLeft, Printer } from 'lucide-react';
@@ -12,6 +12,7 @@ import CertificateCard from '../components/certificates/CertificateCard.jsx';
 export default function CertificateView() {
     const { moduleId } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const { token, user } = useAuthStore();
     const [certificate, setCertificate] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -24,7 +25,7 @@ export default function CertificateView() {
                 });
                 if (response.data.success) {
                     setCertificate(response.data.certificate);
-                    
+
                     // Launch celebratory confetti
                     confetti({
                         particleCount: 200,
@@ -63,16 +64,15 @@ export default function CertificateView() {
     if (!certificate) return null;
 
     return (
-        <div className="min-h-screen bg-[#161b33] p-4 md:p-12 flex flex-col items-center overflow-auto animate-fade-in relative">
-            
+        <div className="min-h-screen bg-[#0d1127] p-4 md:p-12 flex flex-col items-center overflow-auto animate-fade-in relative">
             {/* Action Bar - Pure UI Layer */}
             <div className="w-full max-w-6xl flex flex-col md:flex-row justify-between items-center mb-12 print:hidden gap-6 bg-slate-900/40 p-6 rounded-[2.5rem] border border-white/5 backdrop-blur-xl shadow-2xl">
                 <button
-                    onClick={() => navigate('/dashboard', { state: { openCertificates: true } })}
+                    onClick={() => navigate(location.state?.from || '/dashboard', { state: { openCertificates: location.state?.openCertificates } })}
                     className="flex items-center gap-3 text-gray-500 hover:text-white transition-all group px-4 py-2 hover:bg-white/5 rounded-2xl border border-transparent hover:border-white/5"
                 >
                     <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1.5 transition-transform" />
-                    <span className="font-black text-[10px] uppercase tracking-[0.3em] leading-none">Cerrar Visor</span>
+                    <span className="font-black text-[10px] uppercase tracking-[0.3em] leading-none">Cerrar</span>
                 </button>
 
                 <div className="flex flex-col md:flex-row items-center gap-6">

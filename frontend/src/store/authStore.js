@@ -82,11 +82,24 @@ export const useAuthStore = create(
                     const response = await axios.get(`${API_URL}/auth/verify?t=${Date.now()}`);
 
                     if (response.data.valid) {
-                        set({
-                            isAuthenticated: true,
-                            user: { ...get().user, ...response.data.user },
-                            isLoading: false
-                        });
+                        const currentUser = get().user;
+                        const fetchedUser = response.data.user;
+                        
+                        // Solo actualizar si hay cambios reales para evitar re-renders innecesarios
+                        // Comparamos puntos y nivel que son los que más cambian
+                        if (!currentUser || 
+                            currentUser.points !== fetchedUser.points || 
+                            currentUser.level !== fetchedUser.level ||
+                            currentUser.id !== fetchedUser.id) {
+                            
+                            set({
+                                isAuthenticated: true,
+                                user: { ...currentUser, ...fetchedUser },
+                                isLoading: false
+                            });
+                        } else {
+                            set({ isAuthenticated: true, isLoading: false });
+                        }
                         return true;
                     } else {
                         get().logout();

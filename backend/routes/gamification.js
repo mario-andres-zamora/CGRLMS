@@ -11,7 +11,7 @@ const redisClient = require('../config/redis');
 
 // Iniciar tarea en segundo plano al arrancar la app
 setTimeout(refreshLeaderboardCache, 5000);
-setInterval(refreshLeaderboardCache, 30 * 60 * 1000);
+setInterval(refreshLeaderboardCache, 5 * 60 * 1000); // Refrescar cada 5 minutos
 
 /**
  * @route   GET /api/gamification/leaderboard
@@ -51,37 +51,35 @@ router.get('/leaderboard', authMiddleware, cacheMiddleware(60, true), async (req
             if (cachedDepts) departmentRanking = JSON.parse(cachedDepts);
         }
 
-        // --- RANKING EN TIEMPO REAL DESDE REDIS (ZSET) ---
-        let myRealTimeRank = null;
-        if (redisClient && redisClient.isOpen) {
-            // Redis devuelve índice 0-based, sumamos 1 para posición humana
-            const rank = await redisClient.zRevRank('leaderboard:points', userId.toString());
-            if (rank !== null) myRealTimeRank = rank + 1;
-        }
+        // --- RANKING CONSISTENTE ---
+        const { getUserRank } = require('../utils/gamification');
+        const rankData = await getUserRank(userId, email, department);
 
-        // Global Rank Position (Fallback o complemento con datos de DB)
-        const userGlobalRankRaw = institutionalLeaderboard.find(r => r.email === userEmailLower);
-        const myGlobalRankPos = userGlobalRankRaw ? userGlobalRankRaw.rank_position : (myRealTimeRank || (institutionalLeaderboard.length + 1));
+        const myGlobalRankPos = rankData.institutionalRank;
+        const myDeptRankPos = rankData.departmentalRank;
 
-        // Department Leaderboard
+        // Department Leaderboard (para mostrar la lista del área)
         let departmentLeaderboard = [];
-        let myDeptRankPos = null;
         if (department) {
             departmentLeaderboard = institutionalLeaderboard
                 .filter(r => r.department === department)
-                .map((r, i) => ({ 
-                    ...r, 
-                    institutional_rank: r.rank_position, 
-                    rank_position: i + 1 
-                })); 
-            const myEntry = departmentLeaderboard.find(r => r.email === userEmailLower);
-            myDeptRankPos = myEntry ? myEntry.rank_position : null;
+                .map((r, i) => ({
+                    ...r,
+                    institutional_rank: r.rank_position,
+                    rank_position: i + 1
+                }));
         }
 
         const [userPointsData] = await db.query('SELECT points, level FROM user_points WHERE user_id = ?', [userId]);
         const levels = await getLevels(true);
         const levelIdx = levels.findIndex(l => l.name === userPointsData?.level);
         const formattedLevel = `Nivel ${levelIdx !== -1 ? levelIdx + 1 : 1}: ${userPointsData?.level || 'Novato'}`;
+
+        // Obtener límites de configuración para la respuesta
+        const { getSystemSettings } = require('../utils/gamification');
+        const sysSettings = await getSystemSettings();
+        const globalLimit = sysSettings.ranking_limit_global;
+        const deptLimit = sysSettings.ranking_limit_department;
 
         res.json({
             success: true,
@@ -93,9 +91,9 @@ router.get('/leaderboard', authMiddleware, cacheMiddleware(60, true), async (req
                 deptRank: myDeptRankPos,
                 department
             },
-            institutionalLeaderboard: institutionalLeaderboard,
+            institutionalLeaderboard: globalLimit > 0 ? institutionalLeaderboard.slice(0, globalLimit) : institutionalLeaderboard,
             departmentLeaderboard,
-            departmentRanking,
+            departmentRanking: deptLimit > 0 ? departmentRanking.slice(0, deptLimit) : departmentRanking,
             scope: 'institutional'
         });
     } catch (error) {
@@ -173,11 +171,14 @@ router.post('/leaderboard/refresh', authMiddleware, adminMiddleware, async (req,
         // 1. Recalcular la data central e invalidar niveles
         const { syncAllUsersLevels } = require('../utils/gamification');
         await syncAllUsersLevels();
-        
+
         // 2. Invalidar todos los resultados cacheados por usuario del endpoint de leaderboard
         const { clearCache } = require('../middleware/cache');
         await clearCache('cache:/api/gamification/leaderboard*');
-        
+
+        // Forzar refresco del caché central en Redis en segundo plano
+        refreshLeaderboardCache().catch(err => console.error('Error refreshing leaderboard in bg:', err));
+
         res.json({ success: true, message: 'Ranking actualizado correctamente' });
     } catch (error) {
         logger.error('Error refrescando leaderboard manualmente:', error);

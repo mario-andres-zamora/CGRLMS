@@ -26,6 +26,7 @@ export function useLessonView() {
     const [ytApiLoaded, setYtApiLoaded] = useState(!!window.YT);
     const [uploadingAssignment, setUploadingAssignment] = useState(null);
     const [completionError, setCompletionError] = useState(null);
+    const [startTime, setStartTime] = useState(Date.now());
 
     const playAlert = () => {
         playSound('/sounds/alert.mp3');
@@ -89,7 +90,9 @@ export function useLessonView() {
             setCompletionError(null);
             toast.loading('Finalizando lección...', { id: toastId });
 
-            const response = await axios.post(`${API_URL}/lessons/${id}/complete`, {}, {
+            const timeSpentMinutes = Math.max(1, Math.round((Date.now() - startTime) / 60000));
+
+            const response = await axios.post(`${API_URL}/lessons/${id}/complete`, { timeSpent: timeSpentMinutes }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (response.data.success) {
@@ -237,6 +240,7 @@ export function useLessonView() {
     useEffect(() => {
         setWatchedVideos(new Set());
         setVisitedLinks(new Set());
+        setStartTime(Date.now());
         fetchLessonData();
         window.scrollTo(0, 0);
 

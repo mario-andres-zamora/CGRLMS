@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     Settings,
     Trophy,
@@ -18,10 +18,18 @@ export default function AdminSettings() {
         saving, 
         updateLevel, 
         toggleMaintenance, 
+        updateRankingLimit,
+        toggleThemeChange,
         saveSettings,
         refreshLeaderboard
     } = useAdminSettings();
-    const [activeTab, setActiveTab] = useState('levels');
+    const [activeTab, setActiveTab] = useState(() => {
+        return localStorage.getItem('admin_active_tab') || 'levels';
+    });
+
+    useEffect(() => {
+        localStorage.setItem('admin_active_tab', activeTab);
+    }, [activeTab]);
 
     if (loading) {
         return (
@@ -67,7 +75,12 @@ export default function AdminSettings() {
                 {activeTab === 'general' && (
                     <SecurityTab 
                         maintenanceMode={settings.maintenanceMode}
+                        rankingLimitGlobal={settings.rankingLimitGlobal}
+                        rankingLimitDepartment={settings.rankingLimitDepartment}
+                        allowThemeChange={settings.allowThemeChange}
                         onToggleMaintenance={toggleMaintenance}
+                        onUpdateRankingLimit={updateRankingLimit}
+                        onToggleThemeChange={toggleThemeChange}
                     />
                 )}
             </main>

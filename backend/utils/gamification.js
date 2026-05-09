@@ -1,6 +1,7 @@
 const db = require('../config/database');
 const logger = require('../config/logger');
 const redisClient = require('../config/redis');
+const notificationService = require('../services/notificationService');
 
 /**
  * Caché de niveles y settings para evitar consultas constantes a la BD
@@ -22,7 +23,10 @@ const getSystemSettings = async (forceRefresh = false) => {
             cachedSettings = {
                 points_per_lesson: parseInt(settings.points_per_lesson) || 10,
                 points_per_quiz: parseInt(settings.points_per_quiz) || 50,
-                bonus_perfect_score: parseInt(settings.bonus_perfect_score) || 25
+                bonus_perfect_score: parseInt(settings.bonus_perfect_score) || 25,
+                ranking_limit_global: settings.ranking_limit_global !== undefined ? parseInt(settings.ranking_limit_global) : 100,
+                ranking_limit_department: settings.ranking_limit_department !== undefined ? parseInt(settings.ranking_limit_department) : 10,
+                allow_theme_change: settings.allow_theme_change !== undefined ? settings.allow_theme_change === 'true' : false
             };
         }
         return cachedSettings;
@@ -31,7 +35,9 @@ const getSystemSettings = async (forceRefresh = false) => {
         return {
             points_per_lesson: 10,
             points_per_quiz: 50,
-            bonus_perfect_score: 25
+            bonus_perfect_score: 25,
+            ranking_limit_global: 100,
+            ranking_limit_department: 10
         };
     }
 };
@@ -84,6 +90,89 @@ const calculateLevel = async (points) => {
         }
     }
     return { name: currentLevel, rank: currentRank };
+};
+
+/**
+ * Obtiene el rango institucional y departamental de un usuario de forma consistente.
+ * Prioriza el caché del leaderboard para asegurar que el número mostrado coincida con la lista del ranking.
+ */
+const getUserRank = async (userId, email, department) => {
+    const userEmailLower = (email || '').toLowerCase();
+    let institutionalRank = null;
+    let departmentalRank = null;
+    let totalUsersCount = 0;
+    let totalInDepartment = 0;
+
+    try {
+        if (redisClient && redisClient.isOpen) {
+            // 1. Intentar obtener del caché de la lista completa (para consistencia con el ranking)
+            const cachedInst = await redisClient.get('leaderboard:institutional');
+            if (cachedInst) {
+                const institutionalLeaderboard = JSON.parse(cachedInst);
+                totalUsersCount = institutionalLeaderboard.length;
+
+                const userEntry = institutionalLeaderboard.find(r => (r.email || '').toLowerCase() === userEmailLower);
+                if (userEntry) {
+                    institutionalRank = userEntry.rank_position;
+                }
+
+                if (department) {
+                    const deptUsers = institutionalLeaderboard.filter(r => r.department === department);
+                    totalInDepartment = deptUsers.length;
+                    const myDeptIndex = deptUsers.findIndex(r => (r.email || '').toLowerCase() === userEmailLower);
+                    departmentalRank = myDeptIndex !== -1 ? myDeptIndex + 1 : null;
+                }
+            }
+
+            // 2. Si no se encontró en el caché (usuario muy nuevo), usar el ZSET de tiempo real
+            if (institutionalRank === null) {
+                const zRank = await redisClient.zRevRank('leaderboard:points', userId.toString());
+                if (zRank !== null) {
+                    institutionalRank = zRank + 1;
+                }
+            }
+        }
+    } catch (error) {
+        logger.error('Error fetching rank from Redis:', error);
+    }
+
+    // 3. Fallback final a la Base de Datos
+    if (institutionalRank === null) {
+        try {
+            const globalRanking = await db.query(
+                `SELECT LOWER(sd.email) as email, RANK() OVER (ORDER BY COALESCE(up.points, -1) DESC, sd.full_name ASC) as pos
+                 FROM staff_directory sd
+                 LEFT JOIN users u ON sd.email = u.email
+                 LEFT JOIN user_points up ON u.id = up.user_id`
+            );
+            const userGlobalRankRaw = globalRanking.find(r => (r.email || '').toLowerCase() === userEmailLower);
+            institutionalRank = userGlobalRankRaw ? userGlobalRankRaw.pos : (globalRanking.length + 1);
+            totalUsersCount = globalRanking.length;
+
+            if (department) {
+                const deptRanking = await db.query(
+                    `SELECT LOWER(sd.email) as email, RANK() OVER (ORDER BY COALESCE(up.points, -1) DESC, sd.full_name ASC) as pos
+                     FROM staff_directory sd
+                     LEFT JOIN users u ON sd.email = u.email
+                     LEFT JOIN user_points up ON u.id = up.user_id
+                     WHERE sd.department = ?`,
+                    [department]
+                );
+                const userDeptRankRaw = deptRanking.find(r => (r.email || '').toLowerCase() === userEmailLower);
+                departmentalRank = userDeptRankRaw ? userDeptRankRaw.pos : null;
+                totalInDepartment = deptRanking.length;
+            }
+        } catch (dbError) {
+            logger.error('Error fetching rank from DB:', dbError);
+        }
+    }
+
+    return {
+        institutionalRank,
+        departmentalRank,
+        totalUsersCount,
+        totalInDepartment
+    };
 };
 
 /**
@@ -196,6 +285,18 @@ const syncUserLevel = async (userId, connection = null) => {
 
         if (oldLevel !== newLevel) {
             await executor.query('UPDATE user_points SET level = ?, last_updated = NOW() WHERE user_id = ?', [newLevel, userId]);
+            
+            // Solo crear notificación si NO es la primera vez que se asigna el nivel (evitar Novato al iniciar)
+            if (oldLevel) {
+                await notificationService.createNotification(
+                    userId,
+                    '¡Has subido de nivel!',
+                    `Felicidades, has alcanzado el rango de ${newLevel}. Sigue así para escalar en el ranking institucional.`,
+                    'success',
+                    '/profile'
+                );
+            }
+
             return {
                 leveledUp: true,
                 oldLevel: oldLevel,
@@ -309,13 +410,29 @@ const checkAndRecordModuleCompletion = async (userId, moduleId, isAdmin = false)
             // Sincronizar Nivel (CRITICAL FIX: Awarding points must trigger level check)
             levelingUp = await syncUserLevel(userId);
 
-            // Limpiar el caché de la ruta de ranking para este usuario y patrones globales
+            // Limpiar el caché de la ruta de ranking y forzar refresco del leaderboard central
             try {
                 const { clearCache } = require('../middleware/cache');
                 await clearCache('cache:/api/gamification/leaderboard*');
+                
+                // Refrescar el caché central (Ranking List) en segundo plano
+                module.exports.refreshLeaderboardCache().catch(err => console.error('Error in background refresh after module:', err));
             } catch (cacheErr) {
                 console.error('Error invalidando caché tras módulo:', cacheErr);
             }
+
+            // Obtener info del módulo para la notificación (número y título)
+            const [modInfo] = await db.query("SELECT module_number, title FROM modules WHERE id = ?", [moduleId]);
+            const modDisplay = modInfo ? `Módulo ${modInfo.module_number}: ${modInfo.title}` : `Módulo ${moduleId}`;
+
+            // Create notification for module completion
+            await notificationService.createNotification(
+                userId,
+                '¡Módulo Completado!',
+                `Has finalizado con éxito el ${modDisplay} y ganaste ${bonusPoints} puntos de experiencia.`,
+                'success',
+                '/modules'
+            );
         }
 
         return {
@@ -395,7 +512,12 @@ const refreshLeaderboardCache = async () => {
             levelMap[l.name] = idx + 1;
         });
 
-        const institutionalLeaderboard = instRanking.map(r => ({
+        // Obtener límites de configuración
+        const sysSettings = await getSystemSettings(true);
+        const globalLimit = sysSettings.ranking_limit_global;
+        const deptLimit = sysSettings.ranking_limit_department;
+
+        let institutionalLeaderboard = instRanking.map(r => ({
             ...r,
             id: r.email,
             first_name: r.first_name || r.full_name.split(' ')[0],
@@ -404,6 +526,7 @@ const refreshLeaderboardCache = async () => {
             level: `Nivel ${levelMap[r.level] || 1}: ${r.level}`,
             badges: r.user_id ? (userBadgesMap[r.user_id] || []) : []
         }));
+
 
         const departmentRanking = await db.query(
             `SELECT 
@@ -429,6 +552,9 @@ const refreshLeaderboardCache = async () => {
              GROUP BY sd.department
              ORDER BY average_points DESC, total_points DESC`
         );
+        
+        // Aplicar límite por departamentos/áreas
+        const limitedDepartmentRanking = deptLimit > 0 ? departmentRanking.slice(0, deptLimit) : departmentRanking;
 
         // --- SINCRONIZACIÓN ZSET PARA RANKING REAL-TIME ---
         const allPoints = await db.query('SELECT user_id, points FROM user_points WHERE points > 0');
@@ -443,7 +569,7 @@ const refreshLeaderboardCache = async () => {
 
         // Cache 30 min
         await redisClient.setEx('leaderboard:institutional', 1800, JSON.stringify(institutionalLeaderboard));
-        await redisClient.setEx('leaderboard:departments', 1800, JSON.stringify(departmentRanking));
+        await redisClient.setEx('leaderboard:departments', 1800, JSON.stringify(limitedDepartmentRanking));
         logger.info('✅ Leaderboard cache refreshed in Redis');
     } catch (err) {
         logger.error('❌ Error refreshing leaderboard cache:', err);
@@ -479,10 +605,12 @@ const syncAllUsersLevels = async () => {
 module.exports = {
     getLevels,
     calculateLevel,
+    getUserRank,
     syncUserLevel,
     syncAllUsersLevels,
     getSystemSettings,
     checkAndRecordModuleCompletion,
     updateUserScore,
-    refreshLeaderboardCache
+    refreshLeaderboardCache,
+    calculateDynamicModuleBonus
 };

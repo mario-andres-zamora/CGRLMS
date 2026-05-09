@@ -40,7 +40,8 @@ exports.googleAuth = catchAsync(async (req, res, next) => {
             profilePicture: user.profile_picture,
             points: stats?.points || 0,
             level: `Nivel ${levelInfo.rank}: ${levelInfo.name}`,
-            stats: stats || { completed_lessons: 0 }
+            stats: stats || { completed_lessons: 0 },
+            allowThemeChange: (await (require('../utils/gamification').getSystemSettings())).allow_theme_change
         }
     });
 });
@@ -89,7 +90,8 @@ exports.verifySession = catchAsync(async (req, res, next) => {
             role: user.role,
             is_active: !!user.is_active,
             points: user.points || 0,
-            level: `Nivel ${levelInfo.rank}: ${levelInfo.name}`
+            level: `Nivel ${levelInfo.rank}: ${levelInfo.name}`,
+            allowThemeChange: (await (require('../utils/gamification').getSystemSettings())).allow_theme_change
         }
     });
 });

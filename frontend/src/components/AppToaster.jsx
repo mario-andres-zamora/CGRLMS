@@ -26,10 +26,10 @@ const ToastBubble = ({ t, message, icon }) => {
         stiffness: 260, 
         damping: 20 
       }}
-      className={`${t.className} flex items-center gap-2 pointer-events-auto`}
+      className={`${t.className} flex items-center gap-2`}
     >
       {/* Icono (CyberCat) */}
-      <div className="relative z-10 drop-shadow-xl">
+      <div className="relative z-10 drop-shadow-xl pointer-events-auto">
         {icon || (
           isLoading ? (
             <CyberCat className="w-20 h-20" variant="searching" />

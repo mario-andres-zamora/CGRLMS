@@ -97,61 +97,13 @@ class UserService {
             [userId]
         );
 
-        // Logic for Rankings (Redis with Fallback)
-        let rank = null;
-        let departmentRank = null;
-        let totalUsersCount = 0;
-        const userEmailLower = user.email ? user.email.toLowerCase() : '';
-        const dept = user.department;
-
-        if (redisClient && redisClient.isOpen) {
-            try {
-                const zRank = await redisClient.zRevRank('leaderboard:points', userId.toString());
-                const cachedInst = await redisClient.get('leaderboard:institutional');
-                if (cachedInst) {
-                    const institutionalLeaderboard = JSON.parse(cachedInst);
-                    totalUsersCount = institutionalLeaderboard.length;
-                    if (zRank !== null) {
-                        rank = zRank + 1;
-                    } else {
-                        const userEntry = institutionalLeaderboard.find(r => r.email?.toLowerCase() === userEmailLower);
-                        rank = userEntry ? userEntry.rank_position : (totalUsersCount + 1);
-                    }
-                    if (dept) {
-                        const deptUsers = institutionalLeaderboard.filter(r => r.department === dept);
-                        const myDeptIndex = deptUsers.findIndex(r => r.email?.toLowerCase() === userEmailLower);
-                        departmentRank = myDeptIndex !== -1 ? myDeptIndex + 1 : null;
-                    }
-                }
-            } catch (redisError) {
-                logger.error('Redis error in profile ranking:', redisError);
-            }
-        }
-
-        if (rank === null) {
-            const globalRanking = await db.query(
-                `SELECT LOWER(sd.email) as email, RANK() OVER (ORDER BY COALESCE(up.points, -1) DESC, sd.full_name ASC) as pos
-                 FROM staff_directory sd
-                 LEFT JOIN users u ON sd.email = u.email
-                 LEFT JOIN user_points up ON u.id = up.user_id`
-            );
-            const userGlobalRankRaw = globalRanking.find(r => r.email === userEmailLower);
-            rank = userGlobalRankRaw ? userGlobalRankRaw.pos : (globalRanking.length + 1);
-            totalUsersCount = globalRanking.length;
-
-            if (dept) {
-                const deptRanking = await db.query(
-                    `SELECT LOWER(sd.email) as email, RANK() OVER (ORDER BY COALESCE(up.points, -1) DESC, sd.full_name ASC) as pos
-                     FROM staff_directory sd
-                     LEFT JOIN users u ON sd.email = u.email
-                     LEFT JOIN user_points up ON u.id = up.user_id
-                     WHERE sd.department = ?`,
-                    [dept]
-                );
-                const userDeptRankRaw = deptRanking.find(r => r.email === userEmailLower);
-                departmentRank = userDeptRankRaw ? userDeptRankRaw.pos : null;
-            }
-        }
+        // Logic for Rankings (Consistent Logic)
+        const { getUserRank } = require('../utils/gamification');
+        const rankData = await getUserRank(userId, user.email, user.department);
+        
+        const rank = rankData.institutionalRank;
+        const departmentRank = rankData.departmentalRank;
+        const totalUsersCount = rankData.totalUsersCount;
 
         // Gamification levels logic
         const levels = await getLevels(true);

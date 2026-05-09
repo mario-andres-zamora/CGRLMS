@@ -1,5 +1,6 @@
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
+import { hasAdminPanelAccess } from '../utils/authUtils';
 import {
     LayoutDashboard,
     BookOpen,
@@ -19,6 +20,7 @@ import BadgeAwardModal from './BadgeAwardModal';
 import SoundControl from './SoundControl';
 import ScrollToTop from './ScrollToTop';
 import AnnouncementModal from './AnnouncementModal';
+import NotificationBell from './NotificationBell';
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -35,25 +37,47 @@ export default function Layout() {
     const {
         pendingLevelUp, clearLevelUp,
         pendingModuleCompletion, clearModuleCompletion,
-        pendingBadge, clearBadge
+        pendingBadge, clearBadge,
+        fetchNotifications
     } = useNotificationStore();
     const navigate = useNavigate();
     const location = useLocation();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [activeAnnouncement, setActiveAnnouncement] = useState(null);
 
-    const isAdmin = user?.role === 'admin' && !viewAsStudent;
+    const hasAdminAccess = hasAdminPanelAccess(user) && !viewAsStudent;
 
-    // Sincronización Global: Verificar puntos y sesión en cada cambio de ruta
+    // 1. Sincronización Global: Verificar sesión en cada cambio de ruta
     useEffect(() => {
         setIsMobileMenuOpen(false);
-        verifyToken(); 
+        verifyToken();
     }, [location.pathname, verifyToken]);
+
+    // 2. Cargar notificaciones cuando el usuario está disponible y en cada cambio de ruta
+    useEffect(() => {
+        if (user?.id) {
+            fetchNotifications();
+        }
+    }, [location.pathname, user?.id, fetchNotifications]);
+
+    // 3. Sistema de Polling: Verificar notificaciones cada 60 segundos si la pestaña está activa
+    useEffect(() => {
+        if (!user?.id) return;
+
+        const checkNewNotifications = () => {
+            if (document.visibilityState === 'visible') {
+                fetchNotifications();
+            }
+        };
+
+        const intervalId = setInterval(checkNewNotifications, 60000);
+        return () => clearInterval(intervalId);
+    }, [user?.id, fetchNotifications]);
 
     // Buscar anuncios activos al cargar la plataforma
     useEffect(() => {
         const checkAnnouncements = async () => {
-            if (user && !isAdmin) { // Solo para estudiantes (o admin en modo estudiante)
+            if (user && !hasAdminAccess) { // Solo para estudiantes (o admin en modo estudiante)
                 try {
                     const response = await axios.get(`${API_URL}/announcements/active`);
                     if (response.data.success && response.data.announcement) {
@@ -66,7 +90,7 @@ export default function Layout() {
         };
 
         checkAnnouncements();
-    }, [user, isAdmin]);
+    }, [user, hasAdminAccess]);
 
     const handleLogout = async () => {
         await logout();
@@ -75,7 +99,7 @@ export default function Layout() {
     };
 
     return (
-        <div className="min-h-screen bg-[#161b33] flex flex-col">
+        <div className="min-h-screen bg-[var(--bg-color)] flex flex-col transition-colors duration-300">
             <ScrollToTop />
 
             {/* Admin Student View Banner */}
@@ -86,7 +110,7 @@ export default function Layout() {
             )}
 
             {/* Navbar */}
-            <nav className="bg-[#161b33]/90 backdrop-blur-md border-b border-primary-500/10 sticky top-0 z-50">
+            <nav className="bg-[#0d1127]/95 backdrop-blur-md border-b border-primary-500/10 sticky top-0 z-50 transition-colors duration-300">
                 <div className="w-full px-4 sm:px-6 xl:px-8">
                     <div className="flex justify-between items-center h-20">
                         {/* Logo */}
@@ -95,7 +119,7 @@ export default function Layout() {
                                 <img
                                     src="/images/logo-cgr-blanco.webp"
                                     alt="CGR Logo"
-                                    className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]"
+                                    className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(255,255,255,0.3)] transition-all duration-300"
                                 />
                             </div>
                             <div className="hidden lg:block">
@@ -106,15 +130,15 @@ export default function Layout() {
                         </div>
 
                         {/* Desktop Navigation */}
-                        <div className="hidden md:flex items-center lg:gap-1 bg-slate-900/40 p-1 rounded-xl border border-white/5">
+                        <div className="hidden md:flex items-center lg:gap-1 bg-[#0d1127] p-1 rounded-xl border border-white/5 shadow-2xl">
                             {NAV_ITEMS.map((item) => (
                                 <NavLink
                                     key={item.to}
                                     to={item.to}
                                     className={({ isActive }) =>
-                                        `flex items-center gap-1.5 xl:gap-2 px-2 xl:px-3 py-2 rounded-lg transition-colors duration-200 group ${isActive
-                                            ? 'bg-primary-500/20 text-white border border-primary-500/20 shadow-[0_0_15px_rgba(56,74,153,0.1)]'
-                                            : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
+                                        `flex items-center gap-1.5 xl:gap-2 px-2 xl:px-3 py-2 rounded-lg transition-all duration-200 group ${isActive
+                                            ? 'bg-[#1a2347] !text-white border border-primary-500 shadow-[0_0_15px_rgba(56,74,153,0.2)]'
+                                            : '!text-white/70 hover:!text-white hover:bg-white/5 border border-transparent'
                                         }`
                                     }
                                 >
@@ -122,18 +146,18 @@ export default function Layout() {
                                     <span className="text-[10px] xl:text-[11px] font-black uppercase tracking-widest">{item.label}</span>
                                 </NavLink>
                             ))}
-                            {isAdmin && (
+                            {hasAdminAccess && (
                                 <NavLink
                                     to="/admin"
                                     className={({ isActive }) =>
-                                        `flex items-center gap-1.5 xl:gap-2 px-2 xl:px-3 py-2 rounded-lg transition-colors duration-200 group ${isActive
-                                            ? 'bg-secondary-500/20 text-secondary-500 border border-secondary-500/20 shadow-[0_0_15px_rgba(229,123,60,0.1)]'
-                                            : 'text-gray-400 hover:text-secondary-500 hover:bg-white/5 border border-transparent'
+                                        `flex items-center gap-1.5 xl:gap-2 px-2 xl:px-3 py-2 rounded-lg transition-all duration-200 group ${isActive
+                                            ? 'bg-secondary-500/20 !text-secondary-500 border border-secondary-500/20 shadow-[0_0_15px_rgba(229,123,60,0.1)]'
+                                            : '!text-secondary-500 hover:!text-secondary-500 hover:bg-white/5 border border-transparent'
                                         }`
                                     }
                                 >
                                     <Shield className={`w-3.5 h-3.5 transition-transform duration-300 group-hover:scale-110`} />
-                                    <span className="text-[10px] xl:text-[11px] font-black uppercase tracking-widest text-secondary-500">Admin</span>
+                                    <span className="text-[10px] xl:text-[11px] font-black uppercase tracking-widest">Admin</span>
                                 </NavLink>
                             )}
                         </div>
@@ -141,7 +165,7 @@ export default function Layout() {
                         {/* User Actions Section */}
                         <div className="flex items-center gap-2 xl:gap-3">
                             {/* User Profile */}
-                            <div className="hidden sm:flex items-center gap-2 xl:gap-3 px-2 xl:px-3 py-1 bg-transparent rounded-2xl border border-transparent hover:bg-white/5 transition-all duration-300 cursor-pointer" onClick={() => navigate('/profile')}>
+                            <div className="hidden sm:flex items-center gap-2 xl:gap-3 px-2 xl:px-3 py-1 bg-transparent rounded-2xl border border-transparent transition-all duration-300">
                                 <div className="relative flex-shrink-0">
                                     <div className="p-0.5 bg-gradient-to-tr from-primary-500 to-secondary-500 rounded-full">
                                         <img
@@ -151,30 +175,31 @@ export default function Layout() {
                                             referrerPolicy="no-referrer"
                                         />
                                     </div>
-                                    {user?.role === 'admin' && (
-                                        <div className="absolute -top-1 -right-1 w-2.5 h-2.5 xl:w-3 xl:h-3 bg-secondary-500 rounded-full border-2 border-[#161b33] shadow-sm"></div>
+                                    {hasAdminPanelAccess(user) && (
+                                        <div className="absolute -top-1 -right-1 w-2.5 h-2.5 xl:w-3 xl:h-3 bg-secondary-500 rounded-full border-2 border-[#0d1127] shadow-sm"></div>
                                     )}
                                 </div>
                                 <div className="hidden lg:flex flex-col overflow-hidden min-w-0 flex-1 max-w-[15vw] xl:max-w-[20vw]">
-                                    <p className="text-[10px] font-black text-white uppercase tracking-tight truncate">
+                                    <p className="text-[10px] font-black !text-white uppercase tracking-tight truncate">
                                         {user?.firstName} {user?.lastName}
                                     </p>
                                     <div className="flex items-center gap-2">
                                         <div className="flex items-center gap-1">
                                             <Shield className="w-2.5 h-2.5 text-secondary-500" />
-                                            <p className="text-[8px] text-gray-500 font-bold uppercase tracking-widest">{user?.level || 'Novato'}</p>
+                                            <p className="text-[8px] !text-white font-bold uppercase tracking-widest">{user?.level || 'Novato'}</p>
                                         </div>
                                         <div className="w-px h-2 bg-white/10"></div>
                                         <div className="flex items-center gap-1">
                                             <Trophy className="w-2.5 h-2.5 text-primary-400" />
-                                            <p className="text-[8px] text-white font-black uppercase tracking-widest">
-                                                {user?.points ?? 0} <span className="text-gray-600 text-[7px]">PTS</span>
+                                            <p className="text-[8px] !text-white font-black uppercase tracking-widest">
+                                                {user?.points ?? 0} <span className="text-white text-[7px]">PTS</span>
                                             </p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
+                            <NotificationBell />
                             <SoundControl />
 
                             {/* Logout Button */}
@@ -199,7 +224,7 @@ export default function Layout() {
 
                 {/* Mobile Menu */}
                 {isMobileMenuOpen && (
-                    <div className="md:hidden border-t border-primary-500/10 bg-[#161b33]/95 backdrop-blur-md">
+                    <div className="md:hidden border-t border-white/5 bg-[#0d1127]/95 backdrop-blur-md">
                         <div className="px-4 py-4 space-y-2">
                             {NAV_ITEMS.map((item) => (
                                 <NavLink
@@ -216,7 +241,7 @@ export default function Layout() {
                                     <span className="font-medium">{item.label}</span>
                                 </NavLink>
                             ))}
-                            {isAdmin && (
+                            {hasAdminAccess && (
                                 <NavLink
                                     to="/admin"
                                     className={({ isActive }) =>
@@ -249,7 +274,7 @@ export default function Layout() {
 
             {/* Footer - Hidden in Quiz/Survey views to avoid overlap */}
             {!location.pathname.includes('/quiz/') && !location.pathname.includes('/survey/') && (
-                <footer className="mt-auto border-t border-primary-500/10 bg-[#161b33]/50 backdrop-blur-sm relative z-0">
+                <footer className="mt-auto border-t border-primary-500/10 bg-[var(--bg-color)]/50 backdrop-blur-sm relative z-0">
                     <div className="w-full px-4 sm:px-6 lg:px-12 py-6">
                         <div className="flex flex-col sm:flex-row justify-between items-center gap-6">
                             <div className="flex items-center gap-4 opacity-70">
@@ -260,10 +285,10 @@ export default function Layout() {
                                 </p>
                             </div>
                             <div className="text-right flex flex-col items-end gap-1">
-                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
+                                <p className="text-[10px] text-white/70 font-bold uppercase tracking-widest">
                                     Version {import.meta.env.VITE_APP_VERSION}
                                 </p>
-                                {user?.role === 'admin' && (
+                                {hasAdminPanelAccess(user) && (
                                     <div className="flex items-center gap-2 px-3 py-1 bg-slate-900/50 rounded-full border border-white/5 shadow-lg mt-1">
                                         <span className={`text-[8px] font-black uppercase tracking-[0.2em] ${!viewAsStudent ? 'text-secondary-500' : 'text-gray-500'}`}>
                                             {!viewAsStudent ? 'Panel Administrador' : 'Vista Estudiante'}

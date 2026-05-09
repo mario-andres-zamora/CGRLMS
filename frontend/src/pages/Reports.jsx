@@ -12,9 +12,17 @@ import DetailedUserList from '../components/reports/DetailedUserList';
 import CompletionTrend from '../components/reports/CompletionTrend';
 import CompletionTimeChart from '../components/reports/CompletionTimeChart';
 import BadgeStatsChart from '../components/reports/BadgeStatsChart';
+import ComplianceDetailModal from '../components/reports/ComplianceDetailModal';
+import { useState } from 'react';
 
 export default function Reports() {
     const navigate = useNavigate();
+    const [detailModal, setDetailModal] = useState({
+        isOpen: false,
+        areaType: '',
+        areaName: '',
+        moduleId: 'ALL'
+    });
     const {
         reportData,
         loading,
@@ -40,14 +48,46 @@ export default function Reports() {
         loadingDeptModule
     } = useReports();
 
+    const handleBarClick = (entry) => {
+        // Recharts suele envolver la data en una propiedad 'payload'
+        const data = entry.payload || entry;
+        
+        if (chartType === 'modules') {
+            setDetailModal({
+                isOpen: true,
+                areaType: 'all',
+                areaName: data.title,
+                moduleId: data.id
+            });
+            return;
+        }
+
+        const areaName = chartType === 'departments' ? data.department : data.position;
+        if (!areaName) return;
+
+        setDetailModal({
+            isOpen: true,
+            areaType: chartType,
+            areaName: areaName,
+            moduleId: selectedModuleForDept
+        });
+    };
+
     if (loading) {
         return <ReportsSkeleton />;
     }
 
     if (!reportData) return null;
+    const { summary, departments, positions, atRisk, moduleCompliance, badgeStats } = reportData;
 
-    const { summary, departments, atRisk, moduleCompliance, badgeStats } = reportData;
-    const activeChartData = (chartType === 'departments' ? departments : moduleCompliance) || [];
+    let activeChartData = [];
+    if (chartType === 'departments') {
+        activeChartData = departments || [];
+    } else if (chartType === 'positions') {
+        activeChartData = positions || [];
+    } else {
+        activeChartData = moduleCompliance || [];
+    }
 
     return (
         <div className="max-w-7xl mx-auto space-y-10 animate-fade-in pb-20">
@@ -74,6 +114,7 @@ export default function Reports() {
                                 selectedModule={selectedModuleForDept}
                                 onModuleChange={setSelectedModuleForDept}
                                 loading={loadingDeptModule}
+                                onBarClick={handleBarClick}
                             />
                         </div>
 
@@ -122,6 +163,11 @@ export default function Reports() {
                     onSearchChange={setSearchTerm}
                 />
             )}
+
+            <ComplianceDetailModal 
+                {...detailModal} 
+                onClose={() => setDetailModal(prev => ({ ...prev, isOpen: false }))}
+            />
         </div>
     );
 }

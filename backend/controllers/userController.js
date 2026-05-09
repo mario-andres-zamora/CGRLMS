@@ -27,6 +27,14 @@ class UserController {
             if (!profileData) {
                 return res.status(404).json({ error: 'Usuario no encontrado' });
             }
+
+            // Incluir configuraciones globales relevantes
+            const { getSystemSettings } = require('../utils/gamification');
+            const settings = await getSystemSettings();
+            if (profileData.user) {
+                profileData.user.allowThemeChange = settings.allow_theme_change;
+            }
+
             res.json({ success: true, ...profileData });
         } catch (error) {
             logger.error('Error detallado obteniendo perfil:', error);
@@ -67,6 +75,14 @@ class UserController {
             if (!profileData) {
                 return res.status(404).json({ error: 'Usuario no encontrado' });
             }
+
+            // Incluir configuraciones globales relevantes
+            const { getSystemSettings } = require('../utils/gamification');
+            const settings = await getSystemSettings();
+            if (profileData.user) {
+                profileData.user.allowThemeChange = settings.allow_theme_change;
+            }
+
             res.json({ success: true, ...profileData });
         } catch (error) {
             logger.error('Error obteniendo perfil de usuario:', error);

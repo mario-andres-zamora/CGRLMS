@@ -5,6 +5,24 @@ const initializeDatabase = async () => {
     try {
         logger.info('🔄 Verificando integridad de la base de datos...');
 
+        // Crear tabla system_settings si no existe
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS system_settings (
+                setting_key VARCHAR(50) PRIMARY KEY,
+                setting_value TEXT,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        `);
+
+        // Insertar valores por defecto para parámetros globales si no existen
+        await db.query(`
+            INSERT IGNORE INTO system_settings (setting_key, setting_value) VALUES 
+            ('ranking_limit_global', '100'),
+            ('ranking_limit_department', '10'),
+            ('maintenance_mode', 'false'),
+            ('allow_theme_change', 'false');
+        `);
+
         // Crear tabla user_content_progress si no existe
         await db.query(`
             CREATE TABLE IF NOT EXISTS user_content_progress (

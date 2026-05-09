@@ -21,7 +21,10 @@ export function useAdminSettings() {
     const [saving, setSaving] = useState(false);
     const [settings, setSettings] = useState({
         levels: [],
-        maintenanceMode: false
+        maintenanceMode: false,
+        rankingLimitGlobal: 100,
+        rankingLimitDepartment: 10,
+        allowThemeChange: false
     });
 
     const iconMap = {
@@ -67,15 +70,20 @@ export function useAdminSettings() {
 
             if (gamificationRes.data.success) {
                 const { levels } = gamificationRes.data;
+                const sysSettings = systemRes.data.settings || {};
+                
                 setSettings({
                     levels: levels.map(l => ({
                         ...l,
-                        icon: iconMap[l.icon] || Award,
+                        icon: iconMap[l.icon] || Trophy,
                         iconName: l.icon,
                         color: colorMap[l.icon] || 'text-primary-500',
                         bgColor: bgColorMap[l.icon] || 'bg-primary-500/10'
                     })),
-                    maintenanceMode: systemRes.data.settings?.maintenance_mode === 'true'
+                    maintenanceMode: sysSettings.maintenance_mode === 'true',
+                    rankingLimitGlobal: sysSettings.ranking_limit_global !== undefined ? parseInt(sysSettings.ranking_limit_global) : 100,
+                    rankingLimitDepartment: sysSettings.ranking_limit_department !== undefined ? parseInt(sysSettings.ranking_limit_department) : 10,
+                    allowThemeChange: sysSettings.allow_theme_change !== undefined ? sysSettings.allow_theme_change === 'true' : false
                 });
             }
         } catch (error) {
@@ -100,7 +108,16 @@ export function useAdminSettings() {
         setSettings(prev => ({ ...prev, maintenanceMode: !prev.maintenanceMode }));
     };
 
+    const updateRankingLimit = (key, value) => {
+        setSettings(prev => ({ ...prev, [key]: value }));
+    };
+
+    const toggleThemeChange = () => {
+        setSettings(prev => ({ ...prev, allowThemeChange: !prev.allowThemeChange }));
+    };
+
     const saveSettings = async () => {
+        setSaving(true);
         const payload = {
             levels: settings.levels.map(l => ({
                 name: l.name,
@@ -113,7 +130,10 @@ export function useAdminSettings() {
             Promise.all([
                 axios.put(`${API_URL}/gamification/settings`, payload),
                 axios.put(`${API_URL}/system/settings`, {
-                    maintenance_mode: settings.maintenanceMode
+                    maintenance_mode: settings.maintenanceMode,
+                    ranking_limit_global: settings.rankingLimitGlobal,
+                    ranking_limit_department: settings.rankingLimitDepartment,
+                    allow_theme_change: settings.allowThemeChange
                 })
             ]),
             {
@@ -121,7 +141,9 @@ export function useAdminSettings() {
                 success: 'Configuraciones guardadas permanentemente',
                 error: 'Error al salvar cambios'
             }
-        ).finally(() => setSaving(false));
+        ).then(() => {
+            fetchSettings();
+        }).finally(() => setSaving(false));
     };
 
     const refreshLeaderboard = async () => {
@@ -147,6 +169,8 @@ export function useAdminSettings() {
         saving,
         updateLevel,
         toggleMaintenance,
+        updateRankingLimit,
+        toggleThemeChange,
         saveSettings,
         refreshLeaderboard,
         refresh: fetchSettings

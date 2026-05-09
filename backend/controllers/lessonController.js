@@ -37,7 +37,8 @@ class LessonController {
             await clearCache(`cache:/api/modules*u${userId}*`);
             await clearCache(`cache:/api/lessons/*u${userId}*`);
 
-            const result = await lessonService.completeLesson(lessonId, userId, isAdminView);
+            const { timeSpent } = req.body;
+            const result = await lessonService.completeLesson(lessonId, userId, isAdminView, timeSpent || 0);
             res.json({ success: true, message: 'Lección completada', ...result });
         } catch (error) {
             logger.error('Error al completar lección:', error);

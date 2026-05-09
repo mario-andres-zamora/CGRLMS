@@ -2,13 +2,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import { BarChart3, ChevronDown, Loader2 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LabelList } from 'recharts';
 
-export default function ComplianceCharts({ chartType, onTypeChange, data, modules = [], selectedModule, onModuleChange, loading }) {
+export default function ComplianceCharts({ chartType, onTypeChange, data, modules = [], selectedModule, onModuleChange, loading, onBarClick }) {
     const [isOpen, setIsOpen] = useState(false);
     const [isModuleOpen, setIsModuleOpen] = useState(false);
     const dropdownRef = useRef(null);
     const moduleRef = useRef(null);
-    const yDataKey = chartType === 'departments' ? 'department' : 'title';
-
+    
     // Simple click outside handler
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -21,11 +20,14 @@ export default function ComplianceCharts({ chartType, onTypeChange, data, module
 
     const options = [
         { value: 'departments', label: 'Por Unidad/Área' },
+        { value: 'positions', label: 'Por Puesto' },
         { value: 'modules', label: 'Por Módulo' }
     ];
 
-    const currentOption = options.find(o => o.value === chartType) || options[1];
+    const currentOption = options.find(o => o.value === chartType) || options[0];
     const currentModule = modules.find(m => String(m.id) === String(selectedModule)) || { id: 'ALL', title: 'Todos los Módulos' };
+
+    const yDataKey = chartType === 'departments' ? 'department' : (chartType === 'positions' ? 'position' : 'title');
 
     // Dynamic height based on data length (min 400px, max 1000px)
     const chartHeight = Math.max(400, Math.min(data.length * 40, 1000));
@@ -44,7 +46,7 @@ export default function ComplianceCharts({ chartType, onTypeChange, data, module
             <div className="flex items-center justify-between flex-wrap gap-4 text-left">
                 <h3 className="text-lg font-black text-white uppercase tracking-tight flex items-center gap-3">
                     <BarChart3 className="w-6 h-6 text-primary-400" />
-                    {chartType === 'departments' ? 'Cumplimiento por Unidad' : 'Cumplimiento por Módulo'}
+                    {chartType === 'departments' ? 'Cumplimiento por Unidad' : (chartType === 'positions' ? 'Cumplimiento por Puesto' : 'Cumplimiento por Módulo')}
                 </h3>
 
                 <div className="flex items-center gap-3 flex-wrap">
@@ -149,7 +151,7 @@ export default function ComplianceCharts({ chartType, onTypeChange, data, module
                             content={({ active, payload }) => {
                                 if (active && payload && payload.length) {
                                     const data = payload[0].payload;
-                                    const count = chartType === 'departments' ? data.total_pax : data.total_students;
+                                    const count = (chartType === 'departments' || chartType === 'positions') ? data.total_pax : data.total_students;
                                     return (
                                         <div className="bg-slate-900 border border-white/10 p-4 rounded-xl shadow-2xl backdrop-blur-xl">
                                             <p className="text-[10px] font-black text-white uppercase tracking-wider mb-2 border-b border-white/5 pb-2">
@@ -175,7 +177,13 @@ export default function ComplianceCharts({ chartType, onTypeChange, data, module
                                 return null;
                             }}
                         />
-                        <Bar dataKey="avg_completion" radius={[0, 4, 4, 0]} barSize={20}>
+                        <Bar 
+                            dataKey="avg_completion" 
+                            radius={[0, 4, 4, 0]} 
+                            barSize={20}
+                            onClick={(entry) => onBarClick && onBarClick(entry)}
+                            className="cursor-pointer"
+                        >
                             {data.map((entry, index) => (
                                 <Cell
                                     key={`cell-${index}`}

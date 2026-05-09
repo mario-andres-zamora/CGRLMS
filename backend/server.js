@@ -44,6 +44,7 @@ const certificateRoutes = require('./routes/certificates');
 const announcementRoutes = require('./routes/announcements');
 const forumRoutes = require('./routes/forumRoutes');
 const gameRoutes = require('./routes/gameRoutes');
+const notificationRoutes = require('./routes/notifications');
 
 
 const { authMiddleware, adminMiddleware } = require('./middleware/auth');
@@ -185,6 +186,7 @@ app.use('/api/certificates', authMiddleware, maintenanceMiddleware, certificateR
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/forums', authMiddleware, maintenanceMiddleware, forumRoutes);
 app.use('/api/games', gameRoutes);
+app.use('/api/notifications', authMiddleware, maintenanceMiddleware, notificationRoutes);
 
 
 
@@ -203,13 +205,44 @@ app.get('/api/system/settings', authMiddleware, adminMiddleware, async (req, res
 // Ruta para actualizar configuraciones globales del sistema (Admin)
 app.put('/api/system/settings', authMiddleware, adminMiddleware, async (req, res) => {
     try {
-        const { maintenance_mode } = req.body;
+        const { maintenance_mode, ranking_limit_global, ranking_limit_department } = req.body;
+        
         if (maintenance_mode !== undefined) {
             await db.query(
                 "UPDATE system_settings SET setting_value = ? WHERE setting_key = 'maintenance_mode'",
                 [String(maintenance_mode)]
             );
         }
+
+        if (ranking_limit_global !== undefined) {
+            await db.query(
+                "INSERT INTO system_settings (setting_key, setting_value) VALUES ('ranking_limit_global', ?) ON DUPLICATE KEY UPDATE setting_value = ?",
+                [String(ranking_limit_global), String(ranking_limit_global)]
+            );
+        }
+
+        if (ranking_limit_department !== undefined) {
+            await db.query(
+                "INSERT INTO system_settings (setting_key, setting_value) VALUES ('ranking_limit_department', ?) ON DUPLICATE KEY UPDATE setting_value = ?",
+                [String(ranking_limit_department), String(ranking_limit_department)]
+            );
+        }
+
+        if (req.body.allow_theme_change !== undefined) {
+            await db.query(
+                "INSERT INTO system_settings (setting_key, setting_value) VALUES ('allow_theme_change', ?) ON DUPLICATE KEY UPDATE setting_value = ?",
+                [String(req.body.allow_theme_change), String(req.body.allow_theme_change)]
+            );
+        }
+
+        // Invalidar caché y refrescar leaderboard con los nuevos límites
+        const { getSystemSettings, refreshLeaderboardCache } = require('./utils/gamification');
+        const { clearCache } = require('./middleware/cache');
+        
+        await getSystemSettings(true);
+        await clearCache('cache:/api/gamification/leaderboard*');
+        refreshLeaderboardCache().catch(err => logger.error('Error refreshing leaderboard after settings change:', err));
+
         res.json({ success: true, message: 'Configuración actualizada' });
     } catch (error) {
         res.status(500).json({ error: 'Error al guardar configuración' });
