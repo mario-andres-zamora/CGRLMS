@@ -3,105 +3,121 @@ import { Mail, Briefcase, Building2, Shield, Zap } from 'lucide-react';
 
 export default function ProfileHero({ user, stats }) {
     return (
-        <div className="relative rounded-[3rem] overflow-hidden bg-slate-800/40 border border-white/5 shadow-2xl">
-            {/* Background Decor */}
-            <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-secondary-500/10 to-transparent"></div>
-            <div className="absolute top-[10%] left-[5%] w-32 h-32 bg-primary-500/10 rounded-full blur-3xl"></div>
+        <div className="relative rounded-[2.5rem] overflow-hidden shadow-xl transition-colors duration-300"
+            style={{ background: 'linear-gradient(135deg, var(--card-bg) 0%, var(--bg-color) 100%)' }}>
 
-            <div className="relative z-10 p-8 md:p-12 flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12">
+            {/* Light-mode premium border */}
+            <div className="absolute inset-0 rounded-[2.5rem] border border-[var(--card-border)] pointer-events-none" />
+
+            {/* Decorative blobs */}
+            <div className="absolute top-0 right-0 w-96 h-full bg-gradient-to-l from-primary-500/6 via-secondary-500/4 to-transparent pointer-events-none" />
+            <div className="absolute -top-10 left-0 w-64 h-64 bg-primary-500/5 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute bottom-0 right-20 w-48 h-48 bg-secondary-500/5 rounded-full blur-2xl pointer-events-none" />
+
+            {/* Top accent stripe */}
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary-500 via-secondary-500 to-accent-500 rounded-t-[2.5rem]" />
+
+            <div className="relative z-10 p-6 md:py-8 md:px-12 flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12">
                 {/* Portrait */}
-                <div className="relative">
-                    <div className="w-40 h-40 rounded-[2.5rem] p-1 bg-gradient-to-tr from-primary-500 via-secondary-500 to-accent-500 shadow-2xl overflow-hidden animate-pulse-slow">
-                        <div className="w-full h-full bg-slate-900 rounded-[2.3rem] flex items-center justify-center overflow-hidden">
+                <div className="relative flex-shrink-0">
+                    <div className="w-36 h-36 rounded-[2rem] p-[3px] bg-gradient-to-tr from-primary-500 via-secondary-500 to-accent-500 shadow-xl">
+                        <div className="w-full h-full bg-[var(--bg-color)] rounded-[1.8rem] overflow-hidden">
                             <img
                                 src={user.profile_picture || `https://ui-avatars.com/api/?name=${user.first_name}+${user.last_name}&background=384A99&color=fff&size=200`}
                                 alt={user.first_name}
                                 className="w-full h-full object-cover"
+                                referrerPolicy="no-referrer"
                             />
                         </div>
                     </div>
-                    <div className="absolute -bottom-2 -right-2 bg-secondary-500 text-white w-12 h-12 rounded-2xl flex items-center justify-center shadow-xl border-4 border-slate-900">
-                        <Shield className="w-6 h-6" />
+                    <div className="absolute -bottom-2 -right-2 bg-secondary-500 text-white w-10 h-10 rounded-xl flex items-center justify-center shadow-lg border-4 border-[var(--bg-color)]">
+                        <Shield className="w-5 h-5" />
                     </div>
                 </div>
 
-                {/* Basic Info */}
-                <div className="flex-1 text-center md:text-left space-y-4">
-                    <div className="space-y-1">
-                        <h1 className="text-4xl font-black text-white tracking-tighter uppercase leading-none flex items-center justify-center md:justify-start gap-3">
+                {/* Info */}
+                <div className="flex-1 text-center md:text-left space-y-4 min-w-0">
+                    <div className="space-y-2">
+                        <h1 className="text-3xl lg:text-4xl font-black text-[var(--text-color)] tracking-tighter uppercase leading-none flex items-center justify-center md:justify-start gap-3 flex-wrap">
                             {user.first_name} {user.last_name}
                             {user.login_streak > 1 && (
                                 <div className="group relative cursor-help">
-                                    <Zap className="w-5 h-5 text-secondary-500 fill-secondary-500/10 animate-pulse" />
-                                    <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-3 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none">
-                                        <div className="bg-slate-900 border border-secondary-500/30 text-white text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-full shadow-2xl whitespace-nowrap">
-                                            Secuencia: <span className="text-secondary-400">x{user.login_streak}</span>
+                                    <div className="flex items-center gap-1 bg-secondary-500/10 border border-secondary-500/20 rounded-full px-2 py-0.5">
+                                        <Zap className="w-3.5 h-3.5 text-secondary-500 fill-secondary-500/20 animate-pulse" />
+                                        <span className="text-[9px] font-black text-secondary-500 uppercase tracking-widest">x{user.login_streak}</span>
+                                    </div>
+                                    <div className="absolute left-1/2 -translate-x-1/2 top-full mt-3 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-50">
+                                        <div className="w-2 h-2 bg-[#1a2347] border-l border-t border-white/15 rotate-45 mx-auto -mb-1 relative z-10" />
+                                        <div className="bg-[#1a2347] border border-white/15 text-white text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-full shadow-2xl whitespace-nowrap">
+                                            Racha activa: <span className="text-secondary-400">x{user.login_streak} días</span>
                                         </div>
-                                        <div className="w-2 h-2 bg-slate-900 border-r border-b border-secondary-500/30 rotate-45 mx-auto -mt-1"></div>
                                     </div>
                                 </div>
                             )}
                         </h1>
-                        <div className="flex flex-wrap justify-center md:justify-start gap-4 text-gray-400 text-sm font-medium">
-                            <span className="flex items-center gap-1.5" title="Correo Institucional"><Mail className="w-4 h-4 text-primary-400" /> {user.email}</span>
-                            <span className="mx-1 text-gray-700 hidden md:block">•</span>
-                            <span className="flex items-center gap-1.5" title="Unidad Administrativa">
-                                <Building2 className="w-4 h-4 text-primary-400" />
-                                <span className="text-gray-500 mr-1">Área:</span> {user.department || 'Sin asignar'}
+
+                        <div className="flex flex-wrap justify-center md:justify-start gap-x-4 gap-y-1 mt-2">
+                            <span className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] font-medium">
+                                <Mail className="w-3.5 h-3.5 text-primary-500/70" /> {user.email}
                             </span>
-                            <span className="mx-1 text-gray-700 hidden md:block">•</span>
-                            <span className="flex items-center gap-1.5" title="Cargo Institucional">
-                                <Briefcase className="w-4 h-4 text-primary-400" />
-                                <span className="text-gray-500 mr-1">Puesto:</span> {user.position || 'Sin asignar'}
+                            <span className="hidden md:block text-[var(--card-border)]">•</span>
+                            <span className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] font-medium">
+                                <Building2 className="w-3.5 h-3.5 text-primary-500/70" />
+                                <span className="text-[var(--text-muted)]/70 mr-0.5">Área:</span> {user.department || 'Sin asignar'}
+                            </span>
+                            <span className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] font-medium">
+                                <Briefcase className="w-3.5 h-3.5 text-primary-500/70" />
+                                <span className="text-[var(--text-muted)]/70 mr-0.5">Puesto:</span> {user.position || 'Sin asignar'}
                             </span>
                         </div>
                     </div>
 
-                    {/* Level & Points Bar */}
-                    <div className="space-y-4 pt-4 w-full">
+                    {/* Level & Progress */}
+                    <div className="space-y-3 pt-2">
                         <div className="flex justify-between items-end">
-                            <div className="flex flex-col gap-1 text-left">
-                                <span className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em]">Rango Actual</span>
-                                <h2 className="text-2xl font-black text-white tracking-tighter uppercase italic leading-none">
+                            <div>
+                                <p className="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-[0.3em]">Rango Actual</p>
+                                <p className="text-xl font-black text-[var(--text-color)] tracking-tighter uppercase italic leading-tight mt-0.5">
                                     {stats.level}
-                                </h2>
+                                </p>
                             </div>
-                            <div className="flex flex-col items-end gap-1 pb-1">
-                                <span className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em]">Siguiente Rango</span>
-                                <span className="text-2xl font-black text-secondary-500 uppercase italic leading-none">
+                            <div className="text-right">
+                                <p className="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-[0.3em]">Siguiente Rango</p>
+                                <p className="text-xl font-black text-secondary-500 uppercase italic leading-tight mt-0.5">
                                     {stats.next_level_name}
-                                </span>
+                                </p>
                             </div>
                         </div>
 
+                        {/* Progress bar */}
                         <div className="relative">
-                            <div className="h-2.5 bg-slate-900/80 rounded-full border border-white/5 overflow-hidden shadow-inner">
+                            <div className="h-2 bg-[var(--bg-color)] rounded-full border border-[var(--card-border)] overflow-hidden shadow-inner">
                                 <div
-                                    className="h-full bg-gradient-to-r from-secondary-600 via-secondary-400 to-secondary-500 rounded-full transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(229,123,60,0.4)]"
+                                    className="h-full bg-gradient-to-r from-secondary-600 via-secondary-400 to-secondary-500 rounded-full transition-all duration-1000 ease-out shadow-[0_0_12px_rgba(229,123,60,0.35)]"
                                     style={{ width: `${stats.level_progress_percentage || 0}%` }}
-                                ></div>
+                                />
+                            </div>
+                            {/* Progress percentage pill */}
+                            <div
+                                className="absolute -top-5 text-[8px] font-black text-secondary-500 uppercase tracking-widest transition-all duration-1000"
+                                style={{ left: `clamp(0%, ${stats.level_progress_percentage || 0}% - 10px, 90%)` }}
+                            >
+                                {stats.level_progress_percentage || 0}%
                             </div>
                         </div>
 
-                        <div className="flex justify-between items-center px-1">
-                            <div className="flex flex-col items-start">
-                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
-                                    <span className="text-white text-sm">{stats.points}</span> PUNTOS TOTALES
-                                </span>
-                            </div>
-
+                        <div className="flex justify-between items-center px-0.5">
+                            <span className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest">
+                                <span className="text-[var(--text-color)] text-sm font-black">{stats.points}</span> pts totales
+                            </span>
                             {stats.next_level_min_points ? (
-                                <div className="text-right">
-                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
-                                        PRÓXIMO NIVEL: <span className="text-secondary-400 text-sm">{stats.next_level_min_points}</span> PUNTOS
-                                    </span>
-                                </div>
+                                <span className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest">
+                                    Próximo nivel: <span className="text-secondary-500 text-sm">{stats.next_level_min_points}</span> pts
+                                </span>
                             ) : (
-                                <div className="text-right">
-                                    <span className="text-[10px] font-black text-secondary-500 uppercase tracking-widest animate-pulse">
-                                        LEYENDA MÁXIMA ALCANZADA
-                                    </span>
-                                </div>
+                                <span className="text-[10px] font-black text-secondary-500 uppercase tracking-widest animate-pulse">
+                                    Leyenda Máxima
+                                </span>
                             )}
                         </div>
                     </div>

@@ -54,7 +54,7 @@ router.get('/leaderboard', authMiddleware, cacheMiddleware(60, true), async (req
         // --- RANKING CONSISTENTE ---
         const { getUserRank } = require('../utils/gamification');
         const rankData = await getUserRank(userId, email, department);
-        
+
         const myGlobalRankPos = rankData.institutionalRank;
         const myDeptRankPos = rankData.departmentalRank;
 
@@ -63,17 +63,23 @@ router.get('/leaderboard', authMiddleware, cacheMiddleware(60, true), async (req
         if (department) {
             departmentLeaderboard = institutionalLeaderboard
                 .filter(r => r.department === department)
-                .map((r, i) => ({ 
-                    ...r, 
-                    institutional_rank: r.rank_position, 
-                    rank_position: i + 1 
-                })); 
+                .map((r, i) => ({
+                    ...r,
+                    institutional_rank: r.rank_position,
+                    rank_position: i + 1
+                }));
         }
 
         const [userPointsData] = await db.query('SELECT points, level FROM user_points WHERE user_id = ?', [userId]);
         const levels = await getLevels(true);
         const levelIdx = levels.findIndex(l => l.name === userPointsData?.level);
         const formattedLevel = `Nivel ${levelIdx !== -1 ? levelIdx + 1 : 1}: ${userPointsData?.level || 'Novato'}`;
+
+        // Obtener límites de configuración para la respuesta
+        const { getSystemSettings } = require('../utils/gamification');
+        const sysSettings = await getSystemSettings();
+        const globalLimit = sysSettings.ranking_limit_global;
+        const deptLimit = sysSettings.ranking_limit_department;
 
         res.json({
             success: true,
@@ -85,9 +91,9 @@ router.get('/leaderboard', authMiddleware, cacheMiddleware(60, true), async (req
                 deptRank: myDeptRankPos,
                 department
             },
-            institutionalLeaderboard: institutionalLeaderboard,
+            institutionalLeaderboard: globalLimit > 0 ? institutionalLeaderboard.slice(0, globalLimit) : institutionalLeaderboard,
             departmentLeaderboard,
-            departmentRanking,
+            departmentRanking: deptLimit > 0 ? departmentRanking.slice(0, deptLimit) : departmentRanking,
             scope: 'institutional'
         });
     } catch (error) {
@@ -165,14 +171,14 @@ router.post('/leaderboard/refresh', authMiddleware, adminMiddleware, async (req,
         // 1. Recalcular la data central e invalidar niveles
         const { syncAllUsersLevels } = require('../utils/gamification');
         await syncAllUsersLevels();
-        
+
         // 2. Invalidar todos los resultados cacheados por usuario del endpoint de leaderboard
         const { clearCache } = require('../middleware/cache');
         await clearCache('cache:/api/gamification/leaderboard*');
-        
+
         // Forzar refresco del caché central en Redis en segundo plano
         refreshLeaderboardCache().catch(err => console.error('Error refreshing leaderboard in bg:', err));
-        
+
         res.json({ success: true, message: 'Ranking actualizado correctamente' });
     } catch (error) {
         logger.error('Error refrescando leaderboard manualmente:', error);

@@ -1,5 +1,6 @@
 const db = require('../config/database');
 const logger = require('../config/logger');
+const notificationService = require('../services/notificationService');
 
 /**
  * Automáticamente revisa y asigna insignias según criterios específicos.
@@ -18,6 +19,17 @@ async function awardBadge(userId, badgeId, shouldNotify = false) {
         if (result.affectedRows > 0) {
             logger.info(`Insignia otorgada: ${badge.name} al usuario ${userId}`);
             
+            // Otorgar puntos extra por insignia ganada según su configuración (default 10)
+            const pointsToAward = badge.points !== undefined && badge.points !== null ? badge.points : 10;
+            
+            await notificationService.createNotification(
+                userId,
+                '¡Nueva Insignia!',
+                `Has ganado la insignia: ${badge.name}. +${pointsToAward} pts de experiencia. ${badge.description || ''}`,
+                'info',
+                '/profile'
+            );
+
             // Obtener datos del usuario para el correo
             let userEmail = null;
             let userName = null;
@@ -31,9 +43,6 @@ async function awardBadge(userId, badgeId, shouldNotify = false) {
                 logger.error('Error obteniendo datos de usuario para email de insignia:', userError);
             }
 
-            // Otorgar puntos extra por insignia ganada según su configuración (default 10)
-            const pointsToAward = badge.points !== undefined && badge.points !== null ? badge.points : 10;
-            
             if (pointsToAward > 0) {
                 await db.query(
                     `INSERT INTO gamification_activities (user_id, activity_type, points_earned, reference_id) 

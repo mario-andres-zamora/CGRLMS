@@ -1,3 +1,4 @@
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useAuthStore } from './store/authStore';
@@ -28,6 +29,8 @@ import AdminInteractions from './pages/AdminInteractions';
 import AdminSurveys from './pages/AdminSurveys';
 import AdminSurveyDetail from './pages/AdminSurveyDetail';
 import AdminAnnouncements from './pages/AdminAnnouncements';
+import AdminNotifications from './pages/AdminNotifications';
+import Notifications from './pages/Notifications';
 import NotFound from './pages/NotFound';
 import ServerError from './pages/ServerError';
 import Maintenance from './pages/Maintenance';
@@ -39,11 +42,22 @@ import AdminRoute from './components/AdminRoute';
 import Layout from './components/Layout';
 import ToastSoundEffect from './components/ToastSoundEffect';
 import AppToaster from './components/AppToaster';
+import { useThemeStore } from './store/themeStore';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'your-google-client-id.apps.googleusercontent.com';
 
 function App() {
   const { isAuthenticated } = useAuthStore();
+  const { theme } = useThemeStore();
+
+  // Aplicar tema globalmente
+  React.useEffect(() => {
+    if (theme === 'light') {
+      document.documentElement.classList.add('light-theme');
+    } else {
+      document.documentElement.classList.remove('light-theme');
+    }
+  }, [theme]);
 
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
@@ -69,6 +83,7 @@ function App() {
               <Route path="/surveys/:id" element={<SurveyView />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
+              <Route path="/notifications" element={<Notifications />} />
 
               {/* Rutas de administrador compartidas con Analista */}
               <Route element={<AdminRoute roles={['admin', 'analyst']} />}>
@@ -92,6 +107,7 @@ function App() {
                 <Route path="/admin/assignments" element={<AdminAssignments />} />
                 <Route path="/admin/phishing" element={<AdminPhishing />} />
                 <Route path="/admin/announcements" element={<AdminAnnouncements />} />
+                <Route path="/admin/notifications" element={<AdminNotifications />} />
                 <Route path="/admin/lessons/:id/editor" element={<AdminLessonEditor />} />
               </Route>
 

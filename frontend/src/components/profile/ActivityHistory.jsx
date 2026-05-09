@@ -24,7 +24,7 @@ export default function ActivityHistory({
 
     return (
         <div className="space-y-6">
-            <h2 className="text-2xl font-black text-white uppercase tracking-tight flex items-center gap-3">
+            <h2 className="text-2xl font-black text-[var(--text-color)] uppercase tracking-tight flex items-center gap-3">
                 <HistoryIcon className="w-6 h-6 text-primary-400" />
                 Historial de Actividad
             </h2>
@@ -39,8 +39,8 @@ export default function ActivityHistory({
                                 className={`group p-3 rounded-[1.2rem] transition-all flex items-center gap-4 
                                     ${activity.type === 'module_completed'
                                         ? 'bg-amber-500/10 border-amber-500/40 shadow-[0_0_15px_rgba(245,158,11,0.1)]'
-                                        : 'bg-slate-800/20 border-white/5'} 
-                                    border ${activity.reference_id ? 'cursor-pointer hover:bg-slate-800/40 hover:border-primary-500/30' : ''}`}
+                                        : 'bg-[var(--card-bg)] border-[var(--card-border)]'} 
+                                    border ${activity.reference_id ? 'cursor-pointer hover:bg-[var(--card-bg)]/80 hover:border-primary-500/30' : ''}`}
                             >
                                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105 ${
                                     activity.type === 'lesson_completed' ? 'bg-blue-500/10 text-blue-400' :
@@ -71,7 +71,7 @@ export default function ActivityHistory({
                                                 </span>
                                             )}
                                         </div>
-                                        <p className="text-white font-bold text-sm tracking-tight text-left">
+                                        <p className="text-[var(--text-color)] font-bold text-sm tracking-tight text-left">
                                             {activity.type === 'module_completed' ? `¡Completaste el módulo: ${activity.reference_title}!` :
                                                 activity.type === 'lesson_completed' ? `¡Completaste la lección: ${activity.reference_title}!` :
                                                     activity.type === 'quiz_passed' ? `¡Aprobaste la evaluación: ${activity.reference_title}!` :
@@ -104,7 +104,7 @@ export default function ActivityHistory({
                                 <button
                                     onClick={() => onPageChange(Math.max(currentPage - 1, 1))}
                                     disabled={currentPage === 1}
-                                    className="px-4 py-2 rounded-xl bg-slate-800/40 text-gray-400 text-xs font-black uppercase tracking-widest disabled:opacity-20 hover:bg-slate-800 transition-colors border border-white/5"
+                                    className="px-4 py-2 rounded-xl bg-[var(--card-bg)] text-gray-400 text-xs font-black uppercase tracking-widest disabled:opacity-20 hover:bg-[var(--card-bg)]/80 transition-colors border border-[var(--card-border)]"
                                 >
                                     Anterior
                                 </button>
@@ -115,7 +115,7 @@ export default function ActivityHistory({
                                             onClick={() => onPageChange(i + 1)}
                                             className={`w-8 h-8 rounded-lg text-[10px] font-black transition-all border ${currentPage === i + 1
                                                 ? 'bg-primary-500 border-primary-500 text-white shadow-lg shadow-primary-500/20'
-                                                : 'bg-slate-800/40 border-white/5 text-gray-500 hover:bg-slate-800'
+                                                : 'bg-[var(--card-bg)] border-[var(--card-border)] text-gray-500 hover:bg-[var(--card-bg)]/80'
                                                 }`}
                                         >
                                             {i + 1}
@@ -125,7 +125,7 @@ export default function ActivityHistory({
                                 <button
                                     onClick={() => onPageChange(Math.min(currentPage + 1, totalPages))}
                                     disabled={currentPage === totalPages}
-                                    className="px-4 py-2 rounded-xl bg-slate-800/40 text-gray-400 text-xs font-black uppercase tracking-widest disabled:opacity-20 hover:bg-slate-800 transition-colors border border-white/5"
+                                    className="px-4 py-2 rounded-xl bg-[var(--card-bg)] text-gray-400 text-xs font-black uppercase tracking-widest disabled:opacity-20 hover:bg-[var(--card-bg)]/80 transition-colors border border-[var(--card-border)]"
                                 >
                                     Siguiente
                                 </button>
@@ -133,9 +133,9 @@ export default function ActivityHistory({
                         )}
                     </>
                 ) : (
-                    <div className="py-20 text-center bg-slate-800/10 rounded-3xl border border-dashed border-white/5">
+                    <div className="py-20 text-center bg-[var(--card-bg)] rounded-3xl border border-dashed border-[var(--card-border)]">
                         <HistoryIcon className="w-16 h-16 text-gray-700 mx-auto mb-4 opacity-10" />
-                        <h4 className="text-white font-bold opacity-30">Tu historial está vacío</h4>
+                        <h4 className="text-[var(--text-color)] font-bold opacity-30">Tu historial está vacío</h4>
                         <p className="text-gray-600 text-[11px] font-medium uppercase tracking-widest mt-1">Comienza tu capacitación para ganar puntos</p>
                     </div>
                 )}

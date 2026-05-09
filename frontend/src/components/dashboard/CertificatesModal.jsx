@@ -24,7 +24,7 @@ export default function CertificatesModal({ isOpen, onClose, certificates }) {
                         initial={{ scale: 0.9, opacity: 0, y: 20 }}
                         animate={{ scale: 1, opacity: 1, y: 0 }}
                         exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                        className="relative w-full max-w-4xl bg-[#0B0F1C] border border-white/5 rounded-[2.5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col max-h-[90vh]"
+                        className="relative w-full max-w-4xl bg-[var(--card-bg)] border border-[var(--card-border)] rounded-[2.5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col max-h-[90vh] transition-colors duration-300"
                     >
                         {/* Decorative background Elements */}
                         <div className="absolute top-0 left-0 w-96 h-96 bg-secondary-500/10 rounded-full blur-[100px] -translate-y-1/2 -translate-x-1/2 pointer-events-none" />
@@ -37,7 +37,7 @@ export default function CertificatesModal({ isOpen, onClose, certificates }) {
                                     <div className="p-2 bg-secondary-500/20 rounded-xl">
                                         <Award className="w-5 h-5 text-secondary-500" />
                                     </div>
-                                    <h2 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight">Mis Certificados</h2>
+                                    <h2 className="text-2xl md:text-3xl font-black text-[var(--text-color)] uppercase tracking-tight text-left">Mis Certificados</h2>
                                 </div>
                                 <p className="text-gray-500 text-[10px] md:text-xs font-black uppercase tracking-[0.2em]">Certificados obtenidos en la plataforma</p>
                             </div>
@@ -64,13 +64,13 @@ export default function CertificatesModal({ isOpen, onClose, certificates }) {
                                                 onClose();
                                                 navigate(`/certificates/module/${cert.module_id}`);
                                             }}
-                                            className="p-5 rounded-2xl bg-slate-900 border border-white/5 hover:border-secondary-500/40 hover:bg-slate-800/80 transition-all cursor-pointer group text-left flex items-center gap-4 shadow-lg hover:shadow-secondary-500/10 hover:-translate-y-1"
+                                            className="p-5 rounded-2xl bg-[var(--bg-color)] border border-[var(--card-border)] hover:border-secondary-500/40 hover:bg-[var(--bg-color)]/80 transition-all cursor-pointer group text-left flex items-center gap-4 shadow-lg hover:shadow-secondary-500/10 hover:-translate-y-1"
                                         >
                                             <div className="p-3 bg-secondary-500/20 rounded-xl text-secondary-500 group-hover:scale-110 transition-transform">
                                                 <FileText className="w-8 h-8" />
                                             </div>
                                             <div className="flex-1">
-                                                <p className="text-white font-bold text-sm uppercase tracking-tight group-hover:text-secondary-400 transition-colors line-clamp-2">{cert.module_title}</p>
+                                                <p className="text-[var(--text-color)] font-bold text-sm uppercase tracking-tight group-hover:text-secondary-400 transition-colors line-clamp-2">{cert.module_title}</p>
                                                 <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">
                                                     Obtenido: {new Date(cert.issued_at).toLocaleDateString()}
                                                 </p>

@@ -105,6 +105,14 @@ export default function AdminPanel() {
             stats: 'MODALES'
         },
         {
+            title: 'Notificaciones Manuales',
+            description: 'Enviar mensajes directos a la campana de notificaciones por área o rol.',
+            icon: Bell,
+            path: '/admin/notifications',
+            iconBg: 'bg-blue-500',
+            stats: 'DIRECTO'
+        },
+        {
             title: 'Directorio Maestro',
 
             description: 'Subir lista oficial de funcionarios (CSV) y ver quién falta de entrar.',

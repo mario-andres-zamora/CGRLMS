@@ -21,7 +21,7 @@ export default function BadgesModal({ isOpen, onClose, badges }) {
                         initial={{ scale: 0.9, opacity: 0, y: 20 }}
                         animate={{ scale: 1, opacity: 1, y: 0 }}
                         exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                        className="relative w-full max-w-4xl bg-[#0B0F1C] border border-white/5 rounded-[2.5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col max-h-[90vh]"
+                        className="relative w-full max-w-4xl bg-[var(--card-bg)] border border-[var(--card-border)] rounded-[2.5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col max-h-[90vh] transition-colors duration-300"
                     >
                         {/* Decorative background Elements */}
                         <div className="absolute top-0 right-0 w-96 h-96 bg-primary-500/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
@@ -34,7 +34,7 @@ export default function BadgesModal({ isOpen, onClose, badges }) {
                                     <div className="p-2 bg-primary-500/20 rounded-xl">
                                         <Trophy className="w-5 h-5 text-primary-400" />
                                     </div>
-                                    <h2 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight">Mis Insignias</h2>
+                                    <h2 className="text-2xl md:text-3xl font-black text-[var(--text-color)] uppercase tracking-tight text-left">Mis Insignias</h2>
                                 </div>
                                 <p className="text-gray-500 text-[10px] md:text-xs font-black uppercase tracking-[0.2em]">Tu colección de logros y reconocimientos en la plataforma</p>
                             </div>
@@ -58,7 +58,7 @@ export default function BadgesModal({ isOpen, onClose, badges }) {
                                         transition={{ delay: i * 0.05 }}
                                         className="group relative flex flex-col gap-4 text-center"
                                     >
-                                        <div className="aspect-square rounded-3xl bg-slate-900 border border-white/5 flex items-center justify-center relative cursor-default shadow-2xl transition-all duration-500 hover:border-primary-500/40 hover:shadow-primary-500/5 hover:-translate-y-1 group/badge ">
+                                        <div className="aspect-square rounded-3xl bg-[var(--bg-color)] border border-[var(--card-border)] flex items-center justify-center relative cursor-default shadow-2xl transition-all duration-500 hover:border-primary-500/40 hover:shadow-primary-500/5 hover:-translate-y-1 group/badge ">
                                             <div className="absolute inset-0 bg-gradient-to-br from-primary-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl"></div>
                                             <img
                                                 src={badge.image_url ? (badge.image_url.startsWith('http') ? badge.image_url : `/images/badges/${badge.image_url}`) : '/images/shield.svg'}
@@ -71,14 +71,14 @@ export default function BadgesModal({ isOpen, onClose, badges }) {
                                             />
 
                                             {/* Badge Tooltip Detail on Click/Hover */}
-                                            <div className="absolute inset-0 bg-slate-900/95 p-4 rounded-3xl flex flex-col items-center justify-center opacity-0 group-hover/badge:opacity-100 transition-opacity duration-300 pointer-events-none text-center">
+                                            <div className="absolute inset-0 bg-[var(--bg-color)]/95 p-4 rounded-3xl flex flex-col items-center justify-center opacity-0 group-hover/badge:opacity-100 transition-opacity duration-300 pointer-events-none text-center">
                                                 <p className="text-[10px] font-black text-secondary-500 uppercase tracking-widest mb-1">{badge.name}</p>
                                                 <p className="text-[9px] text-gray-300 font-medium leading-tight line-clamp-4">{badge.description}</p>
                                             </div>
                                         </div>
 
                                         <div className="space-y-1">
-                                            <p className="text-[11px] font-bold text-white uppercase tracking-tight group-hover:text-primary-400 transition-colors px-1 line-clamp-3 min-h-[2.8rem] leading-[1.2] text-center pt-1">
+                                            <p className="text-[11px] font-bold text-[var(--text-color)] uppercase tracking-tight group-hover:text-primary-400 transition-colors px-1 line-clamp-3 min-h-[2.8rem] leading-[1.2] text-center pt-1">
                                                 {badge.name}
                                             </p>
                                             <p className="text-[9px] text-gray-500 font-black uppercase tracking-widest">
@@ -91,7 +91,7 @@ export default function BadgesModal({ isOpen, onClose, badges }) {
                                 {/* Locked Placeholders */}
                                 {[...Array(Math.max(0, 10 - (badges?.length || 0)))].map((_, i) => (
                                     <div key={`locked-${i}`} className="flex flex-col gap-4 opacity-10 grayscale">
-                                        <div className="aspect-square rounded-3xl bg-slate-950 border border-white/5 flex items-center justify-center relative shadow-inner">
+                                        <div className="aspect-square rounded-3xl bg-[var(--bg-color)] border border-[var(--card-border)] flex items-center justify-center relative shadow-inner">
                                             <Shield className="w-12 h-12 text-slate-800" />
                                             <Lock className="w-5 h-5 absolute top-4 right-4 text-slate-800" />
                                         </div>

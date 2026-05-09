@@ -151,9 +151,10 @@ class LessonService {
         };
     }
 
-    async completeLesson(lessonId, userId, isAdminView) {
+    async completeLesson(lessonId, userId, isAdminView, timeSpent = 0) {
         const [lesson] = await db.query('SELECT module_id FROM lessons WHERE id = ?', [lessonId]);
         if (!lesson) throw new Error('Lección no encontrada');
+
 
         // Verify requirements
         const assignments = await db.query(
@@ -285,7 +286,7 @@ class LessonService {
             pointsAwarded += itemPoints;
         }
 
-        await db.query(`UPDATE user_progress SET status = 'completed', progress_percentage = 100, completed_at = NOW() WHERE user_id = ? AND lesson_id = ?`, [userId, lessonId]);
+        await db.query(`UPDATE user_progress SET status = 'completed', progress_percentage = 100, completed_at = NOW(), time_spent_minutes = COALESCE(time_spent_minutes, 0) + ? WHERE user_id = ? AND lesson_id = ?`, [timeSpent, userId, lessonId]);
         await db.query(`INSERT INTO user_points (user_id, points) VALUES (?, ?) ON DUPLICATE KEY UPDATE points = points + ?`, [userId, pointsAwarded, pointsAwarded]);
         await db.query(`INSERT INTO gamification_activities (user_id, activity_type, points_earned, reference_id) VALUES (?, 'lesson_completed', ?, ?)`, [userId, pointsAwarded, lessonId]);
 
